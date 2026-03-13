@@ -1,0 +1,13 @@
+{
+  "bsonType": "object",
+  "required": ["title"],
+  "properties": {
+    "_id": {},
+    "title": {
+      "bsonType": "string"
+    },
+    "createTime": {
+      "bsonType": "timestamp"
+    }
+  }
+}
