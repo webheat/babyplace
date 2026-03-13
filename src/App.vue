@@ -1,12 +1,21 @@
 <script>
+import uniIdPageInit from '@/uni_modules/uni-id-pages/init.js'
+
 export default {
-  onLaunch: function () {
+  async onLaunch() {
     console.log('App Launch')
+
+    try {
+      await uniIdPageInit()
+      console.log('uni-id-pages init success')
+    } catch (error) {
+      console.error('uni-id-pages init failed', error)
+    }
   },
-  onShow: function () {
+  onShow() {
     console.log('App Show')
   },
-  onHide: function () {
+  onHide() {
     console.log('App Hide')
   },
 }
