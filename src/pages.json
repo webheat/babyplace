@@ -2,18 +2,28 @@
   "pages": [
     {
       "path": "pages/index/index",
+      "aliasPath": "/",
       "style": {
         "navigationBarTitleText": "babyplace"
       }
     },
     {
+      "path": "pages/admin/index",
+      "aliasPath": "/admin",
+      "style": {
+        "navigationBarTitleText": "景点管理"
+      }
+    },
+    {
       "path": "pages/auth/index",
+      "aliasPath": "/auth",
       "style": {
         "navigationBarTitleText": "登录接入中心"
       }
     },
     {
       "path": "pages/auth/wechat-h5",
+      "aliasPath": "/wechat-login",
       "style": {
         "navigationBarTitleText": "微信扫码登录"
       }

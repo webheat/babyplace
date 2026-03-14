@@ -62,6 +62,12 @@
     "mp-baidu" : {
         "usingComponents" : true
     },
+    "h5" : {
+        "router" : {
+            "mode" : "hash",
+            "base" : "/"
+        }
+    },
     "mp-toutiao" : {
         "usingComponents" : true
     },

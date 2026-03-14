@@ -1,11 +1,11 @@
 <template>
   <view class="page">
     <view class="hero">
-      <text class="eyebrow">babyplace goods</text>
-      <text class="title">在售商品</text>
-      <text class="subtitle">页面只通过 `uniCloud.callFunction()` 获取公开商品列表，管理员写操作保留给云函数。</text>
+      <text class="eyebrow">babyplace spots</text>
+      <text class="title">景点基础数据</text>
+      <text class="subtitle">公开展示当前已录入的景点基础信息。管理员新增、编辑和删除都在 `/admin` 页面完成。</text>
       <view class="hero-actions">
-        <button class="hero-button" size="mini" @click="goAuthCenter">登录中心</button>
+        <button class="hero-button" size="mini" @click="goAdmin">进入管理页</button>
         <text class="hero-status">{{ loginStatusText }}</text>
       </view>
     </view>
@@ -15,7 +15,7 @@
         v-model="keyword"
         class="search"
         confirm-type="search"
-        placeholder="搜索商品名称"
+        placeholder="搜索景点名称或地址"
         @confirm="refreshGoods"
       />
       <button class="button" type="primary" :loading="loading" @click="refreshGoods">刷新</button>
@@ -23,22 +23,20 @@
 
     <view v-if="errorMessage" class="state error">{{ errorMessage }}</view>
     <view v-else-if="loading" class="state">加载中...</view>
-    <view v-else-if="!goodsList.length" class="state">暂无在售商品</view>
+    <view v-else-if="!goodsList.length" class="state">暂无景点数据</view>
 
     <view v-else class="goods-list">
       <view v-for="item in goodsList" :key="item._id" class="goods-card">
-        <image v-if="item.cover" :src="item.cover" class="cover" mode="aspectFill" />
-        <view v-else class="cover placeholder">NO IMAGE</view>
         <view class="meta">
           <text class="name">{{ item.name }}</text>
-          <text v-if="item.summary" class="summary">{{ item.summary }}</text>
-          <view class="price-row">
-            <text class="price">¥{{ formatPrice(item.price) }}</text>
-            <text v-if="item.originalPrice" class="original-price">¥{{ formatPrice(item.originalPrice) }}</text>
-          </view>
+          <text class="summary">{{ item.address }}</text>
           <view class="tag-row">
-            <text v-if="item.category" class="tag">{{ item.category }}</text>
-            <text class="tag">库存 {{ item.stock }}</text>
+            <text class="tag">纬度 {{ formatCoord(item.lat) }}</text>
+            <text class="tag">经度 {{ formatCoord(item.lng) }}</text>
+            <text v-if="item.suitable_ages" class="tag">{{ item.suitable_ages }}</text>
+            <text v-if="item.transport_hint" class="tag">{{ item.transport_hint }}</text>
+            <text v-if="item.parking_tip" class="tag">{{ item.parking_tip }}</text>
+            <text v-if="item.stroller_friendly" class="tag">{{ item.stroller_friendly }}</text>
           </view>
         </view>
       </view>
@@ -57,14 +55,14 @@ const errorMessage = ref('');
 const keyword = ref('');
 const loginStatusText = computed(() => (hasValidUniIdToken() ? '已检测到登录态' : '未登录'));
 
-function formatPrice(value) {
+function formatCoord(value) {
   const num = Number(value || 0);
-  return num.toFixed(2);
+  return num.toFixed(6);
 }
 
-function goAuthCenter() {
+function goAdmin() {
   uni.navigateTo({
-    url: '/pages/auth/index',
+    url: '/pages/admin/index',
   });
 }
 
@@ -195,29 +193,11 @@ onMounted(() => {
 }
 
 .goods-card {
-  display: flex;
-  gap: 20rpx;
   padding: 20rpx;
   border: 2rpx solid rgba(235, 210, 185, 0.9);
   border-radius: 28rpx;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 16rpx 40rpx rgba(91, 54, 24, 0.08);
-}
-
-.cover {
-  width: 180rpx;
-  height: 180rpx;
-  flex-shrink: 0;
-  border-radius: 20rpx;
-  background: #f6eadc;
-}
-
-.placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #b48e6d;
-  font-size: 22rpx;
 }
 
 .meta {
@@ -238,25 +218,6 @@ onMounted(() => {
   font-size: 24rpx;
   line-height: 1.5;
   color: #756050;
-}
-
-.price-row {
-  display: flex;
-  align-items: baseline;
-  gap: 14rpx;
-  margin-bottom: 16rpx;
-}
-
-.price {
-  font-size: 34rpx;
-  font-weight: 700;
-  color: #d0662b;
-}
-
-.original-price {
-  font-size: 22rpx;
-  color: #a79589;
-  text-decoration: line-through;
 }
 
 .tag-row {

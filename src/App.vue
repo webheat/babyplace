@@ -1,15 +1,47 @@
 <script>
-import uniIdPageInit from '@/uni_modules/uni-id-pages/init.js'
+function getH5FallbackTargetRoute() {
+  // #ifdef H5
+  const params = new URLSearchParams(window.location.search || '')
+  let target = params.get('target') || ''
+  if (!target) {
+    return ''
+  }
+
+  const code = params.get('code') || ''
+  const state = params.get('state') || ''
+
+  if (code && !target.includes('code=')) {
+    target += `${target.includes('?') ? '&' : '?'}code=${encodeURIComponent(code)}`
+    if (state) {
+      target += `&state=${encodeURIComponent(state)}`
+    }
+  }
+
+  if (target.startsWith('/admin')) {
+    return target.replace('/admin', '/pages/admin/index')
+  }
+
+  if (target.startsWith('/wechat-login')) {
+    return target.replace('/wechat-login', '/pages/auth/wechat-h5')
+  }
+
+  if (target.startsWith('/auth')) {
+    return target.replace('/auth', '/pages/auth/index')
+  }
+  // #endif
+
+  return ''
+}
 
 export default {
   async onLaunch() {
     console.log('App Launch')
 
-    try {
-      await uniIdPageInit()
-      console.log('uni-id-pages init success')
-    } catch (error) {
-      console.error('uni-id-pages init failed', error)
+    const fallbackRoute = getH5FallbackTargetRoute()
+    if (fallbackRoute) {
+      uni.reLaunch({
+        url: fallbackRoute,
+      })
     }
   },
   onShow() {
