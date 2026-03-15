@@ -71,18 +71,22 @@ async function refreshGoods() {
   errorMessage.value = '';
 
   try {
+    console.log('Calling listGoods...');
     const result = await listGoods({
       keyword: keyword.value,
       page: 1,
       pageSize: 20,
     });
+    console.log('listGoods result:', JSON.stringify(result));
 
     if (result.code !== 0) {
       throw new Error(result.message || '加载失败');
     }
 
-    goodsList.value = result.data.list || [];
+    const list = result.data?.list || [];
+    goodsList.value = list.map(item => ({ ...item }));
   } catch (error) {
+    console.error('refreshGoods error:', error);
     goodsList.value = [];
     errorMessage.value = error.message || '加载失败';
   } finally {
