@@ -1,0 +1,1 @@
+Dedup: similarity>0.85 and distance<500m

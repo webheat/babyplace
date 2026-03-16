@@ -1,0 +1,220 @@
+{
+  "bsonType": "object",
+  "required": [
+    "name",
+    "city",
+    "district",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "permission": {
+    "read": true,
+    "create": "auth.uid != null",
+    "update": "auth.uid != null",
+    "delete": "auth.uid != null"
+  },
+  "properties": {
+    "_id": {
+      "description": "系统自动生成ID"
+    },
+    "name": {
+      "bsonType": "string",
+      "title": "地点名称",
+      "trim": "both"
+    },
+    "canonical_name": {
+      "bsonType": "string",
+      "title": "标准名称",
+      "trim": "both",
+      "defaultValue": ""
+    },
+    "alias": {
+      "bsonType": "array",
+      "title": "别名列表",
+      "defaultValue": []
+    },
+    "city": {
+      "bsonType": "string",
+      "title": "城市"
+    },
+    "district": {
+      "bsonType": "string",
+      "title": "行政区"
+    },
+    "address": {
+      "bsonType": "string",
+      "title": "地址",
+      "defaultValue": ""
+    },
+    "location": {
+      "bsonType": "object",
+      "title": "经纬度",
+      "defaultValue": {
+        "lat": 0,
+        "lng": 0
+      },
+      "properties": {
+        "lat": {
+          "bsonType": "double",
+          "title": "纬度"
+        },
+        "lng": {
+          "bsonType": "double",
+          "title": "经度"
+        }
+      }
+    },
+    "category": {
+      "bsonType": "string",
+      "title": "主分类",
+      "enum": [
+        { "text": "公园", "value": "park" },
+        { "text": "商场", "value": "mall" },
+        { "text": "游乐场", "value": "playground" },
+        { "text": "博物馆", "value": "museum" },
+        { "text": "动物园", "value": "zoo" },
+        { "text": "农场", "value": "farm" },
+        { "text": "综合场馆", "value": "mixed" }
+      ],
+      "defaultValue": "mixed"
+    },
+    "age_range": {
+      "bsonType": "array",
+      "title": "适龄段",
+      "defaultValue": []
+    },
+    "indoor": {
+      "bsonType": "bool",
+      "title": "是否室内",
+      "defaultValue": false
+    },
+    "price_type": {
+      "bsonType": "string",
+      "title": "费用类型",
+      "enum": [
+        { "text": "免费", "value": "free" },
+        { "text": "收费", "value": "paid" },
+        { "text": "部分收费", "value": "mixed" }
+      ],
+      "defaultValue": "free"
+    },
+    "recommended_duration": {
+      "bsonType": "string",
+      "title": "推荐时长",
+      "enum": [
+        { "text": "1小时", "value": "1h" },
+        { "text": "2小时", "value": "2h" },
+        { "text": "半天", "value": "half_day" },
+        { "text": "全天", "value": "full_day" }
+      ],
+      "defaultValue": "2h"
+    },
+    "transport": {
+      "bsonType": "array",
+      "title": "交通方式",
+      "defaultValue": []
+    },
+    "facilities": {
+      "bsonType": "object",
+      "title": "设施信息",
+      "defaultValue": {
+        "stroller_friendly": false,
+        "restroom": false,
+        "food": false,
+        "shade": false,
+        "parking": false,
+        "rainy_day_ok": false
+      },
+      "properties": {
+        "stroller_friendly": {
+          "bsonType": "bool",
+          "title": "推车友好"
+        },
+        "restroom": {
+          "bsonType": "bool",
+          "title": "有卫生间"
+        },
+        "food": {
+          "bsonType": "bool",
+          "title": "有餐饮"
+        },
+        "shade": {
+          "bsonType": "bool",
+          "title": "有遮阴"
+        },
+        "parking": {
+          "bsonType": "bool",
+          "title": "可停车"
+        },
+        "rainy_day_ok": {
+          "bsonType": "bool",
+          "title": "雨天可去"
+        }
+      }
+    },
+    "summary": {
+      "bsonType": "string",
+      "title": "一句话摘要",
+      "defaultValue": ""
+    },
+    "recommend_reason": {
+      "bsonType": "string",
+      "title": "推荐理由",
+      "defaultValue": ""
+    },
+    "notice": {
+      "bsonType": "string",
+      "title": "注意事项",
+      "defaultValue": ""
+    },
+    "cover_image": {
+      "bsonType": "string",
+      "title": "封面图",
+      "defaultValue": ""
+    },
+    "gallery": {
+      "bsonType": "array",
+      "title": "图片列表",
+      "defaultValue": []
+    },
+    "tags": {
+      "bsonType": "array",
+      "title": "标签",
+      "defaultValue": []
+    },
+    "source_count": {
+      "bsonType": "int",
+      "title": "来源数",
+      "defaultValue": 0
+    },
+    "review_count": {
+      "bsonType": "int",
+      "title": "评价数",
+      "defaultValue": 0
+    },
+    "avg_rating": {
+      "bsonType": "double",
+      "title": "平均评分",
+      "defaultValue": 0
+    },
+    "status": {
+      "bsonType": "string",
+      "title": "状态",
+      "enum": [
+        { "text": "草稿", "value": "draft" },
+        { "text": "已发布", "value": "published" },
+        { "text": "已下线", "value": "archived" }
+      ],
+      "defaultValue": "draft"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "title": "创建时间"
+    },
+    "updated_at": {
+      "bsonType": "timestamp",
+      "title": "更新时间"
+    }
+  }
+}

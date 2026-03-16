@@ -1,0 +1,1 @@
+Extract POI names from article text.

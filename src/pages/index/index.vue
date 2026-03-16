@@ -1,240 +1,172 @@
 <template>
   <view class="page">
     <view class="hero">
-      <text class="eyebrow">babyplace spots</text>
-      <text class="title">景点基础数据</text>
-      <text class="subtitle">公开展示当前已录入的景点基础信息。管理员新增、编辑和删除都在 `/admin` 页面完成。</text>
-      <view class="hero-actions">
-        <button class="hero-button" size="mini" @click="goAdmin">进入管理页</button>
-        <text class="hero-status">{{ loginStatusText }}</text>
+      <text class="title">Babyplace POI 推荐</text>
+      <text class="subtitle">以地点为核心，聚合文章与用户评价。</text>
+      <view class="actions">
+        <button class="button primary" size="mini" @click="goPoiList">查看全部地点</button>
+        <button class="button" size="mini" @click="loadHome">刷新推荐</button>
       </view>
     </view>
 
-    <view class="toolbar">
-      <input
-        v-model="keyword"
-        class="search"
-        confirm-type="search"
-        placeholder="搜索景点名称或地址"
-        @confirm="refreshGoods"
-      />
-      <button class="button" type="primary" :loading="loading" @click="refreshGoods">刷新</button>
+    <view class="section">
+      <view class="section-head">
+        <text class="section-title">精选推荐</text>
+      </view>
+      <view v-if="loading" class="state">加载中...</view>
+      <view v-else-if="!homeData.featured.length" class="state">暂无推荐</view>
+      <view v-else class="list">
+        <poi-card v-for="item in homeData.featured" :key="item._id" :poi="item" @click="goDetail" />
+      </view>
     </view>
 
-    <view v-if="errorMessage" class="state error">{{ errorMessage }}</view>
-    <view v-else-if="loading" class="state">加载中...</view>
-    <view v-else-if="!goodsList.length" class="state">暂无景点数据</view>
-
-    <view v-else class="goods-list">
-      <view v-for="item in goodsList" :key="item._id" class="goods-card">
-        <view class="meta">
-          <text class="name">{{ item.name }}</text>
-          <text class="summary">{{ item.address }}</text>
-          <view class="tag-row">
-            <text class="tag">纬度 {{ formatCoord(item.lat) }}</text>
-            <text class="tag">经度 {{ formatCoord(item.lng) }}</text>
-            <text v-if="item.suitable_ages" class="tag">{{ item.suitable_ages }}</text>
-            <text v-if="item.transport_hint" class="tag">{{ item.transport_hint }}</text>
-            <text v-if="item.parking_tip" class="tag">{{ item.parking_tip }}</text>
-            <text v-if="item.stroller_friendly" class="tag">{{ item.stroller_friendly }}</text>
-          </view>
-        </view>
+    <view class="section">
+      <view class="section-head">
+        <text class="section-title">附近地点</text>
+      </view>
+      <view v-if="!homeData.nearby.length" class="state">未获取到定位或附近暂无数据</view>
+      <view v-else class="list">
+        <poi-card v-for="item in homeData.nearby" :key="item._id" :poi="item" @click="goDetail" />
       </view>
     </view>
   </view>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
-import { listGoods } from '../../api/goods';
-import { hasValidUniIdToken } from '../../utils/auth';
+import { onMounted, reactive, ref } from 'vue';
+import PoiCard from '@/components/poi-card.vue';
+import { recommendHome } from '@/api/recommend';
 
-const goodsList = ref([]);
 const loading = ref(false);
-const errorMessage = ref('');
-const keyword = ref('');
-const loginStatusText = computed(() => (hasValidUniIdToken() ? '已检测到登录态' : '未登录'));
+const homeData = reactive({
+  featured: [],
+  nearby: [],
+  latest: [],
+});
 
-function formatCoord(value) {
-  const num = Number(value || 0);
-  return num.toFixed(6);
+function goPoiList() {
+  uni.navigateTo({ url: '/pages/poi/list' });
 }
 
-function goAdmin() {
-  uni.navigateTo({
-    url: '/pages/admin/index',
+function goDetail(item) {
+  if (!item?._id) return;
+  uni.navigateTo({ url: `/pages/poi/detail?id=${item._id}` });
+}
+
+function getCurrentLocation() {
+  return new Promise((resolve) => {
+    uni.getLocation({
+      type: 'gcj02',
+      success: ({ latitude, longitude }) => {
+        resolve({ lat: latitude, lng: longitude });
+      },
+      fail: () => resolve(null),
+    });
   });
 }
 
-async function refreshGoods() {
+async function loadHome() {
   loading.value = true;
-  errorMessage.value = '';
-
   try {
-    console.log('Calling listGoods...');
-    const result = await listGoods({
-      keyword: keyword.value,
-      page: 1,
-      pageSize: 20,
+    const location = await getCurrentLocation();
+    const result = await recommendHome({
+      lat: location?.lat,
+      lng: location?.lng,
+      radius: 5000,
     });
-    console.log('listGoods result:', JSON.stringify(result));
-
-    if (result.code !== 0) {
-      throw new Error(result.message || '加载失败');
-    }
-
-    const list = result.data?.list || [];
-    goodsList.value = list.map(item => ({ ...item }));
+    if (result.code !== 0) throw new Error(result.message || '加载失败');
+    homeData.featured = result.data?.featured || [];
+    homeData.nearby = result.data?.nearby || [];
+    homeData.latest = result.data?.latest || [];
   } catch (error) {
-    console.error('refreshGoods error:', error);
-    goodsList.value = [];
-    errorMessage.value = error.message || '加载失败';
+    uni.showToast({
+      title: error.message || '加载失败',
+      icon: 'none',
+    });
+    homeData.featured = [];
+    homeData.nearby = [];
+    homeData.latest = [];
   } finally {
     loading.value = false;
   }
 }
 
 onMounted(() => {
-  refreshGoods();
+  loadHome();
 });
 </script>
 
 <style scoped>
 .page {
   min-height: 100vh;
-  padding: 48rpx 28rpx 60rpx;
-  background:
-    radial-gradient(circle at top left, #ffe6cf 0%, rgba(255, 230, 207, 0) 36%),
-    linear-gradient(180deg, #fffaf2 0%, #fff 100%);
+  padding: 28rpx;
+  background: #f7fafc;
 }
 
 .hero {
-  margin-bottom: 32rpx;
-}
-
-.eyebrow {
-  display: block;
-  margin-bottom: 12rpx;
-  font-size: 22rpx;
-  color: #9f6a35;
-  text-transform: uppercase;
-  letter-spacing: 4rpx;
+  margin-bottom: 24rpx;
+  padding: 28rpx;
+  border-radius: 20rpx;
+  background: linear-gradient(135deg, #e3f4ff, #e8fff4);
 }
 
 .title {
   display: block;
-  font-size: 52rpx;
-  font-weight: 600;
-  color: #3c2415;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #1f2937;
 }
 
 .subtitle {
   display: block;
-  margin-top: 16rpx;
+  margin-top: 12rpx;
   font-size: 26rpx;
-  line-height: 1.6;
-  color: #7b6557;
+  color: #4b5563;
 }
 
-.hero-actions {
+.actions {
+  margin-top: 18rpx;
   display: flex;
-  align-items: center;
-  gap: 16rpx;
-  margin-top: 24rpx;
-}
-
-.hero-button {
-  margin: 0;
-  border-radius: 999rpx;
-  background: #fff;
-  color: #8f5e31;
-  border: 2rpx solid #edc79c;
-}
-
-.hero-status {
-  font-size: 24rpx;
-  color: #8a6a55;
-}
-
-.toolbar {
-  display: flex;
-  gap: 16rpx;
-  align-items: center;
-  margin-bottom: 28rpx;
-}
-
-.search {
-  flex: 1;
-  height: 80rpx;
-  padding: 0 24rpx;
-  border: 2rpx solid #efd7bf;
-  border-radius: 20rpx;
-  background: rgba(255, 255, 255, 0.92);
+  gap: 12rpx;
 }
 
 .button {
   margin: 0;
-  border-radius: 20rpx;
-  background: #d98b3a;
+  border-radius: 12rpx;
+  background: #fff;
+  color: #1f2937;
+}
+
+.button.primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.section {
+  margin-bottom: 26rpx;
+}
+
+.section-head {
+  margin-bottom: 14rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  color: #1f2937;
+  font-weight: 600;
 }
 
 .state {
-  padding: 32rpx;
-  border-radius: 24rpx;
-  background: rgba(255, 255, 255, 0.88);
-  color: #6d574b;
+  padding: 28rpx;
+  border-radius: 16rpx;
+  background: #fff;
+  color: #6b7280;
   text-align: center;
 }
 
-.error {
-  color: #b84032;
-}
-
-.goods-list {
+.list {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
-}
-
-.goods-card {
-  padding: 20rpx;
-  border: 2rpx solid rgba(235, 210, 185, 0.9);
-  border-radius: 28rpx;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 16rpx 40rpx rgba(91, 54, 24, 0.08);
-}
-
-.meta {
-  flex: 1;
-}
-
-.name {
-  display: block;
-  margin-bottom: 12rpx;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #2f2118;
-}
-
-.summary {
-  display: block;
-  margin-bottom: 16rpx;
-  font-size: 24rpx;
-  line-height: 1.5;
-  color: #756050;
-}
-
-.tag-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12rpx;
-}
-
-.tag {
-  padding: 8rpx 14rpx;
-  border-radius: 999rpx;
-  background: #f9efe4;
-  font-size: 22rpx;
-  color: #8a6547;
+  gap: 14rpx;
 }
 </style>

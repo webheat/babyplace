@@ -15,6 +15,20 @@
       }
     },
     {
+      "path": "pages/poi/list",
+      "aliasPath": "/poi/list",
+      "style": {
+        "navigationBarTitleText": "地点列表"
+      }
+    },
+    {
+      "path": "pages/poi/detail",
+      "aliasPath": "/poi/detail",
+      "style": {
+        "navigationBarTitleText": "地点详情"
+      }
+    },
+    {
       "path": "pages/auth/index",
       "aliasPath": "/auth",
       "style": {

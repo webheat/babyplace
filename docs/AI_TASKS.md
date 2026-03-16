@@ -1,0 +1,1 @@
+verify schema -> generate cloudobjects -> generate API -> generate pages -> run seed
