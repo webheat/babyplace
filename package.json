@@ -34,6 +34,7 @@
     "build:quickapp-webview": "uni build -p quickapp-webview",
     "build:quickapp-webview-huawei": "uni build -p quickapp-webview-huawei",
     "build:quickapp-webview-union": "uni build -p quickapp-webview-union",
+    "upload:mp-weixin:auto": "node scripts/upload-mp-weixin-auto.js",
     "deploy:cloud:functions": "C:\\HBuilderX\\cli.exe cloud functions --upload allcloudfunctions --prj babyplace --provider aliyun",
     "deploy:cloud:babyplace-db": "C:\\HBuilderX\\cli.exe cloud functions --upload db --prj babyplace --provider aliyun --name babyplace.schema.json",
     "deploy:web": "C:\\HBuilderX\\cli.exe publish web --project C:\\Users\\Admin\\babyplace --webTitle babyplace --webHosting true --provider aliyun --spaceId mp-55536281-ad8f-4f58-b590-ad515baf863a",
@@ -65,6 +66,7 @@
     "@dcloudio/uni-cli-shared": "3.0.0-alpha-5000320260310001",
     "@dcloudio/uni-stacktracey": "3.0.0-alpha-5000320260310001",
     "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5000320260310001",
+    "@vitejs/plugin-vue": "^6.0.5",
     "@vue/runtime-core": "^3.4.21",
     "vite": "5.2.8"
   },

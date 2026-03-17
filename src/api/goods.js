@@ -1,30 +1,37 @@
-const HTTP_URL = 'https://byupload.aixifs.com/babyplace-admin';
+const HTTP_URL = 'https://ds.aixifs.com/';
 
 function httpCall(data) {
+  const requestBody = JSON.stringify(data || {});
   return new Promise((resolve) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', HTTP_URL, true);
-    // Use text/plain JSON to satisfy current CORS policy on this endpoint.
-    xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-    xhr.timeout = 30000;
-    xhr.onload = function() {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          resolve(JSON.parse(xhr.responseText));
-        } catch (e) {
-          resolve({ code: -1, message: 'parse error' });
+    uni.request({
+      url: HTTP_URL,
+      method: 'POST',
+      // Keep text/plain for endpoint compatibility.
+      header: {
+        'Content-Type': 'text/plain;charset=UTF-8',
+      },
+      timeout: 30000,
+      data: requestBody,
+      success: ({ statusCode, data: responseData }) => {
+        if (statusCode >= 200 && statusCode < 300) {
+          if (responseData && typeof responseData === 'object') {
+            resolve(responseData);
+            return;
+          }
+          try {
+            resolve(JSON.parse(String(responseData || '')));
+          } catch (e) {
+            resolve({ code: -1, message: 'parse error' });
+          }
+          return;
         }
-      } else {
-        resolve({ code: xhr.status, message: 'HTTP error' });
+        resolve({ code: statusCode, message: 'HTTP error' });
+      },
+      fail: (error) => {
+        const isTimeout = String(error?.errMsg || '').toLowerCase().includes('timeout');
+        resolve({ code: -1, message: isTimeout ? 'timeout' : 'network error' });
       }
-    };
-    xhr.onerror = function() {
-      resolve({ code: -1, message: 'network error' });
-    };
-    xhr.ontimeout = function() {
-      resolve({ code: -1, message: 'timeout' });
-    };
-    xhr.send(JSON.stringify(data));
+    });
   });
 }
 

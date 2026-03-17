@@ -11,7 +11,7 @@
       "path": "pages/admin/index",
       "aliasPath": "/admin",
       "style": {
-        "navigationBarTitleText": "景点管理"
+        "navigationBarTitleText": "后台管理"
       }
     },
     {

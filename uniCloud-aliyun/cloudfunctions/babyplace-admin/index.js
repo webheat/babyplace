@@ -14,6 +14,15 @@ const SEED_ACTIONS = new Set([
   'seed.insertBatch',
   'seed.clearCollections',
 ])
+const ADMIN_ACTIONS = new Set([
+  'poi.list', 'poi.detail', 'poi.create', 'poi.update', 'poi.remove',
+  'article.list', 'article.detail', 'article.create', 'article.update', 'article.remove',
+  'source.list', 'source.detail', 'source.create', 'source.update', 'source.remove',
+  'review.list', 'review.detail', 'review.create', 'review.update', 'review.remove',
+  'poi.nearby',
+  'review.listByPoi',
+  'recommend.home',
+])
 const IMPORT_SECRET = 'babyplace2026'
 const SEED_ALLOWED_COLLECTIONS = new Set([
   'babyplace-poi',
@@ -21,6 +30,32 @@ const SEED_ALLOWED_COLLECTIONS = new Set([
   'babyplace-content-source',
   'babyplace-user-review',
 ])
+const ADMIN_ENTITY_CONFIG = {
+  poi: {
+    collection: 'babyplace-poi',
+    keywordFields: ['name', 'canonical_name', 'address', 'city', 'district'],
+    orderBy: [['updated_at', 'desc'], ['created_at', 'desc']],
+    requiredFields: ['name', 'city', 'district'],
+  },
+  article: {
+    collection: 'babyplace-article',
+    keywordFields: ['title', 'source_account', 'url'],
+    orderBy: [['publish_time', 'desc'], ['updated_at', 'desc']],
+    requiredFields: ['title', 'source_account'],
+  },
+  source: {
+    collection: 'babyplace-content-source',
+    keywordFields: ['poi_id', 'article_id', 'quoted_text'],
+    orderBy: [['updated_at', 'desc'], ['created_at', 'desc']],
+    requiredFields: ['poi_id', 'article_id'],
+  },
+  review: {
+    collection: 'babyplace-user-review',
+    keywordFields: ['poi_id', 'nickname', 'comment'],
+    orderBy: [['updated_at', 'desc'], ['created_at', 'desc']],
+    requiredFields: ['poi_id'],
+  },
+}
 const MUTABLE_FIELDS = [
   'name',
   'lat',
@@ -64,6 +99,20 @@ function toNumberSafe(value, fallback = 0) {
 function toIntegerSafe(value, fallback = 0) {
   const num = Number(value)
   return Number.isInteger(num) ? num : fallback
+}
+
+function toRadians(value) {
+  return value * Math.PI / 180
+}
+
+function calcDistanceMeters(lat1, lng1, lat2, lng2) {
+  const earthRadius = 6371000
+  const dLat = toRadians(lat2 - lat1)
+  const dLng = toRadians(lng2 - lng1)
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+    + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2))
+    * Math.sin(dLng / 2) * Math.sin(dLng / 2)
+  return earthRadius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
 function toBool(value, fallback = false) {
@@ -221,6 +270,341 @@ async function batchImportGoods(params, context) {
     succeededItems: succeeded,
     failedItems: failed,
   }, `imported ${succeeded.length}/${items.length} items`)
+}
+
+function parseAdminAction(action) {
+  const parts = sanitizeString(action).split('.')
+  if (parts.length !== 2) return null
+  const entity = parts[0]
+  const operation = parts[1]
+  if (!ADMIN_ENTITY_CONFIG[entity]) return null
+  if (!['list', 'detail', 'create', 'update', 'remove'].includes(operation)) return null
+  return { entity, operation }
+}
+
+function normalizeAdminPayload(entity, payload = {}, isUpdate = false) {
+  const source = payload && typeof payload === 'object' ? payload : {}
+  const normalized = {}
+  const setString = (key) => {
+    if (!isUpdate || Object.prototype.hasOwnProperty.call(source, key)) normalized[key] = sanitizeString(source[key])
+  }
+  const setArray = (key) => {
+    if (!isUpdate || Object.prototype.hasOwnProperty.call(source, key)) normalized[key] = sanitizeArray(source[key])
+  }
+  const setNumber = (key, fallback = 0) => {
+    if (!isUpdate || Object.prototype.hasOwnProperty.call(source, key)) normalized[key] = toNumberSafe(source[key], fallback)
+  }
+  const setInteger = (key, fallback = 0) => {
+    if (!isUpdate || Object.prototype.hasOwnProperty.call(source, key)) normalized[key] = toIntegerSafe(source[key], fallback)
+  }
+  const setBool = (key, fallback = false) => {
+    if (!isUpdate || Object.prototype.hasOwnProperty.call(source, key)) normalized[key] = toBool(source[key], fallback)
+  }
+  const setRaw = (key, fallback = null) => {
+    if (!isUpdate || Object.prototype.hasOwnProperty.call(source, key)) normalized[key] = source[key] || fallback
+  }
+
+  switch (entity) {
+    case 'poi': {
+      setString('name')
+      setString('canonical_name')
+      setArray('alias')
+      setString('city')
+      setString('district')
+      setString('address')
+      if (!isUpdate || Object.prototype.hasOwnProperty.call(source, 'location')) {
+        const location = source.location && typeof source.location === 'object' ? source.location : {}
+        normalized.location = {
+          lat: toNumberSafe(location.lat, 0),
+          lng: toNumberSafe(location.lng, 0),
+        }
+      }
+      setString('category')
+      setArray('age_range')
+      setBool('indoor', false)
+      setString('price_type')
+      setString('recommended_duration')
+      setArray('transport')
+      if (!isUpdate || Object.prototype.hasOwnProperty.call(source, 'facilities')) {
+        const facilities = source.facilities && typeof source.facilities === 'object' ? source.facilities : {}
+        normalized.facilities = {
+          stroller_friendly: toBool(facilities.stroller_friendly, false),
+          restroom: toBool(facilities.restroom, false),
+          food: toBool(facilities.food, false),
+          shade: toBool(facilities.shade, false),
+          parking: toBool(facilities.parking, false),
+          rainy_day_ok: toBool(facilities.rainy_day_ok, false),
+        }
+      }
+      setString('summary')
+      setString('recommend_reason')
+      setString('notice')
+      setString('cover_image')
+      setArray('gallery')
+      setArray('tags')
+      setInteger('source_count', 0)
+      setInteger('review_count', 0)
+      setNumber('avg_rating', 0)
+      setString('status')
+      break
+    }
+    case 'article':
+      setString('title')
+      setString('source_account')
+      setString('source_account_id')
+      setRaw('publish_time', db.serverDate())
+      setString('url')
+      setString('cover_image')
+      setString('content_text')
+      setString('content_html')
+      setArray('images')
+      setArray('extracted_poi_names')
+      if (!isUpdate || Object.prototype.hasOwnProperty.call(source, 'parse_result')) {
+        normalized.parse_result = source.parse_result && typeof source.parse_result === 'object' ? source.parse_result : {}
+      }
+      setString('status')
+      setNumber('parse_confidence', 0)
+      break
+    case 'source':
+      setString('poi_id')
+      setString('article_id')
+      setString('source_type')
+      setString('quoted_text')
+      setArray('support_fields')
+      setNumber('confidence_score', 0)
+      setBool('is_primary', false)
+      setString('status')
+      break
+    case 'review':
+      setString('poi_id')
+      setString('user_id')
+      setString('nickname')
+      setString('avatar')
+      setInteger('rating', 5)
+      setString('comment')
+      setRaw('visit_date', db.serverDate())
+      setArray('tags')
+      setArray('images')
+      setString('status')
+      break
+  }
+
+  return normalized
+}
+
+function validateAdminPayload(entity, payload = {}, isUpdate = false) {
+  const config = ADMIN_ENTITY_CONFIG[entity]
+  if (!config) return ['invalid entity']
+  const errors = []
+  if (!isUpdate) {
+    config.requiredFields.forEach(field => {
+      if (!sanitizeString(payload[field])) {
+        errors.push(`${field} is required`)
+      }
+    })
+  } else if (!Object.keys(payload).length) {
+    errors.push('payload is required')
+  }
+  if ((entity === 'poi' || entity === 'review') && Object.prototype.hasOwnProperty.call(payload, 'rating')) {
+    const rating = toInteger(payload.rating)
+    if (rating === null || rating < 1 || rating > 5) errors.push('rating must be 1-5')
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'parse_confidence')) {
+    const score = toNumber(payload.parse_confidence)
+    if (score === null || score < 0 || score > 1) errors.push('parse_confidence must be 0-1')
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'confidence_score')) {
+    const score = toNumber(payload.confidence_score)
+    if (score === null || score < 0 || score > 1) errors.push('confidence_score must be 0-1')
+  }
+  return errors
+}
+
+async function listAdminEntity(entity, params = {}) {
+  const config = ADMIN_ENTITY_CONFIG[entity]
+  if (!config) return fail(400, 'invalid entity')
+  const page = Math.max(toInteger(params.page) || 1, 1)
+  const pageSize = Math.min(Math.max(toInteger(params.pageSize) || 10, 1), 50)
+  const keyword = sanitizeString(params.keyword)
+  const where = {}
+  if (keyword) {
+    where.$or = config.keywordFields.map(field => ({
+      [field]: new dbRegExp({ regexp: keyword, options: 'i' }),
+    }))
+  }
+  let query = db.collection(config.collection).where(where)
+  const totalResult = await query.count()
+  config.orderBy.forEach(order => {
+    query = query.orderBy(order[0], order[1])
+  })
+  const result = await query
+    .skip((page - 1) * pageSize)
+    .limit(pageSize)
+    .get()
+  return ok({ list: result.data || [], total: totalResult.total || 0, page, pageSize })
+}
+
+async function listReviewByPoi(params = {}) {
+  const poiId = sanitizeString(params.poi_id)
+  if (!poiId) return fail(400, 'poi_id is required')
+  const page = Math.max(toInteger(params.page) || 1, 1)
+  const pageSize = Math.min(Math.max(toInteger(params.pageSize) || 10, 1), 50)
+  const query = db.collection('babyplace-user-review').where({
+    poi_id: poiId,
+    status: 'approved',
+  })
+  const countResult = await query.count()
+  const result = await query
+    .orderBy('created_at', 'desc')
+    .skip((page - 1) * pageSize)
+    .limit(pageSize)
+    .get()
+  return ok({
+    list: result.data || [],
+    total: countResult.total || 0,
+    page,
+    pageSize,
+  })
+}
+
+async function nearbyPoi(params = {}) {
+  const lat = toNumber(params.lat)
+  const lng = toNumber(params.lng)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return fail(400, 'lat/lng is required')
+  }
+  const radius = Math.max(100, Math.min(50000, toInteger(params.radius) || 3000))
+  const page = Math.max(toInteger(params.page) || 1, 1)
+  const pageSize = Math.min(Math.max(toInteger(params.pageSize) || 20, 1), 50)
+  const result = await db.collection('babyplace-poi').where({ status: 'published' }).limit(500).get()
+  const list = (result.data || [])
+    .map(item => {
+      const poiLat = toNumber(item.location?.lat, 0)
+      const poiLng = toNumber(item.location?.lng, 0)
+      return {
+        ...item,
+        distance: calcDistanceMeters(lat, lng, poiLat, poiLng),
+      }
+    })
+    .filter(item => item.distance <= radius)
+    .sort((a, b) => a.distance - b.distance)
+  const total = list.length
+  const start = (page - 1) * pageSize
+  return ok({
+    list: list.slice(start, start + pageSize),
+    total,
+    page,
+    pageSize,
+    radius,
+  })
+}
+
+async function recommendHome(params = {}) {
+  const lat = toNumber(params.lat, NaN)
+  const lng = toNumber(params.lng, NaN)
+  const radius = Math.max(500, Math.min(20000, toInteger(params.radius) || 5000))
+  const result = await db.collection('babyplace-poi').where({ status: 'published' }).limit(200).get()
+  const list = result.data || []
+  const featured = [...list]
+    .sort((a, b) => (toNumberSafe(b.avg_rating, 0) - toNumberSafe(a.avg_rating, 0))
+      || (toIntegerSafe(b.review_count, 0) - toIntegerSafe(a.review_count, 0)))
+    .slice(0, 6)
+  const latest = [...list]
+    .sort((a, b) => {
+      const aTime = a.updated_at?.getTime ? a.updated_at.getTime() : 0
+      const bTime = b.updated_at?.getTime ? b.updated_at.getTime() : 0
+      return bTime - aTime
+    })
+    .slice(0, 6)
+  let nearby = []
+  if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    nearby = list
+      .map(item => {
+        const poiLat = toNumber(item.location?.lat, 0)
+        const poiLng = toNumber(item.location?.lng, 0)
+        return {
+          ...item,
+          distance: calcDistanceMeters(lat, lng, poiLat, poiLng),
+        }
+      })
+      .filter(item => item.distance <= radius)
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 6)
+  }
+  return ok({
+    featured,
+    latest,
+    nearby,
+  })
+}
+
+async function detailAdminEntity(entity, params = {}) {
+  const config = ADMIN_ENTITY_CONFIG[entity]
+  if (!config) return fail(400, 'invalid entity')
+  const id = sanitizeString(params.id)
+  if (!id) return fail(400, 'id is required')
+  const result = await db.collection(config.collection).doc(id).get()
+  const item = (result.data || [])[0]
+  if (!item) return fail(404, `${entity} not found`)
+  return ok(item)
+}
+
+async function createAdminEntity(entity, params = {}) {
+  const config = ADMIN_ENTITY_CONFIG[entity]
+  if (!config) return fail(400, 'invalid entity')
+  const payload = normalizeAdminPayload(entity, params.payload || {}, false)
+  const errors = validateAdminPayload(entity, payload, false)
+  if (errors.length) return fail(400, errors.join('; '))
+  const now = db.serverDate()
+  const result = await db.collection(config.collection).add({
+    ...payload,
+    created_at: now,
+    updated_at: now,
+  })
+  return ok({ id: result.id }, 'created')
+}
+
+async function updateAdminEntity(entity, params = {}) {
+  const config = ADMIN_ENTITY_CONFIG[entity]
+  if (!config) return fail(400, 'invalid entity')
+  const id = sanitizeString(params.id)
+  if (!id) return fail(400, 'id is required')
+  const payload = normalizeAdminPayload(entity, params.payload || {}, true)
+  const errors = validateAdminPayload(entity, payload, true)
+  if (errors.length) return fail(400, errors.join('; '))
+  const result = await db.collection(config.collection).doc(id).update({
+    ...payload,
+    updated_at: db.serverDate(),
+  })
+  if (!result.updated) return fail(404, `${entity} not found`)
+  return ok({ id, updated: result.updated }, 'updated')
+}
+
+async function removeAdminEntity(entity, params = {}) {
+  const config = ADMIN_ENTITY_CONFIG[entity]
+  if (!config) return fail(400, 'invalid entity')
+  const id = sanitizeString(params.id)
+  if (!id) return fail(400, 'id is required')
+  const result = await db.collection(config.collection).doc(id).remove()
+  if (!result.deleted) return fail(404, `${entity} not found`)
+  return ok({ id, deleted: result.deleted }, 'removed')
+}
+
+async function dispatchAdminAction(action, params = {}) {
+  if (action === 'review.listByPoi') return listReviewByPoi(params)
+  if (action === 'poi.nearby') return nearbyPoi(params)
+  if (action === 'recommend.home') return recommendHome(params)
+  const parsed = parseAdminAction(action)
+  if (!parsed) return fail(400, 'invalid action')
+  const { entity, operation } = parsed
+  switch (operation) {
+    case 'list': return listAdminEntity(entity, params)
+    case 'detail': return detailAdminEntity(entity, params)
+    case 'create': return createAdminEntity(entity, params)
+    case 'update': return updateAdminEntity(entity, params)
+    case 'remove': return removeAdminEntity(entity, params)
+    default: return fail(400, 'invalid action')
+  }
 }
 
 function ensureSeedAuthorized(params) {
@@ -420,6 +804,9 @@ exports.main = async (event, context) => {
   }
   const action = sanitizeString(params.action)
   if (!action) return fail(400, 'action is required')
+  if (ADMIN_ACTIONS.has(action)) {
+    return dispatchAdminAction(action, params)
+  }
   if (!WRITE_ACTIONS.has(action) && !PUBLIC_ACTIONS.has(action) && !SEED_ACTIONS.has(action)) {
     return fail(400, 'invalid action')
   }
