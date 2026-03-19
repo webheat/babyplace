@@ -8,8 +8,11 @@
     <text class="summary">{{ poi.summary || poi.recommend_reason || '暂无简介' }}</text>
     <tag-list :tags="poi.tags || []" />
     <view class="footer">
-      <rating-stars :score="Number(poi.avg_rating || 0)" />
-      <text class="count">{{ Number(poi.review_count || 0) }} 条评价</text>
+      <view class="footer-left">
+        <rating-stars :score="Number(poi.avg_rating || 0)" />
+        <text class="count">{{ Number(poi.review_count || 0) }} 条评价</text>
+      </view>
+      <text v-if="hasLocation" class="map-link" @click.stop="handleMap">地图</text>
     </view>
   </view>
 </template>
@@ -18,6 +21,7 @@
 import { computed } from 'vue';
 import RatingStars from '@/components/rating-stars.vue';
 import TagList from '@/components/tag-list.vue';
+import { hasPoiLocation } from '@/utils/poi';
 
 const props = defineProps({
   poi: {
@@ -26,7 +30,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['click']);
+const emit = defineEmits(['click', 'map']);
 
 const locationText = computed(() => {
   const city = props.poi.city || '';
@@ -42,8 +46,14 @@ const distanceText = computed(() => {
   return `${(distance / 1000).toFixed(1)}km`;
 });
 
+const hasLocation = computed(() => hasPoiLocation(props.poi));
+
 function handleClick() {
   emit('click', props.poi);
+}
+
+function handleMap() {
+  emit('map', props.poi);
 }
 </script>
 
@@ -95,10 +105,26 @@ function handleClick() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12rpx;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
 }
 
 .count {
   font-size: 22rpx;
   color: #6b7280;
+}
+
+.map-link {
+  flex-shrink: 0;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  background: #e8f0ff;
+  color: #1d4ed8;
+  font-size: 22rpx;
 }
 </style>

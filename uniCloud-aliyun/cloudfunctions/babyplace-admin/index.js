@@ -13,6 +13,8 @@ const SEED_ACTIONS = new Set([
   'seed.ping',
   'seed.insertBatch',
   'seed.clearCollections',
+  'seed.upsertPoiBatch',
+  'seed.listPoiByNames',
 ])
 const ADMIN_ACTIONS = new Set([
   'poi.list', 'poi.detail', 'poi.create', 'poi.update', 'poi.remove',
@@ -325,6 +327,8 @@ function normalizeAdminPayload(entity, payload = {}, isUpdate = false) {
       setString('price_type')
       setString('recommended_duration')
       setArray('transport')
+      setString('transport_hint')
+      setString('parking_tip')
       if (!isUpdate || Object.prototype.hasOwnProperty.call(source, 'facilities')) {
         const facilities = source.facilities && typeof source.facilities === 'object' ? source.facilities : {}
         normalized.facilities = {
@@ -639,6 +643,8 @@ function normalizeSeedPoiDoc(input = {}) {
     price_type: sanitizeString(input.price_type) || 'free',
     recommended_duration: sanitizeString(input.recommended_duration) || '2h',
     transport: sanitizeArray(input.transport),
+    transport_hint: sanitizeString(input.transport_hint),
+    parking_tip: sanitizeString(input.parking_tip),
     facilities: {
       stroller_friendly: toBool(facilities.stroller_friendly, true),
       restroom: toBool(facilities.restroom, true),
@@ -789,6 +795,201 @@ async function seedClearCollections(params) {
   return ok({ list }, 'cleared')
 }
 
+function normalizeSeedPoiUpsertDoc(input = {}) {
+  const location = input.location || {}
+  const facilities = input.facilities || {}
+  return {
+    _id: sanitizeString(input._id),
+    name: sanitizeString(input.name),
+    canonical_name: sanitizeString(input.canonical_name) || sanitizeString(input.name),
+    alias: sanitizeArray(input.alias),
+    city: sanitizeString(input.city),
+    district: sanitizeString(input.district),
+    address: sanitizeString(input.address),
+    location: {
+      lat: toNumberSafe(location.lat, 0),
+      lng: toNumberSafe(location.lng, 0),
+    },
+    category: sanitizeString(input.category) || 'mixed',
+    age_range: sanitizeArray(input.age_range),
+    indoor: toBool(input.indoor, false),
+    price_type: sanitizeString(input.price_type) || 'free',
+    recommended_duration: sanitizeString(input.recommended_duration) || '2h',
+    transport: sanitizeArray(input.transport),
+    transport_hint: sanitizeString(input.transport_hint),
+    parking_tip: sanitizeString(input.parking_tip),
+    facilities: {
+      stroller_friendly: toBool(facilities.stroller_friendly, false),
+      restroom: toBool(facilities.restroom, false),
+      food: toBool(facilities.food, false),
+      shade: toBool(facilities.shade, false),
+      parking: toBool(facilities.parking, false),
+      rainy_day_ok: toBool(facilities.rainy_day_ok, false),
+    },
+    summary: sanitizeString(input.summary),
+    recommend_reason: sanitizeString(input.recommend_reason),
+    notice: sanitizeString(input.notice),
+    cover_image: sanitizeString(input.cover_image),
+    gallery: sanitizeArray(input.gallery),
+    tags: sanitizeArray(input.tags),
+    source_count: Math.max(0, toIntegerSafe(input.source_count, 0)),
+    review_count: Math.max(0, toIntegerSafe(input.review_count, 0)),
+    avg_rating: Math.max(0, Math.min(5, toNumberSafe(input.avg_rating, 0))),
+    status: sanitizeString(input.status) || 'draft',
+  }
+}
+
+function mergePoiDocs(existing = {}, incoming = {}) {
+  const mergedAlias = Array.from(new Set([]
+    .concat(sanitizeArray(existing.alias))
+    .concat(sanitizeArray(incoming.alias))
+    .concat(sanitizeString(existing.name) ? [sanitizeString(existing.name)] : [])
+    .concat(sanitizeString(incoming.name) ? [sanitizeString(incoming.name)] : [])
+    .filter(Boolean)))
+
+  const mergedTransport = Array.from(new Set([]
+    .concat(sanitizeArray(existing.transport))
+    .concat(sanitizeArray(incoming.transport))
+    .filter(Boolean)))
+
+  return {
+    name: incoming.name || existing.name || '',
+    canonical_name: incoming.canonical_name || existing.canonical_name || existing.name || incoming.name || '',
+    alias: mergedAlias,
+    city: incoming.city || existing.city || '',
+    district: incoming.district || existing.district || '',
+    address: incoming.address || existing.address || '',
+    location: {
+      lat: toNumberSafe(incoming.location?.lat, 0) || toNumberSafe(existing.location?.lat, 0),
+      lng: toNumberSafe(incoming.location?.lng, 0) || toNumberSafe(existing.location?.lng, 0),
+    },
+    category: incoming.category || existing.category || 'mixed',
+    age_range: sanitizeArray(incoming.age_range).length ? sanitizeArray(incoming.age_range) : sanitizeArray(existing.age_range),
+    indoor: Object.prototype.hasOwnProperty.call(incoming, 'indoor') ? incoming.indoor : toBool(existing.indoor, false),
+    price_type: incoming.price_type || existing.price_type || 'free',
+    recommended_duration: incoming.recommended_duration || existing.recommended_duration || '2h',
+    transport: mergedTransport,
+    transport_hint: incoming.transport_hint || existing.transport_hint || '',
+    parking_tip: incoming.parking_tip || existing.parking_tip || '',
+    facilities: {
+      stroller_friendly: toBool(incoming.facilities?.stroller_friendly, toBool(existing.facilities?.stroller_friendly, false)),
+      restroom: toBool(incoming.facilities?.restroom, toBool(existing.facilities?.restroom, false)),
+      food: toBool(incoming.facilities?.food, toBool(existing.facilities?.food, false)),
+      shade: toBool(incoming.facilities?.shade, toBool(existing.facilities?.shade, false)),
+      parking: toBool(incoming.facilities?.parking, toBool(existing.facilities?.parking, false)),
+      rainy_day_ok: toBool(incoming.facilities?.rainy_day_ok, toBool(existing.facilities?.rainy_day_ok, false)),
+    },
+    summary: incoming.summary || existing.summary || '',
+    recommend_reason: incoming.recommend_reason || existing.recommend_reason || '',
+    notice: incoming.notice || existing.notice || '',
+    cover_image: incoming.cover_image || existing.cover_image || '',
+    gallery: sanitizeArray(incoming.gallery).length ? sanitizeArray(incoming.gallery) : sanitizeArray(existing.gallery),
+    tags: Array.from(new Set([].concat(sanitizeArray(existing.tags)).concat(sanitizeArray(incoming.tags)).filter(Boolean))),
+    source_count: Math.max(toIntegerSafe(existing.source_count, 0), toIntegerSafe(incoming.source_count, 0)),
+    review_count: Math.max(toIntegerSafe(existing.review_count, 0), toIntegerSafe(incoming.review_count, 0)),
+    avg_rating: Math.max(toNumberSafe(existing.avg_rating, 0), toNumberSafe(incoming.avg_rating, 0)),
+    status: incoming.status || existing.status || 'draft',
+  }
+}
+
+async function findSeedPoiByName(item = {}) {
+  const names = Array.from(new Set([]
+    .concat(item._id ? [item._id] : [])
+    .concat(item.name ? [item.name] : [])
+    .concat(item.canonical_name ? [item.canonical_name] : [])
+    .concat(Array.isArray(item.alias) ? item.alias : [])
+    .map(name => sanitizeString(name))
+    .filter(Boolean)))
+
+  if (item._id) {
+    const docResult = await db.collection('babyplace-poi').doc(item._id).get()
+    const docItem = (docResult.data || [])[0]
+    if (docItem) return docItem
+  }
+
+  for (let i = 0; i < names.length; i++) {
+    const name = names[i]
+    let result = await db.collection('babyplace-poi').where({
+      name,
+    }).limit(1).get()
+    if ((result.data || []).length) return result.data[0]
+
+    result = await db.collection('babyplace-poi').where({
+      canonical_name: name,
+    }).limit(1).get()
+    if ((result.data || []).length) return result.data[0]
+  }
+
+  if (names.length) {
+    const result = await db.collection('babyplace-poi')
+      .where({
+        alias: db.command.in(names),
+      })
+      .limit(1)
+      .get()
+    if ((result.data || []).length) return result.data[0]
+  }
+
+  return null
+}
+
+async function seedListPoiByNames(params) {
+  if (!ensureSeedAuthorized(params)) return fail(401, 'unauthorized')
+  const names = Array.isArray(params.names) ? params.names.map(item => sanitizeString(item)).filter(Boolean) : []
+  if (!names.length) return fail(400, 'names is required')
+  const result = []
+  for (let i = 0; i < names.length; i++) {
+    const item = await findSeedPoiByName({ name: names[i], canonical_name: names[i], alias: [names[i]] })
+    if (item) result.push(item)
+  }
+  return ok({ list: result, total: result.length })
+}
+
+async function seedUpsertPoiBatch(params) {
+  if (!ensureSeedAuthorized(params)) return fail(401, 'unauthorized')
+  const data = Array.isArray(params.data) ? params.data : []
+  if (!data.length) return fail(400, 'data is required')
+  if (data.length > 100) return fail(400, 'max batch size is 100')
+
+  const poiCollection = db.collection('babyplace-poi')
+  const succeededItems = []
+  const failedItems = []
+  for (let i = 0; i < data.length; i++) {
+    try {
+      const incoming = normalizeSeedPoiUpsertDoc(data[i] || {})
+      if (!incoming.name) {
+        failedItems.push({ index: i, reason: 'name is required' })
+        continue
+      }
+      const existing = await findSeedPoiByName(incoming)
+      const merged = mergePoiDocs(existing || {}, incoming)
+      if (existing?._id) {
+        const updateResult = await poiCollection.doc(existing._id).update({
+          ...merged,
+          updated_at: db.serverDate(),
+        })
+        succeededItems.push({ index: i, id: existing._id, mode: 'update', updated: updateResult.updated || 0 })
+      } else {
+        const createResult = await poiCollection.add({
+          ...merged,
+          created_at: db.serverDate(),
+          updated_at: db.serverDate(),
+        })
+        succeededItems.push({ index: i, id: createResult.id, mode: 'create' })
+      }
+    } catch (error) {
+      failedItems.push({ index: i, reason: error.message || 'unknown error' })
+    }
+  }
+  return ok({
+    total: data.length,
+    succeeded: succeededItems.length,
+    failed: failedItems.length,
+    succeededItems,
+    failedItems,
+  }, `upserted ${succeededItems.length}/${data.length}`)
+}
+
 exports.main = async (event, context) => {
   let params = event
   if (event.httpMethod && event.body) {
@@ -826,6 +1027,10 @@ exports.main = async (event, context) => {
     case 'clearCollections':
     case 'seed.clearCollections':
       return seedClearCollections(params, context)
+    case 'seed.listPoiByNames':
+      return seedListPoiByNames(params, context)
+    case 'seed.upsertPoiBatch':
+      return seedUpsertPoiBatch(params, context)
     default: return fail(400, 'invalid action')
   }
 }

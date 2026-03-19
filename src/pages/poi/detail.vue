@@ -16,6 +16,15 @@
         <text class="paragraph">{{ poi.recommend_reason || poi.summary || '暂无' }}</text>
       </view>
 
+      <route-planner-card
+        :name="poi.name || ''"
+        :city="poi.city || ''"
+        :district="poi.district || ''"
+        :address="poi.address || ''"
+        :latitude="Number(poi.location?.lat || 0)"
+        :longitude="Number(poi.location?.lng || 0)"
+      />
+
       <view class="section">
         <text class="section-title">用户评价</text>
         <view class="review-form">
@@ -45,6 +54,7 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
+import RoutePlannerCard from '@/components/RoutePlannerCard.vue';
 import RatingStars from '@/components/rating-stars.vue';
 import TagList from '@/components/tag-list.vue';
 import { detailPoi } from '@/api/poi';

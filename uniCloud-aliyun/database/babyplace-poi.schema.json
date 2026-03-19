@@ -115,6 +115,16 @@
       "title": "交通方式",
       "defaultValue": []
     },
+    "transport_hint": {
+      "bsonType": "string",
+      "title": "交通提示",
+      "defaultValue": ""
+    },
+    "parking_tip": {
+      "bsonType": "string",
+      "title": "停车提示",
+      "defaultValue": ""
+    },
     "facilities": {
       "bsonType": "object",
       "title": "设施信息",

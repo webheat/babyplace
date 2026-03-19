@@ -113,6 +113,8 @@ function normalizePoiPayload(payload = {}) {
     price_type: sanitizeString(payload.price_type) || 'free',
     recommended_duration: sanitizeString(payload.recommended_duration) || '2h',
     transport: sanitizeArray(payload.transport),
+    transport_hint: sanitizeString(payload.transport_hint),
+    parking_tip: sanitizeString(payload.parking_tip),
     facilities: {
       stroller_friendly: toBool(facility.stroller_friendly, false),
       restroom: toBool(facility.restroom, false),

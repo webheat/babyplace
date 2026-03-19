@@ -59,6 +59,10 @@ function ensureDistExists() {
   }
 }
 
+function shouldDeployCloudFunctions() {
+  return process.env.SKIP_CLOUD_DEPLOY !== '1';
+}
+
 function main() {
   const cliPath = pickCliPath();
   if (!cliPath) {
@@ -68,6 +72,13 @@ function main() {
 
   const version = process.env.WECHAT_UPLOAD_VERSION || createAutoVersion();
   const desc = process.env.WECHAT_UPLOAD_DESC || createAutoDesc(version);
+
+  if (shouldDeployCloudFunctions()) {
+    console.log('[upload] deploy cloud functions');
+    run('pnpm', ['run', 'deploy:cloud:functions']);
+  } else {
+    console.log('[upload] skip cloud function deploy');
+  }
 
   console.log(`[upload] build mp-weixin`);
   run('pnpm', ['run', 'build:mp-weixin']);

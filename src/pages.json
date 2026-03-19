@@ -1,17 +1,122 @@
 {
+  "easycom": {
+    "^u-(.*)": "@/uview-ui/components/u-$1/u-$1.vue"
+  },
   "pages": [
     {
       "path": "pages/index/index",
-      "aliasPath": "/",
+      "onReachBottomDistance": 300,
       "style": {
-        "navigationBarTitleText": "babyplace"
+        "enablePullDownRefresh": true
       }
     },
     {
-      "path": "pages/admin/index",
-      "aliasPath": "/admin",
+      "path": "pages/ele/ele",
+      "onReachBottomDistance": 300,
       "style": {
-        "navigationBarTitleText": "后台管理"
+        "navigationStyle": "custom",
+        "navigationBarTextStyle": "white",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/meituan/meituan",
+      "onReachBottomDistance": 300,
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTextStyle": "white",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/life/arrive/arrive",
+      "onReachBottomDistance": 300,
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTextStyle": "white",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/life/shop/shop",
+      "onReachBottomDistance": 300,
+      "style": {
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/index/debug",
+      "onReachBottomDistance": 300
+    },
+    {
+      "path": "pages/user/mine/mine",
+      "style": {}
+    },
+    {
+      "path": "pages/message/message/message",
+      "style": {
+        "navigationBarTitleText": "消息",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/message/sysmessage/sysmessage",
+      "style": {
+        "navigationBarTitleText": "消息",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/webview/webview/webview",
+      "style": {}
+    },
+    {
+      "path": "pages/user/login/login",
+      "style": {
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/common/poster/poster",
+      "style": {
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/taobao/taobao",
+      "style": {
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/taobao/tbk/tbk",
+      "style": {
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/taobao/tbk/search/search",
+      "style": {
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/taobao/tbk/searchGoodsList/searchGoodsList",
+      "style": {
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/taobao/tbk/goodsDetails/goodsDetails",
+      "style": {
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
       }
     },
     {
@@ -29,6 +134,13 @@
       }
     },
     {
+      "path": "pages/admin/index",
+      "aliasPath": "/admin",
+      "style": {
+        "navigationBarTitleText": "后台管理"
+      }
+    },
+    {
       "path": "pages/auth/index",
       "aliasPath": "/auth",
       "style": {
@@ -43,10 +155,133 @@
       }
     }
   ],
+  "subPackages": [
+    {
+      "root": "pages/user/setting",
+      "pages": [
+        {
+          "path": "modifyPassword",
+          "style": {
+            "navigationBarTitleText": "修改密码",
+            "enablePullDownRefresh": false
+          }
+        },
+        {
+          "path": "forgetPassword",
+          "style": {
+            "navigationBarTitleText": "忘记密码",
+            "enablePullDownRefresh": false
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/common/article",
+      "pages": [
+        {
+          "path": "article",
+          "style": {
+            "navigationBarTitleText": "详情",
+            "enablePullDownRefresh": false
+          }
+        },
+        {
+          "path": "list",
+          "style": {
+            "navigationBarTitleText": "资讯",
+            "enablePullDownRefresh": true
+          },
+          "onReachBottomDistance": 300
+        }
+      ]
+    },
+    {
+      "root": "pages/user/mine/feedback",
+      "pages": [
+        {
+          "path": "feedback",
+          "style": {
+            "navigationBarTitleText": "意见反馈",
+            "enablePullDownRefresh": false
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/user/mine/info",
+      "pages": [
+        {
+          "path": "idcard/idcard",
+          "style": {
+            "navigationBarTitleText": "",
+            "enablePullDownRefresh": false
+          }
+        },
+        {
+          "path": "qrcode/qrcode",
+          "style": {
+            "navigationBarTitleText": "",
+            "enablePullDownRefresh": false
+          }
+        },
+        {
+          "path": "changephone/changephone",
+          "style": {
+            "navigationBarTitleText": "修改手机号",
+            "enablePullDownRefresh": false
+          }
+        },
+        {
+          "path": "userinfo/userinfo",
+          "style": {
+            "navigationBarTitleText": "个人信息",
+            "enablePullDownRefresh": false
+          }
+        }
+      ]
+    }
+  ],
   "globalStyle": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "babyplace",
-    "navigationBarBackgroundColor": "#F8F8F8",
-    "backgroundColor": "#F8F8F8"
+    "navigationBarTitleText": "爱享",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#FFFFFF"
+  },
+  "tabBar": {
+    "color": "#7F8389",
+    "selectedColor": "#2979ff",
+    "backgroundColor": "#FFFFFF",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "/static/tab/home.png",
+        "selectedIconPath": "/static/tab/home-selected.png"
+      },
+      {
+        "pagePath": "pages/ele/ele",
+        "text": "饿了么",
+        "iconPath": "/static/tab/ele.png",
+        "selectedIconPath": "/static/tab/ele-selected.png"
+      },
+      {
+        "pagePath": "pages/life/arrive/arrive",
+        "text": "吃喝玩乐",
+        "iconPath": "/static/tab/life.png",
+        "selectedIconPath": "/static/tab/life-selected.png"
+      },
+      {
+        "pagePath": "pages/meituan/meituan",
+        "text": "美团",
+        "iconPath": "/static/tab/meituan.png",
+        "selectedIconPath": "/static/tab/meituan-selected.png"
+      },
+      {
+        "pagePath": "pages/user/mine/mine",
+        "text": "我的",
+        "iconPath": "/static/tab/my.png",
+        "selectedIconPath": "/static/tab/my-selected.png"
+      }
+    ]
   }
 }

@@ -34,6 +34,8 @@
                     "<uses-permission android:name=\"android.permission.GET_ACCOUNTS\"/>",
                     "<uses-permission android:name=\"android.permission.READ_PHONE_STATE\"/>",
                     "<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
                     "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
                     "<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
                     "<uses-feature android:name=\"android.hardware.camera\"/>",
@@ -41,7 +43,12 @@
                 ]
             },
             /* ios打包配置 */
-            "ios" : {},
+            "ios" : {
+                "privacyDescription" : {
+                    "NSLocationWhenInUseUsageDescription" : "用于获取当前位置并规划前往景点的交通路线",
+                    "NSLocationAlwaysAndWhenInUseUsageDescription" : "用于获取当前位置并规划前往景点的交通路线"
+                }
+            },
             /* SDK配置 */
             "sdkConfigs" : {}
         }
@@ -53,6 +60,12 @@
         "appid" : "wx0097f2621a6cb4b1",
         "setting" : {
             "urlCheck" : false
+        },
+        "requiredPrivateInfos" : [ "getLocation" ],
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "用于获取当前位置并规划前往景点的交通路线"
+            }
         },
         "usingComponents" : true
     },

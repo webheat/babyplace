@@ -14,7 +14,7 @@
     <view v-else-if="errorMessage" class="state error">{{ errorMessage }}</view>
     <view v-else-if="!list.length" class="state">暂无数据</view>
     <view v-else class="list">
-      <poi-card v-for="item in list" :key="item._id" :poi="item" @click="goDetail" />
+      <poi-card v-for="item in list" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
     </view>
   </view>
 </template>
@@ -23,6 +23,7 @@
 import { onMounted, ref } from 'vue';
 import PoiCard from '@/components/poi-card.vue';
 import { listPoi } from '@/api/poi';
+import { openPoiMap } from '@/utils/poi';
 
 const loading = ref(false);
 const errorMessage = ref('');
@@ -32,6 +33,10 @@ const list = ref([]);
 function goDetail(item) {
   if (!item?._id) return;
   uni.navigateTo({ url: `/pages/poi/detail?id=${item._id}` });
+}
+
+function openMap(item) {
+  openPoiMap(item);
 }
 
 async function loadList() {

@@ -34,31 +34,25 @@ function httpCall(data) {
   })
 }
 
-export async function listAdminItems(moduleKey, params = {}) {
+export async function callAdminAction(action, params = {}) {
   return httpCall({
-    action: `${moduleKey}.list`,
+    action,
     ...params,
   })
 }
 
+export async function listAdminItems(moduleKey, params = {}) {
+  return callAdminAction(`${moduleKey}.list`, params)
+}
+
 export async function createAdminItem(moduleKey, payload) {
-  return httpCall({
-    action: `${moduleKey}.create`,
-    payload,
-  })
+  return callAdminAction(`${moduleKey}.create`, { payload })
 }
 
 export async function updateAdminItem(moduleKey, id, payload) {
-  return httpCall({
-    action: `${moduleKey}.update`,
-    id,
-    payload,
-  })
+  return callAdminAction(`${moduleKey}.update`, { id, payload })
 }
 
 export async function removeAdminItem(moduleKey, id) {
-  return httpCall({
-    action: `${moduleKey}.remove`,
-    id,
-  })
+  return callAdminAction(`${moduleKey}.remove`, { id })
 }
