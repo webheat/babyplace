@@ -22,7 +22,12 @@
             <image class="banner-image" :src="item.image" mode="aspectFill" />
             <view class="banner-mask">
               <text class="banner-title">{{ item.title }}</text>
+              <!-- #ifdef MP-WEIXIN -->
               <text class="banner-subtitle">地点精选 · 小程序优先展示</text>
+              <!-- #endif -->
+              <!-- #ifdef H5 -->
+              <text class="banner-subtitle">地点精选</text>
+              <!-- #endif -->
             </view>
           </view>
         </swiper-item>
