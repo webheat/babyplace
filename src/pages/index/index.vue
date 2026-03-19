@@ -52,7 +52,7 @@
           <view class="article-copy">
             <text class="article-title">{{ item.title }}</text>
             <view class="article-meta">
-              <dx-tag :text="item.cat_name" type="primary" font-size="20rpx" padding="8rpx 18rpx" border="none" />
+              <dx-tag v-if="item.cat_name && item.cat_name !== 'pending'" :text="item.cat_name" type="primary" font-size="20rpx" padding="8rpx 18rpx" border="none" />
               <text class="article-time">{{ formatMonthDate(item.publish_at) }}</text>
             </view>
           </view>
