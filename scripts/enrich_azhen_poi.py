@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Extract POI metadata from docs/真的叫阿珍/真的叫阿珍.json, enrich with AMap geodata,
+Extract POI metadata from docs/网络数据源 下的公众号 JSON, enrich with AMap geodata,
 then upsert into babyplace-poi through babyplace-admin seed HTTP actions.
 
 Examples:
@@ -22,7 +22,7 @@ from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DEFAULT_SOURCE = BASE_DIR / "docs" / "真的叫阿珍" / "真的叫阿珍.json"
+DEFAULT_SOURCE = BASE_DIR / "docs" / "网络数据源" / "真的叫阿珍" / "真的叫阿珍.json"
 DEFAULT_REPORT_DIR = BASE_DIR / "seed" / "reports"
 DEFAULT_URL = "https://byupload.aixifs.com/babyplace-admin"
 DEFAULT_SECRET = "babyplace2026"

@@ -2,7 +2,7 @@
 
 ## 当前目标
 
-- 从 `docs/真的叫阿珍/真的叫阿珍.json` 中识别明确景点。
+- 从 `docs/网络数据源` 下的同格式 JSON 中识别明确景点。
 - 用高德 Web 服务补齐坐标和标准地址。
 - 抽取正文里的交通和停车提示。
 - 通过 uniCloud 原生调用 `babyplace-seed-v2` upsert 到 `babyplace-poi`。
@@ -19,6 +19,7 @@
 ## 导入脚本
 
 - 脚本：`scripts/enrich_azhen_poi.py`
+- 默认源文件：`docs/网络数据源/真的叫阿珍/真的叫阿珍.json`
 - 默认策略：
   - 只自动处理 `appmsg_album_infos` 中能识别出明确景点名的文章
   - 仅导入目标城市范围内的数据
