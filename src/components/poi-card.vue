@@ -9,8 +9,11 @@
     <tag-list :tags="poi.tags || []" />
     <view class="footer">
       <view class="footer-left">
-        <rating-stars :score="Number(poi.avg_rating || 0)" />
-        <text class="count">{{ Number(poi.review_count || 0) }} 条评价</text>
+        <template v-if="poi.review_count > 0">
+          <rating-stars :score="Number(poi.avg_rating || 0)" />
+          <text class="count">{{ poi.review_count }} 条评价</text>
+        </template>
+        <text v-else class="count">暂无评价</text>
       </view>
       <text v-if="hasLocation" class="map-link" @click.stop="handleMap">地图</text>
     </view>
