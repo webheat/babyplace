@@ -61,18 +61,25 @@ function handleMap() {
 .card {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
   padding: 24rpx;
   border-radius: 20rpx;
   background: #fff;
   border: 2rpx solid #edf0f5;
+}
+.card > view + text,
+.card > text + view,
+.card > text + text,
+.card > view + view {
+  margin-top: 12rpx;
 }
 
 .head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
+}
+.head > text + text {
+  margin-left: 12rpx;
 }
 
 .name {
@@ -105,13 +112,18 @@ function handleMap() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
 }
 
 .footer-left {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+}
+
+.footer-left > view + text,
+.footer-left > text + view,
+.footer-left > text + text,
+.footer-left > view + view {
+  margin-left: 12rpx;
 }
 
 .count {

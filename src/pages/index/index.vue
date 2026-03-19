@@ -168,10 +168,17 @@ onMounted(() => {
 
 <style scoped>
 .page {
+  box-sizing: border-box;
   min-height: 100vh;
   padding: 24rpx;
   background: linear-gradient(180deg, #f3f8ff 0%, #f8fafc 40%, #f8fafc 100%);
 }
+/* #ifdef H5 */
+.page {
+  max-width: 840rpx;
+  margin: 0 auto;
+}
+/* #endif */
 .hero {
   margin-bottom: 24rpx;
   padding: 30rpx;
@@ -181,7 +188,9 @@ onMounted(() => {
 .hero-top {
   display: flex;
   justify-content: space-between;
-  gap: 20rpx;
+}
+.hero-top > view + view {
+  margin-left: 20rpx;
 }
 .title {
   display: block;
@@ -207,8 +216,13 @@ onMounted(() => {
 .hero-actions {
   margin-top: 22rpx;
   display: flex;
-  gap: 12rpx;
   flex-wrap: wrap;
+  margin-right: -12rpx;
+  margin-bottom: -12rpx;
+}
+.hero-actions .action-pill {
+  margin-right: 12rpx;
+  margin-bottom: 12rpx;
 }
 .action-pill {
   padding: 14rpx 22rpx;
@@ -234,6 +248,7 @@ onMounted(() => {
   overflow: hidden;
 }
 .banner-image {
+  display: block;
   width: 100%;
   height: 100%;
   background: #dbeafe;
@@ -289,15 +304,20 @@ onMounted(() => {
 .article-list {
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
+}
+.list > view + view,
+.article-list > view + view {
+  margin-top: 14rpx;
 }
 .article-card {
   display: flex;
-  gap: 16rpx;
   align-items: center;
   padding: 20rpx;
   border-radius: 18rpx;
   background: #f8fafc;
+}
+.article-copy + .article-cover {
+  margin-left: 16rpx;
 }
 .article-copy {
   flex: 1;
@@ -316,14 +336,20 @@ onMounted(() => {
 .article-meta {
   display: flex;
   align-items: center;
-  gap: 10rpx;
   margin-top: 12rpx;
+}
+.article-meta > view + text,
+.article-meta > text + view,
+.article-meta > text + text,
+.article-meta > view + view {
+  margin-left: 10rpx;
 }
 .article-time {
   font-size: 22rpx;
   color: #94a3b8;
 }
 .article-cover {
+  display: block;
   width: 150rpx;
   height: 150rpx;
   border-radius: 16rpx;
