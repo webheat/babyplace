@@ -25,8 +25,10 @@ function formatFullDateTime(date) {
     }
     if (typeof (date) == 'string') {
         date = new Date(new Date(date+".000Z").getTime()-(8*3600*1000)); //转换为东八区时间
+    } else if (typeof (date) == 'number') {
+        date = new Date(date);  // 处理时间戳
     }
-    if (!date.getFullYear()) {
+    if (!date || isNaN(date.getTime())) {
         return "";
     }
     var text = date.getFullYear() + "-" + padding(date.getMonth() + 1, 2) + "-" + padding(date.getDate(), 2) + " " + padding(date.getHours(), 2) + ":" + padding(date.getMinutes(), 2);
@@ -55,8 +57,10 @@ function formatDate(date) {
     var now = new Date()
     if (typeof (date) == 'string') {
         date = new Date(new Date(date+".000Z").getTime()-(8*3600*1000)); //转换为东八区时间
+    } else if (typeof (date) == 'number') {
+        date = new Date(date);  // 处理时间戳
     }
-    if (!date || !date.getYear()) {
+    if (!date || isNaN(date.getTime())) {
         return "";
     }
     var text = date.getFullYear() + "-" + padding(date.getMonth() + 1, 2) + "-" + padding(date.getDate(), 2);
@@ -71,8 +75,10 @@ function formatMonthDate(date) {
     var now = new Date()
     if (typeof (date) == 'string') {
         date = new Date(new Date(date+".000Z").getTime()-(8*3600*1000)); //转换为东八区时间
+    } else if (typeof (date) == 'number') {
+        date = new Date(date);  // 处理时间戳
     }
-    if (!date || !date.getYear()) {
+    if (!date || isNaN(date.getTime())) {
         return "";
     }
     var text = padding(date.getMonth() + 1, 2) + "-" + padding(date.getDate(), 2);
@@ -87,8 +93,10 @@ function formatDateTime(date) {
     var now = new Date()
     if (typeof (date) == 'string') {
         date = new Date(new Date(date+".000Z").getTime()-(8*3600*1000)); //转换为东八区时间
+    } else if (typeof (date) == 'number') {
+        date = new Date(date);  // 处理时间戳
     }
-    if (!date || !date.getYear()) {
+    if (!date || isNaN(date.getTime())) {
         return "";
     }
     var nowTimestamp = new Date().getTime();
