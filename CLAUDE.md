@@ -67,3 +67,32 @@ scripts/            → Python data processing scripts
 - Never modify `src/uni_modules/`
 - Use pnpm as package manager
 - Language is JavaScript (not TypeScript)
+
+## gstack
+
+Use /browse from gstack for all web browsing. Never use mcp__claude-in-chrome__* tools.
+
+Available skills:
+- `/office-hours` - YC Office Hours, reframe product thinking
+- `/plan-ceo-review` - CEO/Founder perspective review
+- `/plan-eng-review` - Engineering Manager architecture review
+- `/plan-design-review` - Senior Designer design review
+- `/design-consultation` - Design Partner consultation
+- `/review` - Staff Engineer code review
+- `/ship` - Release Engineer, deploy and create PR
+- `/browse` - QA Engineer with real browser
+- `/qa` - QA Lead, test and fix bugs
+- `/qa-only` - QA Reporter, report bugs only
+- `/design-review` - Designer Who Codes audit
+- `/setup-browser-cookies` - Session Manager for authenticated pages
+- `/retro` - Engineering Manager weekly retro
+- `/investigate` - Debugger, root-cause analysis
+- `/document-release` - Technical Writer, update docs
+- `/codex` - Second Opinion from OpenAI Codex
+- `/careful` - Safety Guardrails for destructive commands
+- `/freeze` - Edit Lock to one directory
+- `/guard` - Full Safety mode (careful + freeze)
+- `/unfreeze` - Remove edit restrictions
+- `/gstack-upgrade` - Self-updater
+
+If gstack skills aren't working, run `cd .claude/skills/gstack && ./setup` to rebuild.

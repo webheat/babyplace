@@ -72,6 +72,7 @@
     "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5000320260310001",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/runtime-core": "^3.4.21",
+    "sass": "^1.98.0",
     "vite": "5.2.8"
   },
   "pnpm": {
