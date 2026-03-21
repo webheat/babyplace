@@ -4,6 +4,7 @@ const db = uniCloud.database();
 
 const IMPORT_SECRET = 'babyplace2026';
 const POI_COLLECTION = db.collection('babyplace-poi');
+const ARTICLE_COLLECTION = db.collection('babyplace-article');
 const ALLOWED_COLLECTIONS = new Set([
   'babyplace-poi',
   'babyplace-article',
@@ -101,6 +102,29 @@ function normalizePoiDoc(input = {}) {
   };
 }
 
+function normalizeArticleDoc(input = {}) {
+  const now = Date.now();
+  const poiName = sanitizeString(input.poi_name);
+  return {
+    _id: sanitizeString(input._id),
+    title: sanitizeString(input.title) || `${poiName || '未命名地点'} 景点简介`,
+    source_account: sanitizeString(input.source_account) || 'AI生成',
+    source_account_id: sanitizeString(input.source_account_id) || 'ai-generated',
+    publish_time: now,
+    url: sanitizeString(input.url),
+    cover_image: sanitizeString(input.cover_image),
+    content_text: sanitizeString(input.content_text),
+    content_html: sanitizeString(input.content_html),
+    images: sanitizeArray(input.images),
+    extracted_poi_names: sanitizeArray(input.extracted_poi_names).length ? sanitizeArray(input.extracted_poi_names) : (poiName ? [poiName] : []),
+    parse_result: input.parse_result && typeof input.parse_result === 'object' ? input.parse_result : {},
+    status: sanitizeString(input.status) || 'parsed',
+    parse_confidence: Math.max(0, Math.min(1, toNumberSafe(input.parse_confidence, 0.9))),
+    created_at: now,
+    updated_at: now,
+  };
+}
+
 function mergePoiDocs(existing = {}, incoming = {}) {
   const mergedAlias = Array.from(new Set([]
     .concat(sanitizeArray(existing.alias))
@@ -154,6 +178,29 @@ function mergePoiDocs(existing = {}, incoming = {}) {
   };
 }
 
+function mergeArticleDocs(existing = {}, incoming = {}) {
+  const mergedPoiNames = Array.from(new Set([]
+    .concat(sanitizeArray(existing.extracted_poi_names))
+    .concat(sanitizeArray(incoming.extracted_poi_names))
+    .filter(Boolean)));
+
+  return {
+    title: incoming.title || existing.title || '',
+    source_account: incoming.source_account || existing.source_account || 'AI生成',
+    source_account_id: incoming.source_account_id || existing.source_account_id || 'ai-generated',
+    publish_time: incoming.publish_time || existing.publish_time || Date.now(),
+    url: incoming.url || existing.url || '',
+    cover_image: incoming.cover_image || existing.cover_image || '',
+    content_text: incoming.content_text || existing.content_text || '',
+    content_html: incoming.content_html || existing.content_html || '',
+    images: sanitizeArray(incoming.images).length ? sanitizeArray(incoming.images) : sanitizeArray(existing.images),
+    extracted_poi_names: mergedPoiNames,
+    parse_result: incoming.parse_result && Object.keys(incoming.parse_result).length ? incoming.parse_result : (existing.parse_result || {}),
+    status: incoming.status || existing.status || 'parsed',
+    parse_confidence: Math.max(toNumberSafe(existing.parse_confidence, 0), toNumberSafe(incoming.parse_confidence, 0)),
+  };
+}
+
 async function findPoiByName(item = {}) {
   const names = Array.from(new Set([]
     .concat(item._id ? [item._id] : [])
@@ -188,6 +235,35 @@ async function findPoiByName(item = {}) {
   return null;
 }
 
+async function findArticleByPoiName(item = {}) {
+  const poiName = sanitizeString(item.poi_name)
+    || sanitizeString(item.name)
+    || sanitizeArray(item.extracted_poi_names)[0]
+    || '';
+  const title = sanitizeString(item.title);
+
+  if (item._id) {
+    const docResult = await ARTICLE_COLLECTION.doc(item._id).get();
+    const docItem = (docResult.data || [])[0];
+    if (docItem) return docItem;
+  }
+
+  if (title) {
+    const result = await ARTICLE_COLLECTION.where({ title }).limit(1).get();
+    if ((result.data || []).length) return result.data[0];
+  }
+
+  if (poiName) {
+    const result = await ARTICLE_COLLECTION.where({
+      extracted_poi_names: db.command.in([poiName]),
+      source_account: 'AI生成',
+    }).limit(1).get();
+    if ((result.data || []).length) return result.data[0];
+  }
+
+  return null;
+}
+
 async function seedPing() {
   return ok({ now: Date.now() }, 'pong');
 }
@@ -202,6 +278,52 @@ async function seedListPoiByNames(params) {
     if (item) list.push(item);
   }
   return ok({ list, total: list.length });
+}
+
+async function seedUpsertArticleBatch(params) {
+  if (!ensureAuthorized(params)) return fail(401, 'unauthorized');
+  const data = Array.isArray(params.data) ? params.data : [];
+  if (!data.length) return fail(400, 'data is required');
+  if (data.length > 100) return fail(400, 'max batch size is 100');
+
+  const succeededItems = [];
+  const failedItems = [];
+  for (let i = 0; i < data.length; i++) {
+    try {
+      const incoming = normalizeArticleDoc(data[i] || {});
+      if (!incoming.title) {
+        failedItems.push({ index: i, reason: 'title is required' });
+        continue;
+      }
+      const existing = await findArticleByPoiName(data[i] || {});
+      const merged = mergeArticleDocs(existing || {}, incoming);
+      if (existing && existing._id) {
+        const updateResult = await ARTICLE_COLLECTION.doc(existing._id).update({
+          ...merged,
+          updated_at: Date.now(),
+        });
+        succeededItems.push({ index: i, id: existing._id, mode: 'update', updated: updateResult.updated || 0 });
+      } else {
+        const now = Date.now();
+        const createResult = await ARTICLE_COLLECTION.add({
+          ...merged,
+          created_at: now,
+          updated_at: now,
+        });
+        succeededItems.push({ index: i, id: createResult.id, mode: 'create' });
+      }
+    } catch (error) {
+      failedItems.push({ index: i, reason: error.message || 'unknown error' });
+    }
+  }
+
+  return ok({
+    total: data.length,
+    succeeded: succeededItems.length,
+    failed: failedItems.length,
+    succeededItems,
+    failedItems,
+  }, `upserted ${succeededItems.length}/${data.length}`);
 }
 
 async function seedRemovePoiByNames(params) {
@@ -324,6 +446,8 @@ exports.main = async (event) => {
       return seedListPoiByNames(event);
     case 'seed.removePoiByNames':
       return seedRemovePoiByNames(event);
+    case 'seed.upsertArticleBatch':
+      return seedUpsertArticleBatch(event);
     case 'seed.upsertPoiBatch':
       return seedUpsertPoiBatch(event);
     default:

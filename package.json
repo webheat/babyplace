@@ -37,6 +37,8 @@
     "ingest:azhen:dry-run": "python scripts/enrich_azhen_poi.py --transport native --dry-run",
     "ingest:azhen": "python scripts/enrich_azhen_poi.py --transport native",
     "ingest:azhen:reset": "python scripts/enrich_azhen_poi.py --transport native --clear-poi-before-run",
+    "ingest:basename:dry-run": "python scripts/import_basename_poi.py --dry-run",
+    "ingest:basename": "python scripts/import_basename_poi.py",
     "notify:wecom": "python scripts/send_wecom_notice.py",
     "upload:mp-weixin:auto": "node scripts/upload-mp-weixin-auto.js",
     "deploy:cloud:functions": "C:\\HBuilderX\\cli.exe cloud functions --upload all --prj babyplace --provider aliyun",

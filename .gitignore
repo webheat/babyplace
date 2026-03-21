@@ -14,6 +14,8 @@ dist
 .env
 .env.local
 .env.*
+__pycache__/
+*.pyc
 
 # Editor directories and files
 .idea
