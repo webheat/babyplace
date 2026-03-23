@@ -7,7 +7,9 @@
       "path": "pages/index/index",
       "onReachBottomDistance": 300,
       "style": {
-        "enablePullDownRefresh": true
+        "enablePullDownRefresh": true,
+        "enableShareAppMessage": true,
+        "enableShareTimeline": true
       }
     },
     {
@@ -41,7 +43,9 @@
       "path": "pages/life/shop/shop",
       "onReachBottomDistance": 300,
       "style": {
-        "enablePullDownRefresh": true
+        "enablePullDownRefresh": true,
+        "enableShareAppMessage": true,
+        "enableShareTimeline": true
       }
     },
     {
@@ -130,7 +134,9 @@
       "path": "pages/poi/detail",
       "aliasPath": "/poi/detail",
       "style": {
-        "navigationBarTitleText": "地点详情"
+        "navigationBarTitleText": "地点详情",
+        "enableShareAppMessage": true,
+        "enableShareTimeline": true
       }
     },
     {

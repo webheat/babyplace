@@ -29,7 +29,7 @@
     </view>
     <view v-if="hasLocation" class="planner-card">
       <view class="planner-head">
-        <text class="planner-title">天地图驾车规划</text>
+        <text class="planner-title">驾车路线规划</text>
         <text class="planner-subtitle">将使用当前位置到景点位置生成路线</text>
       </view>
       <button class="planner-button" size="mini" :loading="routeLoading" @click="handlePlanRoute">使用当前位置规划路线</button>
@@ -202,6 +202,69 @@ function openLocationSetting() {
   // #endif
 }
 
+function normalizeLocationError(error) {
+  const message = String(error?.errMsg || error?.message || '').toLowerCase();
+  if (!message) return '当前位置获取失败';
+  if (message.includes('privacy')) return '未完成隐私授权';
+  if (message.includes('auth deny') || message.includes('auth denied') || message.includes('permission') || message.includes('authorize')) {
+    return '未获得定位权限';
+  }
+  if (message.includes('getlocation:fail')) return '当前位置获取失败';
+  return '当前位置获取失败';
+}
+
+function getMpPrivacySetting() {
+  // #ifdef MP-WEIXIN
+  return new Promise((resolve, reject) => {
+    if (typeof wx === 'undefined' || typeof wx.getPrivacySetting !== 'function') {
+      resolve({ needAuthorization: false });
+      return;
+    }
+    wx.getPrivacySetting({
+      success: (result) => resolve(result || { needAuthorization: false }),
+      fail: (error) => reject(error),
+    });
+  });
+  // #endif
+  return Promise.resolve({ needAuthorization: false });
+}
+
+function requestPrivacyAuthorize() {
+  // #ifdef MP-WEIXIN
+  return new Promise((resolve, reject) => {
+    if (typeof wx === 'undefined' || typeof wx.requirePrivacyAuthorize !== 'function') {
+      resolve();
+      return;
+    }
+    wx.requirePrivacyAuthorize({
+      success: () => resolve(),
+      fail: (error) => reject(error),
+    });
+  });
+  // #endif
+  return Promise.resolve();
+}
+
+function authorizeLocationScope() {
+  return new Promise((resolve, reject) => {
+    uni.authorize({
+      scope: 'scope.userLocation',
+      success: () => resolve(),
+      fail: (error) => reject(error),
+    });
+  });
+}
+
+async function ensureLocationPermission() {
+  // #ifdef MP-WEIXIN
+  const privacySetting = await getMpPrivacySetting();
+  if (privacySetting?.needAuthorization) {
+    await requestPrivacyAuthorize();
+  }
+  // #endif
+  await authorizeLocationScope();
+}
+
 function getCurrentLocation() {
   return new Promise((resolve, reject) => {
     uni.getLocation({
@@ -214,16 +277,16 @@ function getCurrentLocation() {
 
 async function requestCurrentLocation() {
   try {
+    await ensureLocationPermission();
     const location = await getCurrentLocation();
     userLocation.value = location;
     return location;
   } catch (error) {
-    const message = error?.errMsg || '';
-    if (message.includes('auth deny') || message.includes('auth denied') || message.includes('permission')) {
+    const message = normalizeLocationError(error);
+    if (message === '未获得定位权限' || message === '未完成隐私授权') {
       openLocationSetting();
-      throw new Error('未获得定位权限');
     }
-    throw new Error('当前位置获取失败');
+    throw new Error(message);
   }
 }
 

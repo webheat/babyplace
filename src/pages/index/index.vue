@@ -80,6 +80,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
+import { onShareAppMessage, onShareTimeline } from '@dcloudio/uni-app';
 import PoiCard from '@/components/poi-card.vue';
 import DxTag from '@/components/dx-tag/dx-tag.vue';
 import { recommendHome } from '@/api/recommend';
@@ -168,6 +169,25 @@ onMounted(() => {
   loadHome();
   loadBanners();
   loadArticles();
+});
+
+onShareAppMessage(() => {
+  const featured = homeData.featured[0];
+  const path = featured?._id ? `/pages/life/shop/shop?id=${featured._id}` : '/pages/index/index';
+  return {
+    title: featured?.name ? `遛娃去哪玩？试试 ${featured.name}` : '遛娃灵感，每周发现新的亲子地点',
+    path,
+    imageUrl: bannerList.value[0]?.image || featured?.cover_image || '',
+  };
+});
+
+onShareTimeline(() => {
+  const featured = homeData.featured[0];
+  return {
+    title: featured?.name ? `遛娃去哪玩？试试 ${featured.name}` : '遛娃灵感，每周发现新的亲子地点',
+    query: featured?._id ? `id=${featured._id}` : '',
+    imageUrl: bannerList.value[0]?.image || featured?.cover_image || '',
+  };
 });
 </script>
 

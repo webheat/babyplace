@@ -53,7 +53,7 @@
 
 <script setup>
 import { reactive, ref } from 'vue';
-import { onLoad } from '@dcloudio/uni-app';
+import { onLoad, onShareAppMessage, onShareTimeline } from '@dcloudio/uni-app';
 import RoutePlannerCard from '@/components/RoutePlannerCard.vue';
 import RatingStars from '@/components/rating-stars.vue';
 import TagList from '@/components/tag-list.vue';
@@ -125,6 +125,18 @@ onLoad((options) => {
   poiId = options?.id || '';
   loadDetail();
 });
+
+onShareAppMessage(() => ({
+  title: poi.value?.name ? `${poi.value.name} | 亲子出行地点` : '亲子出行地点推荐',
+  path: poiId ? `/pages/poi/detail?id=${poiId}` : '/pages/index/index',
+  imageUrl: poi.value?.cover_image || '',
+}));
+
+onShareTimeline(() => ({
+  title: poi.value?.name ? `${poi.value.name} | 亲子出行地点` : '亲子出行地点推荐',
+  query: poiId ? `id=${poiId}` : '',
+  imageUrl: poi.value?.cover_image || '',
+}));
 </script>
 
 <style scoped>

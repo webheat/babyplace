@@ -3,10 +3,11 @@
 const createConfig = require('uni-config-center');
 
 const routeConfig = createConfig({
-  pluginId: 'tianditu',
+  pluginId: 'amap',
   defaultConfig: {
     key: '',
-    driveUrl: 'https://api.tianditu.gov.cn/drive',
+    driveUrl: 'https://restapi.amap.com/v3/direction/driving',
+    extensions: 'all',
     timeout: 15000,
   },
 });
@@ -96,6 +97,7 @@ function ensureBoundaryPoints(points, origin, destination) {
 
 function pickFirstRoute(result = {}) {
   if (Array.isArray(result.routes) && result.routes.length) return result.routes[0];
+  if (Array.isArray(result.paths) && result.paths.length) return result.paths[0];
   if (Array.isArray(result.lines) && result.lines.length) return result.lines[0];
   if (Array.isArray(result.results) && result.results.length) return result.results[0];
   return result.route || result;
@@ -113,6 +115,7 @@ function normalizeInstructions(route = {}, result = {}) {
       || item?.guide
       || item?.segmentName
       || item?.text
+      || item?.road
     ))
     .filter(Boolean);
 }
@@ -159,9 +162,12 @@ function formatDuration(duration) {
 }
 
 function normalizeRoutePayload(raw = {}, origin, destination) {
-  const result = raw?.result || raw?.results || raw;
+  const result = raw?.route || raw?.result || raw?.results || raw;
   const route = pickFirstRoute(result);
   const routePoints = ensureBoundaryPoints([
+    ...parseRouteCoordinateText(
+      Array.isArray(route?.steps) ? route.steps.map((item) => item?.polyline).filter(Boolean).join(';') : ''
+    ),
     ...parseRouteCoordinateText(
       route?.routelatlon
       || route?.routeLatLon
@@ -203,17 +209,11 @@ module.exports = {
     }
 
     const key = sanitizeString(routeConfig.config('key'));
-    if (!key) {
-      return fail(500, 'tianditu key is not configured');
-    }
+    if (!key) return fail(500, 'amap key is not configured');
 
-    const driveUrl = sanitizeString(routeConfig.config('driveUrl')) || 'https://api.tianditu.gov.cn/drive';
+    const driveUrl = sanitizeString(routeConfig.config('driveUrl')) || 'https://restapi.amap.com/v3/direction/driving';
+    const extensions = sanitizeString(routeConfig.config('extensions')) || 'all';
     const timeout = Math.max(3000, toNumber(routeConfig.config('timeout'), 15000));
-    const postStr = JSON.stringify({
-      orig: buildCoordString(originLng, originLat),
-      dest: buildCoordString(destLng, destLat),
-      style,
-    });
 
     try {
       const response = await uniCloud.httpclient.request(driveUrl, {
@@ -221,18 +221,21 @@ module.exports = {
         dataType: 'json',
         timeout,
         data: {
-          postStr,
-          type: 'search',
-          tk: key,
+          origin: buildCoordString(originLng, originLat),
+          destination: buildCoordString(destLng, destLat),
+          strategy: style,
+          extensions,
+          output: 'json',
+          key,
         },
       });
       if (response.status !== 200) {
-        return fail(response.status || 500, 'tianditu request failed');
+        return fail(response.status || 500, 'amap request failed');
       }
       const data = response.data || {};
       const status = sanitizeString(data.status);
-      if (status && status !== '0') {
-        return fail(502, sanitizeString(data.msg) || 'tianditu route failed', data);
+      if (status !== '1') {
+        return fail(502, sanitizeString(data.info) || 'amap route failed', data);
       }
       return ok(normalizeRoutePayload(data, {
         lat: originLat,
@@ -242,7 +245,7 @@ module.exports = {
         lng: destLng,
       }));
     } catch (error) {
-      return fail(500, error.message || 'tianditu route failed');
+      return fail(500, error.message || 'amap route failed');
     }
   },
 };

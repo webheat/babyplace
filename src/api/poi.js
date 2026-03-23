@@ -1,9 +1,77 @@
 import { callAdminAction } from '@/api/admin';
+import poiSnapshot from '@/data/poi-snapshot.json';
 
 const poiObject = uniCloud.importObject('poi');
 
+function ok(data = {}, message = 'ok') {
+  return { code: 0, message, data };
+}
+
+function getSnapshotList() {
+  return Array.isArray(poiSnapshot) ? poiSnapshot.slice() : [];
+}
+
+function buildSnapshotListResult(params = {}) {
+  const page = Math.max(1, Number(params.page || 1));
+  const pageSize = Math.max(1, Number(params.pageSize || 20));
+  const keyword = String(params.keyword || '').trim().toLowerCase();
+  const source = getSnapshotList();
+  const filtered = keyword
+    ? source.filter((item) => [item.name, item.canonical_name, item.address, item.city, item.district]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(keyword))
+    : source;
+  const start = (page - 1) * pageSize;
+  return ok({
+    list: filtered.slice(start, start + pageSize),
+    total: filtered.length,
+    page,
+    pageSize,
+  });
+}
+
+function buildSnapshotDetailResult(id, params = {}) {
+  const source = getSnapshotList();
+  const poi = source.find((item) => item._id === id) || source.find((item) => item.slug === id);
+  if (!poi) return { code: 404, message: 'not found', data: null };
+  return ok({
+    poi,
+    reviews: [],
+    sources: [],
+    ...params,
+  });
+}
+
+function buildSnapshotNearbyResult(params = {}) {
+  const lat = Number(params.lat || params.latitude || NaN);
+  const lng = Number(params.lng || params.longitude || NaN);
+  const pageSize = Math.max(1, Number(params.pageSize || 20));
+  const source = getSnapshotList()
+    .filter((item) => Number(item?.location?.lat) && Number(item?.location?.lng))
+    .map((item) => {
+      const itemLat = Number(item.location.lat || 0);
+      const itemLng = Number(item.location.lng || 0);
+      const score = Number.isFinite(lat) && Number.isFinite(lng)
+        ? Math.abs(itemLat - lat) + Math.abs(itemLng - lng)
+        : 0;
+      return { ...item, __score: score };
+    })
+    .sort((left, right) => left.__score - right.__score)
+    .slice(0, pageSize)
+    .map(({ __score, ...item }) => item);
+  return ok({
+    list: source,
+    total: source.length,
+    page: 1,
+    pageSize,
+  });
+}
+
 async function fallbackListPoi(params = {}) {
-  return callAdminAction('poi.list', params);
+  const result = await callAdminAction('poi.list', params);
+  return result?.code === 0 ? result : buildSnapshotListResult(params);
 }
 
 async function fallbackDetailPoi(id, params = {}) {
@@ -24,7 +92,8 @@ async function fallbackDetailPoi(id, params = {}) {
 }
 
 async function fallbackNearbyPoi(params = {}) {
-  return callAdminAction('poi.nearby', params);
+  const result = await callAdminAction('poi.nearby', params);
+  return result?.code === 0 ? result : buildSnapshotNearbyResult(params);
 }
 
 export async function listPoi(params = {}) {
@@ -44,7 +113,8 @@ export async function detailPoi(id, params = {}) {
   } catch (error) {
     console.error('poi.detail importObject failed, fallback to admin action', error);
   }
-  return fallbackDetailPoi(id, params);
+  const result = await fallbackDetailPoi(id, params);
+  return result?.code === 0 ? result : buildSnapshotDetailResult(id, params);
 }
 
 export async function nearbyPoi(params = {}) {

@@ -1,8 +1,18 @@
 'use strict';
 
+const createConfig = require('uni-config-center')
 const db = uniCloud.database();
 const collection = db.collection('babyplace')
 const dbRegExp = db.RegExp
+const routeConfig = createConfig({
+  pluginId: 'amap',
+  defaultConfig: {
+    key: '',
+    driveUrl: 'https://restapi.amap.com/v3/direction/driving',
+    extensions: 'all',
+    timeout: 15000,
+  },
+})
 
 const WRITE_ACTIONS = new Set(['create', 'update', 'remove', 'batchImport'])
 const PUBLIC_ACTIONS = new Set(['list', 'detail'])
@@ -24,6 +34,7 @@ const ADMIN_ACTIONS = new Set([
   'poi.nearby',
   'review.listByPoi',
   'recommend.home',
+  'route.drive',
 ])
 const IMPORT_SECRET = 'babyplace2026'
 const SEED_ALLOWED_COLLECTIONS = new Set([
@@ -542,6 +553,102 @@ async function recommendHome(params = {}) {
   })
 }
 
+function formatRouteDistance(distance) {
+  if (!distance) return ''
+  if (distance >= 1000) return `${(distance / 1000).toFixed(distance >= 10000 ? 0 : 1)} 公里`
+  return `${Math.round(distance)} 米`
+}
+
+function formatRouteDuration(duration) {
+  if (!duration) return ''
+  const minutes = duration > 180 ? Math.round(duration / 60) : Math.round(duration)
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60)
+    const remain = minutes % 60
+    return remain ? `${hours}小时${remain}分钟` : `${hours}小时`
+  }
+  return `${Math.max(1, minutes)} 分钟`
+}
+
+function parseRoutePolyline(steps = [], origin, destination) {
+  const points = []
+  steps.forEach(step => {
+    const polyline = sanitizeString(step?.polyline)
+    if (!polyline) return
+    polyline.split(';').forEach(item => {
+      const [lngText, latText] = item.split(',')
+      const latitude = toNumber(latText)
+      const longitude = toNumber(lngText)
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return
+      points.push({ latitude, longitude })
+    })
+  })
+  if (!points.length) {
+    return [
+      { latitude: origin.lat, longitude: origin.lng },
+      { latitude: destination.lat, longitude: destination.lng },
+    ]
+  }
+  return points
+}
+
+async function routeDrive(params = {}) {
+  const originLat = toNumber(params.originLat)
+  const originLng = toNumber(params.originLng)
+  const destLat = toNumber(params.destLat)
+  const destLng = toNumber(params.destLng)
+  const style = sanitizeString(params.style || '0') || '0'
+  if (!Number.isFinite(originLat) || !Number.isFinite(originLng)) return fail(400, 'origin coordinates are invalid')
+  if (!Number.isFinite(destLat) || !Number.isFinite(destLng)) return fail(400, 'destination coordinates are invalid')
+
+  const key = sanitizeString(routeConfig.config('key'))
+  if (!key) return fail(500, 'amap key is not configured')
+  const driveUrl = sanitizeString(routeConfig.config('driveUrl')) || 'https://restapi.amap.com/v3/direction/driving'
+  const extensions = sanitizeString(routeConfig.config('extensions')) || 'all'
+  const timeout = Math.max(3000, toNumberSafe(routeConfig.config('timeout'), 15000))
+
+  try {
+    const response = await uniCloud.httpclient.request(driveUrl, {
+      method: 'GET',
+      dataType: 'json',
+      timeout,
+      data: {
+        origin: `${originLng},${originLat}`,
+        destination: `${destLng},${destLat}`,
+        strategy: style,
+        extensions,
+        output: 'json',
+        key,
+      },
+    })
+    if (response.status !== 200) return fail(response.status || 500, 'amap request failed')
+    const data = response.data || {}
+    if (sanitizeString(data.status) !== '1') return fail(502, sanitizeString(data.info) || 'amap route failed', data)
+    const route = data.route || {}
+    const path = Array.isArray(route.paths) && route.paths.length ? route.paths[0] : {}
+    const distance = toNumberSafe(path.distance, 0)
+    const duration = toNumberSafe(path.duration, 0)
+    const steps = Array.isArray(path.steps) ? path.steps : []
+    return ok({
+      distance,
+      distanceText: formatRouteDistance(distance),
+      duration,
+      durationText: formatRouteDuration(duration),
+      polyline: parseRoutePolyline(steps, {
+        lat: originLat,
+        lng: originLng,
+      }, {
+        lat: destLat,
+        lng: destLng,
+      }),
+      instructions: steps.map(item => sanitizeString(item?.instruction)).filter(Boolean),
+      raw: data,
+    })
+  } catch (error) {
+    return fail(500, error.message || 'amap route failed')
+  }
+}
+
 async function detailAdminEntity(entity, params = {}) {
   const config = ADMIN_ENTITY_CONFIG[entity]
   if (!config) return fail(400, 'invalid entity')
@@ -598,6 +705,7 @@ async function dispatchAdminAction(action, params = {}) {
   if (action === 'review.listByPoi') return listReviewByPoi(params)
   if (action === 'poi.nearby') return nearbyPoi(params)
   if (action === 'recommend.home') return recommendHome(params)
+  if (action === 'route.drive') return routeDrive(params)
   const parsed = parseAdminAction(action)
   if (!parsed) return fail(400, 'invalid action')
   const { entity, operation } = parsed

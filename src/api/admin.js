@@ -1,4 +1,4 @@
-const HTTP_URL = 'https://ds.aixifs.com/'
+const HTTP_URL = 'https://byupload.aixifs.com/babyplace-admin'
 
 function httpCall(data) {
   const requestBody = JSON.stringify(data || {})
