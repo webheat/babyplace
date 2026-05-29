@@ -3,15 +3,92 @@
     <view class="hero">
       <view class="hero-top">
         <view>
-          <text class="title">遛娃灵感</text>
-          <text class="subtitle">把旧首页的资讯感和当前地点库结合起来，优先服务微信小程序浏览。</text>
+          <text class="title">今天带娃去哪</text>
+          <text class="subtitle">先按场景缩小范围，再决定去哪玩、去哪吃。首页现在优先服务“带娃去哪 + 附近吃什么”的决策链路。</text>
         </view>
-        <view class="hero-badge">NEW</view>
+        <view class="hero-badge">{{ currentWeatherLabel }}</view>
       </view>
       <view class="hero-actions">
         <view class="action-pill action-primary" @click="goPoiList">全部地点</view>
-        <view class="action-pill" @click="goLifePage">按标签找</view>
+        <view class="action-pill" @click="useCurrentLocation">定位附近</view>
         <view class="action-pill" @click="goArticleList">看资讯</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-head">
+        <text class="section-title">今日推荐</text>
+        <text class="section-more" @click="goPoiList">更多</text>
+      </view>
+      <view class="scenario-panel">
+        <view class="scenario-card primary" @click="openTodayPick">
+          <text class="scenario-eyebrow">Today Pick</text>
+          <text class="scenario-title">{{ todayPick.name || '正在生成今日推荐' }}</text>
+          <text class="scenario-copy">{{ todayPick.recommend_reason || todayPick.summary || '结合评分、带娃友好度和天气场景给出第一站建议。' }}</text>
+          <text class="scenario-meta">{{ todayPickMeta }}</text>
+        </view>
+        <view class="scenario-grid">
+          <view class="scenario-card soft" @click="setWeatherMode('sunny')">
+            <text class="scenario-eyebrow">晴天</text>
+            <text class="scenario-title small">{{ sunnyPick.name || '优先户外草地 / 公园' }}</text>
+            <text class="scenario-copy">{{ sunnyPick.summary || sunnyPick.recommend_reason || '适合放电、散步、骑行。' }}</text>
+          </view>
+          <view class="scenario-card soft" @click="setWeatherMode('rainy')">
+            <text class="scenario-eyebrow">雨天</text>
+            <text class="scenario-title small">{{ rainyPick.name || '优先室内 / 雨天友好' }}</text>
+            <text class="scenario-copy">{{ rainyPick.summary || rainyPick.recommend_reason || '优先考虑室内、可推车、补给更方便。' }}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-head stacked">
+        <view>
+          <text class="section-title">按年龄筛选</text>
+          <text class="section-subtitle">先缩小适龄范围，再看今天适合去哪一类地点。</text>
+        </view>
+      </view>
+      <scroll-view class="chip-scroll" scroll-x enable-flex show-scrollbar="false">
+        <view class="chip-row">
+          <view
+            v-for="item in ageOptions"
+            :key="item.value"
+            class="filter-chip"
+            :class="{ active: selectedAge === item.value }"
+            @click="setAgeFilter(item.value)"
+          >
+            {{ item.label }}
+          </view>
+        </view>
+      </scroll-view>
+      <view v-if="!ageFilteredList.length" class="state">当前年龄段暂无更合适的推荐</view>
+      <view v-else class="list compact">
+        <poi-card v-for="item in ageFilteredList" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-head stacked">
+        <view>
+          <text class="section-title">按天气推荐</text>
+          <text class="section-subtitle">不用先查攻略，先按今天的出门条件切一遍。</text>
+        </view>
+      </view>
+      <view class="weather-switch">
+        <view
+          v-for="item in weatherOptions"
+          :key="item.value"
+          class="weather-pill"
+          :class="{ active: weatherMode === item.value }"
+          @click="setWeatherMode(item.value)"
+        >
+          {{ item.label }}
+        </view>
+      </view>
+      <view v-if="!weatherFilteredList.length" class="state">当前天气条件下暂无推荐</view>
+      <view v-else class="list compact">
+        <poi-card v-for="item in weatherFilteredList" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
       </view>
     </view>
 
@@ -36,11 +113,22 @@
 
     <view class="section">
       <view class="section-head">
-        <text class="section-title">精选推荐</text>
-        <text class="section-more" @click="goPoiList">更多</text>
+        <text class="section-title">附近遛娃场所</text>
+        <text class="section-more" @click="useCurrentLocation">刷新</text>
       </view>
       <view v-if="loading" class="state">加载中...</view>
-      <view v-else-if="!homeData.featured.length" class="state">暂无推荐</view>
+      <view v-else-if="!homeData.nearby.length" class="state">点击“定位附近”后，这里会优先展示离你最近的遛娃地点。</view>
+      <view v-else class="list">
+        <poi-card v-for="item in homeData.nearby" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-head">
+        <text class="section-title">精选地点</text>
+        <text class="section-more" @click="goPoiList">更多</text>
+      </view>
+      <view v-if="!homeData.featured.length" class="state">暂无推荐</view>
       <view v-else class="list">
         <poi-card v-for="item in homeData.featured" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
       </view>
@@ -57,7 +145,14 @@
           <view class="article-copy">
             <text class="article-title">{{ item.title }}</text>
             <view class="article-meta">
-              <dx-tag v-if="item.cat_name && item.cat_name !== 'pending'" :text="item.cat_name" type="primary" font-size="20rpx" padding="8rpx 18rpx" border="none" />
+              <dx-tag
+                v-if="item.cat_name && item.cat_name !== 'pending'"
+                :text="item.cat_name"
+                type="primary"
+                font-size="20rpx"
+                padding="8rpx 18rpx"
+                border="none"
+              />
               <text class="article-time">{{ formatMonthDate(item.publish_at) }}</text>
             </view>
           </view>
@@ -65,21 +160,12 @@
         </view>
       </view>
     </view>
-
-    <view class="section">
-      <view class="section-head">
-        <text class="section-title">附近地点</text>
-      </view>
-      <view v-if="!homeData.nearby.length" class="state">进入详情页后使用“当前位置规划路线”可查看你的出行路线</view>
-      <view v-else class="list">
-        <poi-card v-for="item in homeData.nearby" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
-      </view>
-    </view>
+    <customer-service-fab />
   </view>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { onShareAppMessage, onShareTimeline } from '@dcloudio/uni-app';
 import PoiCard from '@/components/poi-card.vue';
 import DxTag from '@/components/dx-tag/dx-tag.vue';
@@ -87,6 +173,7 @@ import { recommendHome } from '@/api/recommend';
 import api from '@/common/api-util.js';
 import utils from '@/common/utils.js';
 import { openPoiMap } from '@/utils/poi';
+import CustomerServiceFab from '@/components/customer-service-fab.vue';
 
 const loading = ref(false);
 const bannerList = ref([]);
@@ -96,13 +183,89 @@ const homeData = reactive({
   latest: [],
 });
 const articleList = ref([]);
+const selectedAge = ref('all');
+const weatherMode = ref('all');
+const userLocation = ref(null);
+
+const ageOptions = [
+  { label: '全部年龄', value: 'all' },
+  { label: '0-3岁', value: '0-3' },
+  { label: '3-6岁', value: '3-6' },
+  { label: '6岁+', value: '6+' },
+];
+
+const weatherOptions = [
+  { label: '不限天气', value: 'all' },
+  { label: '晴天放电', value: 'sunny' },
+  { label: '雨天友好', value: 'rainy' },
+];
+
+function includesAge(item, ageValue) {
+  if (!ageValue || ageValue === 'all') return true;
+  const ageRange = Array.isArray(item?.age_range) ? item.age_range : [];
+  if (ageValue === '6+') {
+    return ageRange.some((value) => String(value).includes('6'));
+  }
+  return ageRange.some((value) => String(value).includes(ageValue));
+}
+
+function isRainyFriendly(item) {
+  return Boolean(item?.indoor || item?.facilities?.rainy_day_ok);
+}
+
+function isSunnyFriendly(item) {
+  return !item?.indoor || item?.facilities?.shade || item?.facilities?.parking;
+}
+
+const allScenarioList = computed(() => {
+  const merged = []
+    .concat(homeData.featured || [])
+    .concat(homeData.latest || [])
+    .concat(homeData.nearby || []);
+  const map = new Map();
+  merged.forEach((item) => {
+    if (item?._id && !map.has(item._id)) {
+      map.set(item._id, item);
+    }
+  });
+  return Array.from(map.values());
+});
+
+const ageFilteredList = computed(() => {
+  return allScenarioList.value
+    .filter((item) => includesAge(item, selectedAge.value))
+    .slice(0, 6);
+});
+
+const weatherFilteredList = computed(() => {
+  return allScenarioList.value
+    .filter((item) => {
+      if (weatherMode.value === 'rainy') return isRainyFriendly(item);
+      if (weatherMode.value === 'sunny') return isSunnyFriendly(item);
+      return true;
+    })
+    .slice(0, 6);
+});
+
+const todayPick = computed(() => weatherFilteredList.value[0] || ageFilteredList.value[0] || allScenarioList.value[0] || {});
+const sunnyPick = computed(() => allScenarioList.value.find((item) => isSunnyFriendly(item)) || {});
+const rainyPick = computed(() => allScenarioList.value.find((item) => isRainyFriendly(item)) || {});
+const currentWeatherLabel = computed(() => {
+  if (weatherMode.value === 'rainy') return '雨天模式';
+  if (weatherMode.value === 'sunny') return '晴天模式';
+  return '场景首页';
+});
+const todayPickMeta = computed(() => {
+  const item = todayPick.value || {};
+  const parts = [];
+  if (item.city || item.district) parts.push([item.city, item.district].filter(Boolean).join(' '));
+  if (Array.isArray(item.age_range) && item.age_range.length) parts.push(item.age_range.join(' / '));
+  if (item.indoor || item?.facilities?.rainy_day_ok) parts.push('雨天友好');
+  return parts.join(' · ') || '优先从高评分、亲子友好的地点开始';
+});
 
 function goPoiList() {
   uni.navigateTo({ url: '/pages/poi/list' });
-}
-
-function goLifePage() {
-  uni.switchTab({ url: '/pages/life/arrive/arrive' });
 }
 
 function goArticleList() {
@@ -119,6 +282,11 @@ function goDetail(item) {
   uni.navigateTo({ url: `/pages/life/shop/shop?id=${item._id}` });
 }
 
+function openTodayPick() {
+  if (!todayPick.value?._id) return;
+  goDetail(todayPick.value);
+}
+
 function openMap(item) {
   openPoiMap(item);
 }
@@ -132,10 +300,34 @@ function formatMonthDate(value) {
   return utils.formatMonthDate(value);
 }
 
+function setAgeFilter(value) {
+  selectedAge.value = value;
+}
+
+function setWeatherMode(value) {
+  weatherMode.value = value;
+}
+
+function getCurrentLocation() {
+  return new Promise((resolve) => {
+    uni.getLocation({
+      type: 'gcj02',
+      success: ({ latitude, longitude }) => {
+        resolve({ lat: latitude, lng: longitude });
+      },
+      fail: () => resolve(null),
+    });
+  });
+}
+
 async function loadHome() {
   loading.value = true;
   try {
+    const location = userLocation.value || await getCurrentLocation();
+    userLocation.value = location;
     const result = await recommendHome({
+      lat: location?.lat,
+      lng: location?.lng,
       radius: 5000,
     });
     if (result.code !== 0) throw new Error(result.message || '加载失败');
@@ -155,6 +347,16 @@ async function loadHome() {
   }
 }
 
+async function useCurrentLocation() {
+  userLocation.value = await getCurrentLocation();
+  if (!userLocation.value) {
+    uni.showToast({ title: '定位失败，已回退默认推荐', icon: 'none' });
+  } else {
+    uni.showToast({ title: '已刷新附近地点', icon: 'none' });
+  }
+  loadHome();
+}
+
 async function loadArticles() {
   const result = await api.article.getArticleList('all', 0, 1, 1);
   articleList.value = result.code === api.SUCCESS ? (result.data || []).slice(0, 3) : [];
@@ -172,19 +374,19 @@ onMounted(() => {
 });
 
 onShareAppMessage(() => {
-  const featured = homeData.featured[0];
+  const featured = todayPick.value?._id ? todayPick.value : homeData.featured[0];
   const path = featured?._id ? `/pages/life/shop/shop?id=${featured._id}` : '/pages/index/index';
   return {
-    title: featured?.name ? `遛娃去哪玩？试试 ${featured.name}` : '遛娃灵感，每周发现新的亲子地点',
+    title: featured?.name ? `带娃去哪玩？试试 ${featured.name}` : '带娃去哪玩？先看今天的场景推荐',
     path,
     imageUrl: bannerList.value[0]?.image || featured?.cover_image || '',
   };
 });
 
 onShareTimeline(() => {
-  const featured = homeData.featured[0];
+  const featured = todayPick.value?._id ? todayPick.value : homeData.featured[0];
   return {
-    title: featured?.name ? `遛娃去哪玩？试试 ${featured.name}` : '遛娃灵感，每周发现新的亲子地点',
+    title: featured?.name ? `带娃去哪玩？试试 ${featured.name}` : '带娃去哪玩？先看今天的场景推荐',
     query: featured?._id ? `id=${featured._id}` : '',
     imageUrl: bannerList.value[0]?.image || featured?.cover_image || '',
   };
@@ -196,7 +398,7 @@ onShareTimeline(() => {
   box-sizing: border-box;
   min-height: 100vh;
   padding: 24rpx;
-  background: linear-gradient(180deg, #f3f8ff 0%, #f8fafc 40%, #f8fafc 100%);
+  background: linear-gradient(180deg, #f3f8ff 0%, #f8fafc 34%, #f8fafc 100%);
 }
 /* #ifdef H5 */
 .page {
@@ -260,6 +462,122 @@ onShareTimeline(() => {
   background: #fff;
   color: #2563eb;
 }
+.section {
+  margin-bottom: 26rpx;
+  padding: 24rpx;
+  border-radius: 20rpx;
+  background: #fff;
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14rpx;
+}
+.section-head.stacked {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.section-title {
+  font-size: 32rpx;
+  color: #1f2937;
+  font-weight: 600;
+}
+.section-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #64748b;
+}
+.section-more {
+  font-size: 24rpx;
+  color: #2563eb;
+}
+.scenario-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 16rpx;
+}
+.scenario-grid {
+  display: grid;
+  gap: 16rpx;
+}
+.scenario-card {
+  border-radius: 20rpx;
+  padding: 24rpx;
+}
+.scenario-card.primary {
+  min-height: 290rpx;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
+}
+.scenario-card.soft {
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+}
+.scenario-eyebrow {
+  display: block;
+  font-size: 20rpx;
+  letter-spacing: 1rpx;
+  text-transform: uppercase;
+}
+.scenario-card.primary .scenario-eyebrow,
+.scenario-card.primary .scenario-title,
+.scenario-card.primary .scenario-copy,
+.scenario-card.primary .scenario-meta {
+  color: #fff;
+}
+.scenario-title {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #0f172a;
+}
+.scenario-title.small {
+  font-size: 28rpx;
+}
+.scenario-copy {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 23rpx;
+  line-height: 1.7;
+  color: #475569;
+}
+.scenario-meta {
+  display: block;
+  margin-top: 18rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.86);
+}
+.chip-scroll {
+  white-space: nowrap;
+  margin-bottom: 18rpx;
+}
+.chip-row {
+  display: inline-flex;
+  gap: 12rpx;
+}
+.filter-chip,
+.weather-pill {
+  padding: 14rpx 22rpx;
+  border-radius: 999rpx;
+  background: #eef2ff;
+  color: #475569;
+  font-size: 24rpx;
+}
+.filter-chip.active,
+.weather-pill.active {
+  background: #2563eb;
+  color: #fff;
+}
+.weather-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 18rpx;
+}
 .banner-section {
   margin-bottom: 24rpx;
 }
@@ -297,27 +615,6 @@ onShareTimeline(() => {
   font-size: 22rpx;
   color: rgba(255, 255, 255, 0.86);
 }
-.section {
-  margin-bottom: 26rpx;
-  padding: 24rpx;
-  border-radius: 20rpx;
-  background: #fff;
-}
-.section-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14rpx;
-}
-.section-title {
-  font-size: 32rpx;
-  color: #1f2937;
-  font-weight: 600;
-}
-.section-more {
-  font-size: 24rpx;
-  color: #2563eb;
-}
 .state {
   padding: 28rpx;
   border-radius: 16rpx;
@@ -329,6 +626,9 @@ onShareTimeline(() => {
 .article-list {
   display: flex;
   flex-direction: column;
+}
+.list.compact > view + view {
+  margin-top: 12rpx;
 }
 .list > view + view,
 .article-list > view + view {
@@ -381,4 +681,9 @@ onShareTimeline(() => {
   background: #e5e7eb;
   flex-shrink: 0;
 }
+/* #ifdef H5 */
+.scenario-panel {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+/* #endif */
 </style>

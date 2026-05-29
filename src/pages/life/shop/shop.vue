@@ -51,6 +51,43 @@
       />
 
       <view class="section">
+        <view class="section-head section-head-inline">
+          <view>
+            <text class="section-title">附近美食</text>
+            <text class="section-subtitle">围绕当前地点推荐适合带娃补给的附近餐厅</text>
+          </view>
+          <text class="section-badge">{{ restaurantMetaText }}</text>
+        </view>
+        <view v-if="restaurantLoading" class="empty-line">正在匹配附近餐厅...</view>
+        <view v-else-if="!restaurantList.length" class="empty-line">附近餐厅数据暂未准备好</view>
+        <view v-else class="restaurant-list">
+          <view v-for="item in restaurantList" :key="item._id" class="restaurant-card">
+            <view class="restaurant-main">
+              <view class="restaurant-top">
+                <text class="restaurant-name">{{ item.name }}</text>
+                <text class="restaurant-score">{{ Number(item.rating || 0).toFixed(1) }}</text>
+              </view>
+              <text class="restaurant-meta">
+                {{ item.category || '附近餐厅' }}
+                <text v-if="Number(item.avg_price || 0) > 0"> · 人均{{ Math.round(Number(item.avg_price || 0)) }}</text>
+                <text v-if="Number(item.distance || 0) > 0"> · {{ formatDistance(item.distance) }}</text>
+              </text>
+              <text class="restaurant-address">{{ item.address || '暂无地址信息' }}</text>
+              <tag-list :tags="item.tags || []" />
+              <text v-if="item.coupon_info" class="restaurant-coupon">{{ item.coupon_info }}</text>
+              <text v-if="item.note && item.source === 'fallback'" class="restaurant-note">{{ item.note }}</text>
+            </view>
+            <view class="restaurant-actions">
+              <button class="ghost-button" size="mini" @click="openRestaurantLocation(item)">看位置</button>
+              <button class="action-button" size="mini" :loading="jumpingRestaurantId === item._id" @click="handleRestaurantAction(item)">
+                去美团看看
+              </button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section">
         <view class="section-head">
           <text class="section-title">评价</text>
         </view>
@@ -86,33 +123,216 @@
           </view>
         </view>
       </view>
+
+      <!-- #ifdef MP-WEIXIN -->
+      <view class="section contact-section">
+        <button class="contact-btn" open-type="contact" @tap="handleContact">
+          <text class="contact-icon">服</text>
+          <text class="contact-text">联系客服</text>
+        </button>
+      </view>
+      <!-- #endif -->
+      <customer-service-fab :show="false" />
     </view>
   </view>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { onLoad, onShareAppMessage, onShareTimeline } from '@dcloudio/uni-app';
 import RoutePlannerCard from '@/components/RoutePlannerCard.vue';
 import RatingStars from '@/components/rating-stars.vue';
 import TagList from '@/components/tag-list.vue';
 import { detailPoi } from '@/api/poi';
+import { getRestaurantLink, listRestaurantByPlace, trackRestaurantEvent } from '@/api/restaurant';
 import { createReview } from '@/api/review';
+import { openEnterpriseChat } from '@/utils/customer-service.js';
+import CustomerServiceFab from '@/components/customer-service-fab.vue';
 
 const loading = ref(false);
 const submitting = ref(false);
+const restaurantLoading = ref(false);
+const jumpingRestaurantId = ref('');
 const errorMessage = ref('');
 const poi = ref({});
 const reviews = ref([]);
 const sources = ref([]);
+const restaurantList = ref([]);
+const restaurantSource = ref('');
 const scoreOptions = ['1', '2', '3', '4', '5'];
 const reviewForm = reactive({ nickname: '', comment: '', rating: 5 });
 
 let poiId = '';
 
+const restaurantMetaText = computed(() => {
+  if (restaurantSource.value === 'cache') return '缓存命中';
+  if (restaurantSource.value === 'gaode') return '高德实时';
+  if (restaurantSource.value === 'fallback') return '本地兜底';
+  if (restaurantSource.value === 'stale-cache') return '旧缓存';
+  return '附近推荐';
+});
+
+const CURRENT_PLATFORM = (() => {
+  // #ifdef MP-WEIXIN
+  return 'mp-weixin';
+  // #endif
+  // #ifdef H5
+  return 'h5';
+  // #endif
+  return 'other';
+})();
+
 function handleScoreChange(event) {
   const index = Number(event.detail.value || 0);
   reviewForm.rating = Number(scoreOptions[index] || 5);
+}
+
+function formatDistance(distance) {
+  const value = Number(distance || 0);
+  if (!value) return '';
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}km`;
+  }
+  return `${Math.round(value)}m`;
+}
+
+function openRestaurantLocation(item) {
+  const latitude = Number(item?.lat || 0);
+  const longitude = Number(item?.lng || 0);
+  if (!latitude || !longitude) {
+    uni.showToast({ title: '暂无餐厅定位信息', icon: 'none' });
+    return;
+  }
+  uni.openLocation({
+    latitude,
+    longitude,
+    name: item?.name || '附近餐厅',
+    address: item?.address || '',
+    scale: 16,
+  });
+}
+
+async function loadRestaurants() {
+  if (!poiId) return;
+  restaurantLoading.value = true;
+  try {
+    const result = await listRestaurantByPlace(poiId, { limit: 8, radius: 2000 });
+    if (result.code !== 0) throw new Error(result.message || '附近餐厅加载失败');
+    restaurantList.value = result.data?.list || [];
+    restaurantSource.value = result.data?.source || '';
+  } catch (error) {
+    restaurantList.value = [];
+    restaurantSource.value = '';
+    uni.showToast({ title: error.message || '附近餐厅加载失败', icon: 'none' });
+  } finally {
+    restaurantLoading.value = false;
+  }
+}
+
+async function handleRestaurantAction(item) {
+  if (!item?._id) return;
+  jumpingRestaurantId.value = item._id;
+  try {
+    await trackRestaurantEvent({
+      event_name: 'restaurant_click',
+      poi_id: poiId,
+      restaurant_id: item._id,
+      restaurant_name: item.name || '',
+      platform: CURRENT_PLATFORM,
+      scene: 'shop_detail',
+      target_type: 'restaurant_card',
+      target_value: item.name || '',
+      meta: {
+        source: item.source || '',
+        category: item.category || '',
+      },
+    });
+
+    const result = await getRestaurantLink(item._id);
+    if (result.code !== 0) throw new Error(result.message || '获取跳转链接失败');
+
+    const jumpUrl = result.data?.jump_url || '';
+    const keyword = result.data?.keyword || item.name || '';
+    const appId = result.data?.app_id || '';
+    const pagePath = result.data?.page_path || '';
+    const sid = result.data?.sid || '';
+
+    if (appId && pagePath) {
+      await trackRestaurantEvent({
+        event_name: 'meituan_jump_click',
+        poi_id: poiId,
+        restaurant_id: item._id,
+        restaurant_name: item.name || '',
+        platform: CURRENT_PLATFORM,
+        scene: 'shop_detail',
+        target_type: 'mini_program',
+        target_value: `${appId}:${pagePath}`,
+        meta: {
+          sid,
+          source: result.data?.source || item.source || '',
+        },
+      });
+      // #ifdef MP-WEIXIN
+      uni.navigateToMiniProgram({
+        appId,
+        path: pagePath,
+        fail: () => {
+          uni.setClipboardData({
+            data: keyword || item.name || '',
+            success: () => {
+              uni.showToast({ title: '跳转失败，已复制餐厅名', icon: 'none' });
+            },
+          });
+        },
+      });
+      return;
+      // #endif
+    }
+
+    if (jumpUrl) {
+      await trackRestaurantEvent({
+        event_name: 'meituan_jump_click',
+        poi_id: poiId,
+        restaurant_id: item._id,
+        restaurant_name: item.name || '',
+        platform: CURRENT_PLATFORM,
+        scene: 'shop_detail',
+        target_type: 'h5',
+        target_value: jumpUrl,
+        meta: {
+          sid,
+          source: result.data?.source || item.source || '',
+        },
+      });
+      // #ifdef H5
+      window.open(jumpUrl, '_blank');
+      // #endif
+      // #ifndef H5
+      uni.setClipboardData({
+        data: keyword || item.name || '',
+        success: () => {
+          uni.showModal({
+            title: '联盟链接待接入',
+            content: `已复制“${keyword || item.name || '餐厅名称'}”，请在美团内搜索查看。`,
+            showCancel: false,
+          });
+        },
+      });
+      // #endif
+      return;
+    }
+
+    uni.setClipboardData({
+      data: keyword || item.name || '',
+      success: () => {
+        uni.showToast({ title: '已复制餐厅名称', icon: 'none' });
+      },
+    });
+  } catch (error) {
+    uni.showToast({ title: error.message || '操作失败', icon: 'none' });
+  } finally {
+    jumpingRestaurantId.value = '';
+  }
 }
 
 async function loadDetail() {
@@ -151,9 +371,14 @@ async function submitReview() {
   }
 }
 
+function handleContact() {
+  openEnterpriseChat();
+}
+
 onLoad((options) => {
   poiId = options?.id || options?.shopId || '';
   loadDetail();
+  loadRestaurants();
 });
 
 onShareAppMessage(() => ({
@@ -246,10 +471,31 @@ onShareTimeline(() => ({
 .section-head {
   margin-bottom: 12rpx;
 }
+.section-head-inline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
 .section-title {
   font-size: 30rpx;
   font-weight: 600;
   color: #1f2937;
+}
+.section-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #64748b;
+}
+.section-badge {
+  flex-shrink: 0;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 20rpx;
 }
 .paragraph,
 .comment,
@@ -279,7 +525,8 @@ onShareTimeline(() => ({
 }
 .review-form,
 .review-list,
-.source-list {
+ .source-list,
+ .restaurant-list {
   display: flex;
   flex-direction: column;
   gap: 10rpx;
@@ -304,10 +551,73 @@ onShareTimeline(() => ({
   color: #fff;
 }
 .review-item,
-.source-item {
+ .source-item {
   padding: 16rpx;
   border-radius: 14rpx;
   background: #f8fafc;
+}
+.restaurant-card {
+  padding: 18rpx;
+  border-radius: 18rpx;
+  background: linear-gradient(135deg, #fff8f2 0%, #ffffff 100%);
+  border: 2rpx solid #ffedd5;
+}
+.restaurant-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+.restaurant-name {
+  flex: 1;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1f2937;
+}
+.restaurant-score {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #ea580c;
+}
+.restaurant-meta,
+.restaurant-address,
+.restaurant-coupon,
+.restaurant-note {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+.restaurant-meta,
+.restaurant-address,
+.restaurant-note {
+  color: #64748b;
+}
+.restaurant-coupon {
+  color: #c2410c;
+}
+.restaurant-note {
+  font-style: italic;
+}
+.restaurant-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 14rpx;
+}
+.action-button,
+.ghost-button {
+  margin: 0;
+  flex: 1;
+  border-radius: 12rpx;
+}
+.action-button {
+  background: #ea580c;
+  color: #fff;
+}
+.ghost-button {
+  background: #fff;
+  color: #ea580c;
+  border: 2rpx solid #fdba74;
 }
 .review-head {
   display: flex;
@@ -319,5 +629,35 @@ onShareTimeline(() => ({
 .source-type {
   font-size: 24rpx;
   color: #1f2937;
+}
+.contact-section {
+  padding: 24rpx;
+  border-radius: 20rpx;
+  background: #fff;
+}
+.contact-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  width: 100%;
+  height: 88rpx;
+  margin: 0;
+  border-radius: 16rpx;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  border: none;
+}
+.contact-btn::after {
+  border: none;
+}
+.contact-icon {
+  font-size: 30rpx;
+  font-weight: 700;
+}
+.contact-text {
+  font-size: 30rpx;
 }
 </style>

@@ -16,6 +16,7 @@
     <view v-else class="list">
       <poi-card v-for="item in list" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
     </view>
+    <customer-service-fab />
   </view>
 </template>
 
@@ -24,6 +25,7 @@ import { onMounted, ref } from 'vue';
 import PoiCard from '@/components/poi-card.vue';
 import { listPoi } from '@/api/poi';
 import { openPoiMap } from '@/utils/poi';
+import CustomerServiceFab from '@/components/customer-service-fab.vue';
 
 const loading = ref(false);
 const errorMessage = ref('');
@@ -32,7 +34,7 @@ const list = ref([]);
 
 function goDetail(item) {
   if (!item?._id) return;
-  uni.navigateTo({ url: `/pages/poi/detail?id=${item._id}` });
+  uni.navigateTo({ url: `/pages/life/shop/shop?id=${item._id}` });
 }
 
 function openMap(item) {

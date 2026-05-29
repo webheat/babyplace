@@ -147,6 +147,13 @@
       }
     },
     {
+      "path": "pages/admin/events",
+      "aliasPath": "/admin/events",
+      "style": {
+        "navigationBarTitleText": "联盟埋点"
+      }
+    },
+    {
       "path": "pages/auth/index",
       "aliasPath": "/auth",
       "style": {

@@ -103,6 +103,7 @@
         <poi-card v-for="item in latestList" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
       </view>
     </view>
+    <customer-service-fab />
   </view>
 </template>
 
@@ -111,6 +112,8 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import PoiCard from '@/components/poi-card.vue';
 import { listPoi } from '@/api/poi';
 import { extractTags, extractUniqueCities, openPoiMap, pickTop } from '@/utils/poi';
+import CustomerServiceFab from '@/components/customer-service-fab.vue';
+import { openEnterpriseChat } from '@/utils/customer-service.js';
 import auth from '@/common/auth.js';
 import store from '@/store';
 
@@ -132,6 +135,7 @@ const quickActions = [
 
 const accountItems = [
   { title: '修改手机号', desc: '管理登录手机号与短信校验', url: '/pages/user/mine/info/changephone/changephone', icon: '机', bg: '#eff6ff' },
+  { title: '联系客服', desc: '在线咨询，快速解答疑问', url: 'customer-service', icon: '服', bg: '#ecfdf5' },
   { title: '意见反馈', desc: '提交建议与问题记录', url: '/pages/user/mine/feedback/feedback', icon: '反', bg: '#fff7ed' },
 ];
 
@@ -153,6 +157,10 @@ function syncUserInfo() {
 }
 
 function go(url) {
+  if (url === 'customer-service') {
+    openEnterpriseChat();
+    return;
+  }
   uni.navigateTo({ url });
 }
 

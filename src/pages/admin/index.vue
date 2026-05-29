@@ -295,6 +295,10 @@ function openWechatLogin() {
   startH5WeixinLogin({ redirectPath: '/admin' })
 }
 
+function openEventDashboard() {
+  uni.navigateTo({ url: '/pages/admin/events' })
+}
+
 function loadWechatLoginScript() {
   // #ifdef H5
   if (window.WxLogin) return Promise.resolve()
@@ -406,6 +410,10 @@ onMounted(() => {
     </view>
 
     <view v-else class="admin-content">
+      <view class="quick-actions">
+        <button class="button analytics-btn" size="mini" @click="openEventDashboard">查看联盟埋点</button>
+      </view>
+
       <scroll-view class="module-tabs" scroll-x enable-flex>
         <view v-for="module in MODULE_OPTIONS" :key="module.key" class="tab-item" :class="{ active: activeModule === module.key }" @click="switchModule(module.key)">{{ module.label }}</view>
       </scroll-view>
@@ -492,6 +500,8 @@ onMounted(() => {
 .qrcode-container { width: 300rpx; height: 300rpx; margin-bottom: 24rpx; }
 .hint { font-size: 28rpx; color: #666; }
 .admin-content { display: flex; flex-direction: column; gap: 24rpx; }
+.quick-actions { display: flex; justify-content: flex-end; }
+.analytics-btn { margin: 0; background: #2563eb; color: #fff; }
 .module-tabs { display: flex; white-space: nowrap; background: #fff; border-radius: 16rpx; padding: 10rpx; }
 .tab-item { display: inline-flex; align-items: center; justify-content: center; min-width: 160rpx; padding: 14rpx 20rpx; margin-right: 10rpx; border-radius: 10rpx; background: #f2f2f2; color: #666; font-size: 26rpx; }
 .tab-item.active { background: #1890ff; color: #fff; }

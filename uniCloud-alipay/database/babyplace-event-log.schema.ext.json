@@ -1,0 +1,13 @@
+{
+  "collection": "babyplace-event-log",
+  "fields": [
+    { "label": "事件名", "name": "event_name", "required": true },
+    { "label": "地点ID", "name": "poi_id" },
+    { "label": "餐厅ID", "name": "restaurant_id" },
+    { "label": "餐厅名称", "name": "restaurant_name" },
+    { "label": "平台", "name": "platform" },
+    { "label": "场景", "name": "scene" },
+    { "label": "目标类型", "name": "target_type" },
+    { "label": "目标值", "name": "target_value" }
+  ]
+}
