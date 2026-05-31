@@ -166,6 +166,13 @@
       "style": {
         "navigationBarTitleText": "微信扫码登录"
       }
+    },
+    {
+      "path": "pages/chat/chat",
+      "style": {
+        "navigationBarTitleText": "AI 助手",
+        "enablePullDownRefresh": false
+      }
     }
   ],
   "subPackages": [
