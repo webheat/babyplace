@@ -1,5 +1,5 @@
 {
-  "baseUrl": "",
-  "apiKey": "",
+  "baseUrl": "https://oc4k.aixifs.com",
+  "apiKey": "<YOUR_ASTBOT_API_KEY>",
   "timeout": 120000
 }
