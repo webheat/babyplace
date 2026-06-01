@@ -1,7 +1,7 @@
 <template>
   <!-- #ifdef MP-WEIXIN -->
   <view v-if="show" class="fab">
-    <button class="fab-btn" open-type="contact" @tap="handleTap">
+    <button class="fab-btn" @tap="handleTap">
       <text class="fab-icon">服</text>
     </button>
   </view>
