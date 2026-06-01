@@ -126,7 +126,7 @@
 
       <!-- #ifdef MP-WEIXIN -->
       <view class="section contact-section">
-        <button class="contact-btn" open-type="contact" @tap="handleContact">
+        <button class="contact-btn" @tap="handleContact">
           <text class="contact-icon">服</text>
           <text class="contact-text">联系客服</text>
         </button>
