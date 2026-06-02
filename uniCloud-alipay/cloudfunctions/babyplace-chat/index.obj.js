@@ -23,6 +23,19 @@ function sanitizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function pickReply(result) {
+  if (!result || typeof result !== 'object') return '';
+  const data = result.data && typeof result.data === 'object' ? result.data : result;
+  return sanitizeString(
+    data.reply ||
+    data.message ||
+    data.content ||
+    data.text ||
+    data.response ||
+    data.result
+  );
+}
+
 module.exports = {
   async send(params = {}) {
     const message = sanitizeString(params.message);
@@ -70,7 +83,10 @@ module.exports = {
         return fail(502, result.message || 'AstrBot returned error');
       }
 
-      return ok(result.data);
+      return ok({
+        ...(result.data && typeof result.data === 'object' ? result.data : {}),
+        reply: pickReply(result),
+      });
     } catch (error) {
       return fail(500, error.message || 'chat request failed');
     }
