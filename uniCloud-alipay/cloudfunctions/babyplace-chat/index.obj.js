@@ -1,15 +1,20 @@
 'use strict';
 
-const createConfig = require('uni-config-center');
+let astrbotConfig = null;
 
-const astrbotConfig = createConfig({
-  pluginId: 'astrbot',
-  defaultConfig: {
-    baseUrl: '',
-    apiKey: '',
-    timeout: 120000,
-  },
-});
+try {
+  const createConfig = require('uni-config-center');
+  astrbotConfig = createConfig({
+    pluginId: 'astrbot',
+    defaultConfig: {
+      baseUrl: '',
+      apiKey: '',
+      timeout: 120000,
+    },
+  });
+} catch (error) {
+  console.warn('uni-config-center unavailable:', error.message);
+}
 
 function ok(data, message = 'ok') {
   return { code: 0, message, data };
@@ -48,13 +53,19 @@ module.exports = {
       sessionId = `mp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     }
 
-    const baseUrl = sanitizeString(astrbotConfig.config('baseUrl'));
+    let baseUrl = '';
+    let apiKey = '';
+    let timeout = 120000;
+
+    if (astrbotConfig) {
+      baseUrl = sanitizeString(astrbotConfig.config('baseUrl'));
+      apiKey = sanitizeString(astrbotConfig.config('apiKey'));
+      timeout = Math.max(10000, Number(astrbotConfig.config('timeout')) || 120000);
+    }
+
     if (!baseUrl) {
       return fail(500, 'AstrBot chat service is not configured');
     }
-
-    const apiKey = sanitizeString(astrbotConfig.config('apiKey'));
-    const timeout = Math.max(10000, Number(astrbotConfig.config('timeout')) || 120000);
 
     const url = `${baseUrl.replace(/\/+$/, '')}/api/v1/chat/sync`;
 
