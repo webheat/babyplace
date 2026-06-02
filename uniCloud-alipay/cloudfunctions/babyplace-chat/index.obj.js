@@ -1,6 +1,6 @@
 'use strict';
 
-const createConfig = require('../common/uni-config-center');
+const createConfig = require('uni-config-center');
 
 const astrbotConfig = createConfig({
   pluginId: 'astrbot',
