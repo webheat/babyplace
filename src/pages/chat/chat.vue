@@ -46,7 +46,7 @@
 
 <script setup>
 import { ref, nextTick } from 'vue';
-import { sendChatMessage } from '@/api/chat.js';
+import { sendCustomerServiceMessage } from '@/api/customer-service.js';
 
 const messages = ref([]);
 const inputText = ref('');
@@ -73,7 +73,7 @@ async function sendMessage() {
 
   sending.value = true;
   try {
-    const result = await sendChatMessage(text, sessionId.value);
+    const result = await sendCustomerServiceMessage(text, sessionId.value);
     if (result.code === 0 && result.data) {
       messages.value.push({ role: 'bot', text: result.data.reply || '(无回复)' });
     } else {
