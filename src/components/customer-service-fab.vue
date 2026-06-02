@@ -1,7 +1,7 @@
 <template>
   <!-- #ifdef MP-WEIXIN -->
   <view v-if="show" class="fab">
-    <button class="fab-btn" @tap="handleTap">
+    <button class="fab-btn" open-type="contact">
       <text class="fab-icon">服</text>
     </button>
   </view>
@@ -9,15 +9,9 @@
 </template>
 
 <script setup>
-import { openEnterpriseChat } from '@/utils/customer-service.js';
-
 defineProps({
   show: { type: Boolean, default: true },
 });
-
-function handleTap() {
-  openEnterpriseChat();
-}
 </script>
 
 <style scoped>
