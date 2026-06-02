@@ -1,9 +1,16 @@
 <template>
   <!-- #ifdef MP-WEIXIN -->
   <view v-if="show" class="fab">
-    <button class="fab-btn" open-type="contact">
+    <button class="fab-btn" open-type="contact" @error="handleContactError">
       <text class="fab-icon">服</text>
     </button>
+  </view>
+  <!-- #endif -->
+  <!-- #ifndef MP-WEIXIN -->
+  <view v-if="show" class="fab" @click="openAIChat">
+    <view class="fab-btn">
+      <text class="fab-icon">服</text>
+    </view>
   </view>
   <!-- #endif -->
 </template>
@@ -12,6 +19,15 @@
 defineProps({
   show: { type: Boolean, default: true },
 });
+
+function openAIChat() {
+  uni.navigateTo({ url: '/pages/chat/chat' });
+}
+
+function handleContactError(e) {
+  console.warn('contact error, falling back to AI chat:', e);
+  openAIChat();
+}
 </script>
 
 <style scoped>

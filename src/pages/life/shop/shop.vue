@@ -126,10 +126,18 @@
 
       <!-- #ifdef MP-WEIXIN -->
       <view class="section contact-section">
-        <button class="contact-btn" open-type="contact">
+        <button class="contact-btn" open-type="contact" @error="handleContactError">
           <text class="contact-icon">服</text>
           <text class="contact-text">联系客服</text>
         </button>
+      </view>
+      <!-- #endif -->
+      <!-- #ifndef MP-WEIXIN -->
+      <view class="section contact-section" @click="openAIChat">
+        <view class="contact-btn">
+          <text class="contact-icon">服</text>
+          <text class="contact-text">联系客服</text>
+        </view>
       </view>
       <!-- #endif -->
       <customer-service-fab :show="false" />
@@ -368,6 +376,15 @@ async function submitReview() {
   } finally {
     submitting.value = false;
   }
+}
+
+function openAIChat() {
+  uni.navigateTo({ url: '/pages/chat/chat' });
+}
+
+function handleContactError(e) {
+  console.warn('contact error, falling back to AI chat:', e);
+  openAIChat();
 }
 
 onLoad((options) => {
