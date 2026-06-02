@@ -1,24 +1,25 @@
 'use strict';
 
-let astrbotConfig = null;
+const fs = require('fs');
+const path = require('path');
 
-try {
-  const createConfig = require('uni-config-center');
-  astrbotConfig = createConfig({
-    pluginId: 'astrbot',
-    defaultConfig: {
-      baseUrl: '',
-      apiKey: '',
-      timeout: 120000,
-      wechatReplyTimeout: 30000,
-      wechatToken: '',
-      officialAccountAppId: '',
-      officialAccountAppSecret: '',
-    },
-  });
-} catch (error) {
-  console.warn('uni-config-center unavailable:', error.message);
+function loadAstrbotConfig() {
+  try {
+    const configPath = path.resolve(__dirname, '../common/uni-config-center/astrbot/config.json');
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
+  } catch (error) {
+    console.warn('Failed to load astrbot config:', error.message);
+  }
+  return {
+    baseUrl: '',
+    apiKey: '',
+    timeout: 120000,
+  };
 }
+
+const astrbotConfig = loadAstrbotConfig();
 
 function ok(data, message = 'ok') {
   return { code: 0, message, data };
@@ -57,19 +58,13 @@ module.exports = {
       sessionId = `mp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     }
 
-    let baseUrl = '';
-    let apiKey = '';
-    let timeout = 120000;
-
-    if (astrbotConfig) {
-      baseUrl = sanitizeString(astrbotConfig.config('baseUrl'));
-      apiKey = sanitizeString(astrbotConfig.config('apiKey'));
-      timeout = Math.max(10000, Number(astrbotConfig.config('timeout')) || 120000);
-    }
-
+    const baseUrl = sanitizeString(astrbotConfig.baseUrl);
     if (!baseUrl) {
       return fail(500, 'AstrBot chat service is not configured');
     }
+
+    const apiKey = sanitizeString(astrbotConfig.apiKey);
+    const timeout = Math.max(10000, Number(astrbotConfig.timeout) || 120000);
 
     const url = `${baseUrl.replace(/\/+$/, '')}/api/v1/chat/sync`;
 
