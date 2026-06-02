@@ -10,6 +10,10 @@ try {
       baseUrl: '',
       apiKey: '',
       timeout: 120000,
+      wechatReplyTimeout: 30000,
+      wechatToken: '',
+      officialAccountAppId: '',
+      officialAccountAppSecret: '',
     },
   });
 } catch (error) {
