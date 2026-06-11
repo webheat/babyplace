@@ -1,0 +1,76 @@
+{
+  "bsonType": "object",
+  "required": [
+    "poi_id",
+    "article_id",
+    "source_type",
+    "created_at",
+    "updated_at"
+  ],
+  "permission": {
+    "read": "auth.uid != null",
+    "create": "auth.uid != null",
+    "update": "auth.uid != null",
+    "delete": "auth.uid != null"
+  },
+  "properties": {
+    "_id": {
+      "description": "系统自动生成ID"
+    },
+    "poi_id": {
+      "bsonType": "string",
+      "title": "关联地点ID"
+    },
+    "article_id": {
+      "bsonType": "string",
+      "title": "关联文章ID"
+    },
+    "source_type": {
+      "bsonType": "string",
+      "title": "来源类型",
+      "enum": [
+        { "text": "公众号文章", "value": "article" },
+        { "text": "用户反馈", "value": "review" },
+        { "text": "人工编辑", "value": "manual" }
+      ],
+      "defaultValue": "article"
+    },
+    "quoted_text": {
+      "bsonType": "string",
+      "title": "引用摘要",
+      "defaultValue": ""
+    },
+    "support_fields": {
+      "bsonType": "array",
+      "title": "支撑字段",
+      "defaultValue": []
+    },
+    "confidence_score": {
+      "bsonType": "double",
+      "title": "关联置信度",
+      "defaultValue": 0
+    },
+    "is_primary": {
+      "bsonType": "bool",
+      "title": "是否主来源",
+      "defaultValue": false
+    },
+    "status": {
+      "bsonType": "string",
+      "title": "状态",
+      "enum": [
+        { "text": "有效", "value": "active" },
+        { "text": "无效", "value": "inactive" }
+      ],
+      "defaultValue": "active"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "title": "创建时间"
+    },
+    "updated_at": {
+      "bsonType": "timestamp",
+      "title": "更新时间"
+    }
+  }
+}

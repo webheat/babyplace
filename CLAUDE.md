@@ -71,7 +71,11 @@ scripts/            → Python data processing
 docs/               → Technical documentation
   ├── AI_DEV_SPEC.md          → AI development rules
   ├── POI_ENGINE_SPEC.md      → POI recommendation engine
-  └── CLOUD_SCHEMA.md         → Database schema reference
+  ├── CLOUD_SCHEMA.md         → Database schema reference
+  ├── CONTENT_PARSER_SPEC.md  → Article content parsing spec
+  ├── MEITUAN_UNION_INTEGRATION.md → Meituan affiliate integration
+  ├── DATABASE_RELATIONS.md   → Database relationship diagrams
+  └── 客服功能配置指南.md      → Customer service setup guide
 ```
 
 **API Pattern**: HTTP calls to `https://byupload.aixifs.com/babyplace-admin` with action-based routing.
@@ -192,9 +196,10 @@ Python scripts in `scripts/` handle POI data ingestion:
 
 - Use uniCloud objects: `uniCloud.importObject('uni-id-co', { customUI: true })`
 - Never delete `manifest.json` or `pages.json`
-- Never modify `src/uni_modules/`
+- Never modify `src/uni_modules/` (currently empty, reserved for uni-app plugins)
 - Use pnpm as package manager
 - Language is JavaScript (not TypeScript)
+- POI is the primary entity — always use cloud objects for POI operations
 
 ### Git Commit Format
 ```
@@ -203,6 +208,17 @@ fix: resolve bug
 refactor: restructure code
 docs: update documentation
 ```
+
+## Design System
+
+See `DESIGN.md` for the complete design specification. Key points:
+
+- **Colors**: Primary `#2563eb`, semantic colors for success/warning/error
+- **Typography**: rpx units (20-46rpx), system font stack
+- **Spacing**: 4px/8rpx base unit system
+- **Components**: Cards (20rpx radius), buttons (999rpx pill), tags, sections
+- **Styling**: Use `<style scoped>`, rpx units, CSS Grid for forms, Flexbox for layouts
+- **SCSS**: Theme variables loaded via `vite.config.js` from `src/uview-ui/theme.scss`
 
 ## gstack
 

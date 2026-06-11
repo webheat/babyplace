@@ -1,0 +1,17 @@
+{
+  "collection": "babyplace-user-review",
+  "enableCache": false,
+  "orderBy": "created_at desc",
+  "fieldRules": [
+    { "label": "地点ID", "name": "poi_id", "required": true },
+    { "label": "用户ID", "name": "user_id" },
+    { "label": "昵称", "name": "nickname" },
+    { "label": "评分", "name": "rating", "required": true },
+    { "label": "评论", "name": "comment" },
+    { "label": "标签", "name": "tags" },
+    { "label": "图片", "name": "images" },
+    { "label": "审核状态", "name": "status", "required": true },
+    { "label": "创建时间", "name": "created_at" },
+    { "label": "更新时间", "name": "updated_at" }
+  ]
+}

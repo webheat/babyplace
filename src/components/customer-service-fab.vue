@@ -1,22 +1,21 @@
 <template>
-  <!-- #ifdef MP-WEIXIN -->
-  <view v-if="show" class="fab">
-    <button class="fab-btn" @tap="handleTap">
+  <view v-if="show" class="fab" @click="openCustomerService">
+    <view class="fab-btn">
       <text class="fab-icon">服</text>
-    </button>
+    </view>
   </view>
-  <!-- #endif -->
 </template>
 
 <script setup>
-import { openEnterpriseChat } from '@/utils/customer-service.js';
+import { sendCustomerServiceMessage } from '@/api/customer-service.js';
 
 defineProps({
   show: { type: Boolean, default: true },
 });
 
-function handleTap() {
-  openEnterpriseChat();
+function openCustomerService() {
+  // 打开客服聊天页面
+  uni.navigateTo({ url: '/pages/chat/chat' });
 }
 </script>
 

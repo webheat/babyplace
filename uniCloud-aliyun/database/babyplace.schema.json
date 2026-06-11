@@ -1,0 +1,65 @@
+{
+  "bsonType": "object",
+  "required": [
+    "name",
+    "lat",
+    "lng",
+    "address",
+    "createdBy",
+    "updatedBy",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "_id": {},
+    "name": {
+      "bsonType": "string",
+      "title": "景点名称",
+      "description": "2-50 字景点名称"
+    },
+    "lat": {
+      "bsonType": "double",
+      "title": "纬度"
+    },
+    "lng": {
+      "bsonType": "double",
+      "title": "经度"
+    },
+    "address": {
+      "bsonType": "string",
+      "title": "地址"
+    },
+    "suitable_ages": {
+      "bsonType": "string",
+      "title": "适合年龄段"
+    },
+    "transport_hint": {
+      "bsonType": "string",
+      "title": "交通方式建议"
+    },
+    "parking_tip": {
+      "bsonType": "string",
+      "title": "停车提示"
+    },
+    "stroller_friendly": {
+      "bsonType": "string",
+      "title": "是否推车友好"
+    },
+    "createdBy": {
+      "bsonType": "string",
+      "title": "创建人 uid"
+    },
+    "updatedBy": {
+      "bsonType": "string",
+      "title": "更新人 uid"
+    },
+    "createdAt": {
+      "bsonType": "long",
+      "title": "创建时间"
+    },
+    "updatedAt": {
+      "bsonType": "long",
+      "title": "更新时间"
+    }
+  }
+}

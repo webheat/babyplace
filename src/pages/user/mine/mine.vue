@@ -109,6 +109,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import PoiCard from '@/components/poi-card.vue';
 import { listPoi } from '@/api/poi';
 import { extractTags, extractUniqueCities, openPoiMap, pickTop } from '@/utils/poi';
@@ -209,6 +210,7 @@ async function loadPage() {
 }
 
 onMounted(loadPage);
+onShow(syncUserInfo);
 </script>
 
 <style scoped>

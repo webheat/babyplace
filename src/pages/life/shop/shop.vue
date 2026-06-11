@@ -124,14 +124,12 @@
         </view>
       </view>
 
-      <!-- #ifdef MP-WEIXIN -->
-      <view class="section contact-section">
-        <button class="contact-btn" @tap="handleContact">
+      <view class="section contact-section" @click="openCustomerService">
+        <view class="contact-btn">
           <text class="contact-icon">服</text>
           <text class="contact-text">联系客服</text>
-        </button>
+        </view>
       </view>
-      <!-- #endif -->
       <customer-service-fab :show="false" />
     </view>
   </view>
@@ -146,7 +144,6 @@ import TagList from '@/components/tag-list.vue';
 import { detailPoi } from '@/api/poi';
 import { getRestaurantLink, listRestaurantByPlace, trackRestaurantEvent } from '@/api/restaurant';
 import { createReview } from '@/api/review';
-import { openEnterpriseChat } from '@/utils/customer-service.js';
 import CustomerServiceFab from '@/components/customer-service-fab.vue';
 
 const loading = ref(false);
@@ -371,8 +368,8 @@ async function submitReview() {
   }
 }
 
-function handleContact() {
-  openEnterpriseChat();
+function openCustomerService() {
+  uni.navigateTo({ url: '/pages/chat/chat' });
 }
 
 onLoad((options) => {
