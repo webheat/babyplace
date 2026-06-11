@@ -1,0 +1,12 @@
+<view class="answer-card">
+  <view class="answer-header">
+    <text class="answer-icon">📚</text>
+    <text class="answer-title">知识库回答</text>
+  </view>
+  <view class="answer-body">
+    <text class="answer-text">{{answer}}</text>
+  </view>
+  <view wx:if="{{query}}" class="answer-footer">
+    <text class="answer-query">问题：{{query}}</text>
+  </view>
+</view>

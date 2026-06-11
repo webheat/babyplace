@@ -1,0 +1,10 @@
+{
+  "name": "babyplace-admin",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "description": "Admin management for babyplace",
+  "dependencies": {
+    "uni-config-center": "file:../common/uni-config-center"
+  }
+}
