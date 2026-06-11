@@ -225,6 +225,39 @@
     "updated_at": {
       "bsonType": "timestamp",
       "title": "更新时间"
+    },
+    "dify_document_id": {
+      "bsonType": "string",
+      "title": "Dify 知识库文档 ID",
+      "defaultValue": ""
+    },
+    "dify_synced_at": {
+      "bsonType": "timestamp",
+      "title": "最近同步到 Dify 的时间"
+    },
+    "booking_url": {
+      "bsonType": "string",
+      "title": "预约链接",
+      "description": "预约链接（公众号文章内嵌或独立预约页）",
+      "defaultValue": ""
+    },
+    "booking_type": {
+      "bsonType": "string",
+      "title": "预约方式",
+      "description": "预约方式",
+      "enum": [
+        { "text": "微信公众号", "value": "wechat_mp" },
+        { "text": "H5页面", "value": "h5" },
+        { "text": "小程序", "value": "mini_program" },
+        { "text": "无预约", "value": "none" }
+      ],
+      "defaultValue": "none"
+    },
+    "booking_hint": {
+      "bsonType": "string",
+      "title": "预约提示信息",
+      "description": "预约提示信息",
+      "defaultValue": ""
     }
   }
 }

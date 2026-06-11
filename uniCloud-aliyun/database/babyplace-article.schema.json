@@ -93,6 +93,10 @@
     "updated_at": {
       "bsonType": "timestamp",
       "title": "更新时间"
+    },
+    "dify_synced_at": {
+      "bsonType": "timestamp",
+      "title": "同步到 Dify 的时间"
     }
   }
 }

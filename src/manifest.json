@@ -67,7 +67,13 @@
                 "desc" : "用于获取当前位置并规划前往景点的交通路线"
             }
         },
-        "usingComponents" : true
+        "usingComponents" : true,
+        "plugins" : {
+            "WechatSI" : {
+                "version" : "0.3.7",
+                "provider" : "wx069ba97219f66d99"
+            }
+        }
     },
     "mp-alipay" : {
         "usingComponents" : true

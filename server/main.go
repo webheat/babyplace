@@ -72,7 +72,14 @@ func main() {
 		port = "8080"
 	}
 
+	// 小红书模块初始化
+	initXHS()
+
 	http.HandleFunc("/api/chat", corsMiddleware(handleChat))
+	http.HandleFunc("/api/xhs/status", corsMiddleware(handleXHSStatus))
+	http.HandleFunc("/api/xhs/auth", corsMiddleware(handleXHSAuth))
+	http.HandleFunc("/api/xhs/callback", corsMiddleware(handleXHSCallback))
+	http.HandleFunc("/api/xhs/publish", corsMiddleware(handleXHSPublish))
 	http.HandleFunc("/health", handleHealth)
 
 	log.Printf("Babyplace chat server starting on :%s", port)
@@ -85,7 +92,7 @@ func main() {
 func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)

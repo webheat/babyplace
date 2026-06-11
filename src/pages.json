@@ -173,6 +173,19 @@
         "navigationBarTitleText": "AI 助手",
         "enablePullDownRefresh": false
       }
+    },
+    {
+      "path": "pages/video/capture",
+      "style": {
+        "navigationBarTitleText": "生成遛娃视频"
+      }
+    },
+    {
+      "path": "pages/video/preview",
+      "style": {
+        "navigationBarTitleText": "视频预览",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "subPackages": [
