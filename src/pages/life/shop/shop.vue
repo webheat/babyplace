@@ -130,7 +130,6 @@
           <text class="contact-text">联系客服</text>
         </view>
       </view>
-      <customer-service-fab :show="false" />
     </view>
   </view>
 </template>
@@ -144,7 +143,6 @@ import TagList from '@/components/tag-list.vue';
 import { detailPoi } from '@/api/poi';
 import { getRestaurantLink, listRestaurantByPlace, trackRestaurantEvent } from '@/api/restaurant';
 import { createReview } from '@/api/review';
-import CustomerServiceFab from '@/components/customer-service-fab.vue';
 
 const loading = ref(false);
 const submitting = ref(false);
@@ -369,7 +367,7 @@ async function submitReview() {
 }
 
 function openCustomerService() {
-  uni.navigateTo({ url: '/pages/chat/chat' });
+  uni.showToast({ title: 'AI 客服即将上线', icon: 'none' });
 }
 
 onLoad((options) => {

@@ -40,7 +40,6 @@
     "ingest:basename:dry-run": "python scripts/import_basename_poi.py --dry-run",
     "ingest:basename": "python scripts/import_basename_poi.py",
     "notify:wecom": "python scripts/send_wecom_notice.py",
-    "sync:astrbot": "node scripts/sync-astrbot-config.js",
     "upload:mp-weixin:auto": "node scripts/upload-mp-weixin-auto.js",
     "deploy:cloud:functions": "C:\\HBuilderX\\cli.exe cloud functions --upload all --prj babyplace --provider aliyun",
     "deploy:cloud:babyplace-db": "C:\\HBuilderX\\cli.exe cloud functions --upload db --prj babyplace --provider aliyun --name babyplace-poi.schema.json",
