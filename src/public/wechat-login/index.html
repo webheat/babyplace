@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Redirecting...</title>
+</head>
+<body>
+<script>
+  (function () {
+    var query = window.location.search || '';
+    var hash = window.location.hash || '';
+    var target = '/wechat-login' + query + hash;
+    window.location.replace('/?target=' + encodeURIComponent(target));
+  })();
+</script>
+</body>
+</html>

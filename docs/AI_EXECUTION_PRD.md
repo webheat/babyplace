@@ -1,0 +1,1 @@
+Core entity POI. Generate cloudobjects, APIs, frontend pages, admin CRUD.

@@ -1,0 +1,46 @@
+{
+  "apis": [
+    {
+      "name": "askDify",
+      "description": "向 Dify 知识库提问，获取 AI 回答。\n调用前置条件：用户提出了一个问题，需要从知识库中检索答案。\n适用场景：用户询问知识、政策、产品信息、客服问题等。\n【禁止场景】闲聊、打招呼、与知识库无关的问题，不应调用本接口。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "用户的问题，取自用户原话中的核心问题内容。禁止编造或改写用户问题。"
+          }
+        },
+        "required": ["question"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string",
+            "description": "Dify 知识库返回的 AI 回答"
+          },
+          "conversationId": {
+            "type": "string",
+            "description": "会话 ID，可用于多轮对话"
+          },
+          "query": {
+            "type": "string",
+            "description": "原始问题"
+          }
+        }
+      },
+      "_meta": {
+        "ui": {
+          "componentPath": "components/answer-card/index"
+        }
+      }
+    }
+  ],
+  "components": [
+    {
+      "path": "components/answer-card/index",
+      "relatedPage": "/pages/ai-home/ai-home"
+    }
+  ]
+}

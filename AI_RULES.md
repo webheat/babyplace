@@ -1,0 +1,1 @@
+Always use cloudobjects. POI is primary entity.

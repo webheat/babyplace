@@ -1,0 +1,40 @@
+.answer-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.08);
+}
+.answer-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.answer-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+.answer-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+.answer-body {
+  padding: 8rpx 0;
+}
+.answer-text {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+}
+.answer-footer {
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+.answer-query {
+  font-size: 24rpx;
+  color: #999;
+}

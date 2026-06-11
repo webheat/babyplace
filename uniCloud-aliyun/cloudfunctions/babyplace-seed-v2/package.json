@@ -1,0 +1,7 @@
+{
+  "name": "babyplace-seed-v2",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "description": "Seed and incremental upsert tools for babyplace"
+}
