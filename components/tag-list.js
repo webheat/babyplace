@@ -1,0 +1,1 @@
+"use strict";const e=require("../common/vendor.js"),t={__name:"tag-list",props:{tags:{type:Array,default:()=>[]}},setup(t){const a=t,o=e.computed(()=>(a.tags||[]).filter(Boolean).slice(0,8));return(t,a)=>e.e({a:o.value.length},o.value.length?{b:e.f(o.value,(t,a,o)=>({a:e.t(t),b:`${t}-${a}`}))}:{})}},a=e._export_sfc(t,[["__scopeId","data-v-5aff1467"]]);wx.createComponent(a);

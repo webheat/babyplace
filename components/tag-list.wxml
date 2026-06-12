@@ -1,0 +1,1 @@
+<view wx:if="{{a}}" class="tag-list data-v-5aff1467"><text wx:for="{{b}}" wx:for-item="tag" wx:key="b" class="tag data-v-5aff1467">{{tag.a}}</text></view>

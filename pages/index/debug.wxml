@@ -1,0 +1,1 @@
+<view class="page data-v-68d0c7e5"><view class="card data-v-68d0c7e5"><text class="title data-v-68d0c7e5">调试页</text><text class="desc data-v-68d0c7e5">旧版调试能力暂未迁移，页面路径已启用。</text><button class="button data-v-68d0c7e5" size="mini" bindtap="{{a}}">返回首页</button></view></view>

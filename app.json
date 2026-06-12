@@ -1,0 +1,119 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/ele/ele",
+    "pages/meituan/meituan",
+    "pages/life/arrive/arrive",
+    "pages/life/shop/shop",
+    "pages/index/debug",
+    "pages/user/mine/mine",
+    "pages/message/message/message",
+    "pages/message/sysmessage/sysmessage",
+    "pages/webview/webview/webview",
+    "pages/user/login/login",
+    "pages/common/poster/poster",
+    "pages/taobao/taobao",
+    "pages/taobao/tbk/tbk",
+    "pages/taobao/tbk/search/search",
+    "pages/taobao/tbk/searchGoodsList/searchGoodsList",
+    "pages/taobao/tbk/goodsDetails/goodsDetails",
+    "pages/poi/list",
+    "pages/poi/detail",
+    "pages/admin/index",
+    "pages/admin/events",
+    "pages/auth/index",
+    "pages/auth/wechat-h5",
+    "pages/chat/chat",
+    "pages/video/capture",
+    "pages/video/preview"
+  ],
+  "subPackages": [
+    {
+      "root": "pages/user/setting",
+      "pages": [
+        "modifyPassword",
+        "forgetPassword"
+      ]
+    },
+    {
+      "root": "pages/common/article",
+      "pages": [
+        "article",
+        "list"
+      ]
+    },
+    {
+      "root": "pages/user/mine/feedback",
+      "pages": [
+        "feedback"
+      ]
+    },
+    {
+      "root": "pages/user/mine/info",
+      "pages": [
+        "idcard/idcard",
+        "qrcode/qrcode",
+        "changephone/changephone",
+        "userinfo/userinfo"
+      ]
+    }
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "爱享",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#FFFFFF"
+  },
+  "tabBar": {
+    "color": "#7F8389",
+    "selectedColor": "#2979ff",
+    "backgroundColor": "#FFFFFF",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "/static/tab/home.png",
+        "selectedIconPath": "/static/tab/home-selected.png"
+      },
+      {
+        "pagePath": "pages/ele/ele",
+        "text": "饿了么",
+        "iconPath": "/static/tab/ele.png",
+        "selectedIconPath": "/static/tab/ele-selected.png"
+      },
+      {
+        "pagePath": "pages/life/arrive/arrive",
+        "text": "吃喝玩乐",
+        "iconPath": "/static/tab/life.png",
+        "selectedIconPath": "/static/tab/life-selected.png"
+      },
+      {
+        "pagePath": "pages/meituan/meituan",
+        "text": "美团",
+        "iconPath": "/static/tab/meituan.png",
+        "selectedIconPath": "/static/tab/meituan-selected.png"
+      },
+      {
+        "pagePath": "pages/user/mine/mine",
+        "text": "我的",
+        "iconPath": "/static/tab/my.png",
+        "selectedIconPath": "/static/tab/my-selected.png"
+      }
+    ]
+  },
+  "requiredPrivateInfos": [
+    "getLocation"
+  ],
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于获取当前位置并规划前往景点的交通路线"
+    }
+  },
+  "plugins": {
+    "WechatSI": {
+      "version": "0.3.7",
+      "provider": "wx069ba97219f66d99"
+    }
+  },
+  "usingComponents": {}
+}

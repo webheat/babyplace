@@ -1,0 +1,1 @@
+<view class="stars data-v-7059699b"><text wx:for="{{a}}" wx:for-item="index" wx:for-index="i0" wx:key="a" class="{{['star', 'data-v-7059699b', index.b && 'active']}}">★</text><text class="score data-v-7059699b">{{b}}</text></view>

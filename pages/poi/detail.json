@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "地点详情",
+  "enableShareAppMessage": true,
+  "enableShareTimeline": true,
+  "usingComponents": {
+    "route-planner-card": "../../components/RoutePlannerCard",
+    "rating-stars": "../../components/rating-stars",
+    "tag-list": "../../components/tag-list"
+  }
+}

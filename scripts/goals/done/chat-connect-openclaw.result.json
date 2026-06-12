@@ -1,0 +1,9 @@
+{
+  "goal": "chat-connect-openclaw",
+  "source_file": "/opt/babyplace/scripts/goals/pending/chat-connect-openclaw.md",
+  "finished_at": "2026-06-12T12:21:08.473619",
+  "success": true,
+  "output": "All clean. Here's a summary of the changes:\n\n### `src/config/config.js`\n- Added `openclawApi: 'http://localhost:8080/api/openclaw/chat'` — Go 后端 OpenClaw 端点地址\n\n### `src/pages/chat/chat.vue`\n- **请求目标**: `DIFY_API` → `OPENCLAW_API`（Go 后端 `/api/openclaw/chat`）\n- **请求体**: Dify 格式 (`query`, `user`, `response_mode`) → OpenClaw 格式 (`message`, `agent_id: \"main\"`, `model: \"deepseek-v4-pro\"`, `timeout: 300`)\n- **移除**: `Authorization` header（Go 后端无鉴权）、`getUserId()` 函数、`conversationId` ref\n- **新增**: `sessionKey` ref 管理多轮对话，首次不传，后续带上返回的 `session_key`\n- **响应解析**: `res.data.answer` → `res.data.data.reply`，成功判断从 `statusCode === 200` 改为 `res.data?.status === 'ok'`\n- **新增** `clearChat()` 函数：清空消息并重置 `sessionKey`（可绑定到清空按钮）\n- **UI/样式**: 完全不变\n\n### 验证\n- `pnpm run dev:h5` 编译通过，无报错\n- 源码中不再有 Dify chat 相关引用",
+  "duration": 66.6,
+  "error": null
+}

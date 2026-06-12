@@ -1,0 +1,9 @@
+{
+  "goal": "openclaw-bridge",
+  "source_file": "/opt/babyplace/scripts/goals/pending/openclaw-bridge.md",
+  "finished_at": "2026-06-12T12:10:53.283118",
+  "success": true,
+  "output": "编译通过，零错误。实现总结：\n\n**新增内容**（未修改任何现有逻辑）：\n\n1. **结构体** — `OpenClawRequest`（输入）和 `OpenClawReply`（输出），字段与需求完全一致\n2. **包级变量** — `openclawBin`，从 `OPENCLAW_BIN` 环境变量读取，默认 `\"openclaw\"`\n3. **`handleOpenClawChat` handler** — 核心逻辑：\n   - 校验 POST、解析 JSON、校验 message 非空\n   - 默认值：`agent_id=\"main\"`, `model=\"deepseek-v4-pro\"`, `timeout=300`\n   - 构建 `openclaw agent --agent ... --message ... --json --timeout ...` 命令，可选 `--session-key`\n   - `exec.CommandContext` + `context.WithTimeout` 控制超时\n   - 解析 stdout JSON，提取 `payloads[0].text` → reply、`meta.agentMeta.sessionId` → session_key、`meta.agentMeta.model` → model、`meta.durationMs` → duration\n   - 复用现有 `ChatResponse` 包装返回，成功 `{status:\"ok\", data: OpenClawReply{...}}`，失败 `{status:\"error\", message:\"...\"}`\n4. **路由注册** — `http.HandleFunc(\"/api/openclaw/chat\", corsMiddleware(handleOpenClawChat))`\n\n只用了标准库（`context`, `os/exec`），无新依赖。",
+  "duration": 51.9,
+  "error": null
+}
