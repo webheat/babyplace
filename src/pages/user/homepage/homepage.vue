@@ -127,7 +127,7 @@
 					that.userInfo = res.data;
 				} else {
 					that.noDataFlag = true;
-					utils.toast(api.getErrorMessage(res.code);
+					utils.toast(api.getErrorMessage(res.code));
 				}
 
 			});

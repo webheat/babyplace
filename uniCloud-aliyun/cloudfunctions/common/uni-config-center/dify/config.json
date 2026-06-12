@@ -1,0 +1,6 @@
+{
+  "api_url": "https://oc.aixifs.com",
+  "dataset_api_key": "",
+  "dataset_id": "",
+  "_comment": "Dify 知识库配置，用于 AI 语义检索"
+}

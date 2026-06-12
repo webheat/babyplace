@@ -35,6 +35,15 @@ const ADMIN_ACTIONS = new Set([
   'review.listByPoi',
   'recommend.home',
   'route.drive',
+  'ai.searchPlaces',
+  'map.searchNearby',
+  'map.searchAmap',
+  'meituan.search',
+  'map.tencentSearch',
+  'video.uploadAndEnhance',
+  'video.render',
+  'video.renderStatus',
+  'video.uploadToXHS',
 ])
 const IMPORT_SECRET = 'babyplace2026'
 const SEED_ALLOWED_COLLECTIONS = new Set([
@@ -701,11 +710,629 @@ async function removeAdminEntity(entity, params = {}) {
   return ok({ id, deleted: result.deleted }, 'removed')
 }
 
+// ============================================================
+// AI Search: Dify 语义检索 + 数据库补充
+// ============================================================
+
+async function callDifyRetrieval(query) {
+  const difyConfig = createConfig({
+    pluginId: 'dify',
+    defaultConfig: {
+      api_url: 'https://oc.aixifs.com',
+      dataset_api_key: '',
+      dataset_id: '',
+    },
+  })
+  const apiKey = sanitizeString(difyConfig.config('dataset_api_key'))
+  const datasetId = sanitizeString(difyConfig.config('dataset_id'))
+  if (!apiKey || !datasetId) return []
+
+  try {
+    const response = await uniCloud.httpclient.request(
+      `https://oc.aixifs.com/v1/datasets/${datasetId}/retrieve`,
+      {
+        method: 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+        data: { query, top_k: 5 },
+        timeout: 10000,
+      }
+    )
+    return response.data?.data || []
+  } catch (error) {
+    console.error('[callDifyRetrieval] error:', error.message)
+    return []
+  }
+}
+
+function extractPoiIds(difyResults) {
+  const ids = new Set()
+  difyResults.forEach(item => {
+    // 从 document_id 或 segment 中提取 poi_id
+    const docId = item.document_id || item.document?.id || ''
+    if (docId) ids.add(docId)
+    // 从 metadata 中提取
+    const metadata = item.metadata || item.document?.metadata || {}
+    if (metadata.poi_id) ids.add(metadata.poi_id)
+  })
+  return Array.from(ids).filter(Boolean)
+}
+
+async function fetchPoisByIds(ids) {
+  if (!ids.length) return []
+  try {
+    const result = await db.collection('babyplace-poi')
+      .where({ _id: db.command.in(ids) })
+      .limit(10)
+      .get()
+    return result.data || []
+  } catch (error) {
+    return []
+  }
+}
+
+async function searchPoiByKeyword(query, lat, lng) {
+  const where = {
+    status: 'published',
+    $or: [
+      { name: new dbRegExp({ regexp: query, options: 'i' }) },
+      { canonical_name: new dbRegExp({ regexp: query, options: 'i' }) },
+      { address: new dbRegExp({ regexp: query, options: 'i' }) },
+      { tags: new dbRegExp({ regexp: query, options: 'i' }) },
+      { category: new dbRegExp({ regexp: query, options: 'i' }) },
+    ],
+  }
+  const result = await db.collection('babyplace-poi')
+    .where(where)
+    .limit(10)
+    .get()
+  let list = result.data || []
+
+  // 如果有坐标，计算距离并排序
+  if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    list = list.map(item => {
+      const poiLat = toNumber(item.location?.lat, 0)
+      const poiLng = toNumber(item.location?.lng, 0)
+      return { ...item, distance: calcDistanceMeters(lat, lng, poiLat, poiLng) }
+    }).sort((a, b) => a.distance - b.distance)
+  }
+  return list
+}
+
+async function fetchArticlesByPoiId(poiId) {
+  try {
+    // 通过 content-source 关联表查找文章
+    const sources = await db.collection('babyplace-content-source')
+      .where({ poi_id: poiId, status: 'active' })
+      .limit(5)
+      .get()
+    const articleIds = (sources.data || []).map(s => s.article_id).filter(Boolean)
+    if (!articleIds.length) return []
+    const articles = await db.collection('babyplace-article')
+      .where({ _id: db.command.in(articleIds) })
+      .limit(5)
+      .get()
+    return articles.data || []
+  } catch (error) {
+    return []
+  }
+}
+
+async function searchPlaces(params = {}) {
+  const query = sanitizeString(params.query)
+  if (!query) return fail(400, 'query is required')
+  const lat = toNumber(params.lat)
+  const lng = toNumber(params.lng)
+
+  // 1. Dify 语义检索
+  const difyResults = await callDifyRetrieval(query)
+  const difyPoiIds = extractPoiIds(difyResults)
+  let pois = await fetchPoisByIds(difyPoiIds)
+
+  // 2. 如果 Dify 结果不足，补充数据库搜索
+  if (pois.length < 3) {
+    const dbPois = await searchPoiByKeyword(query, lat, lng)
+    const existIds = new Set(pois.map(p => p._id))
+    dbPois.forEach(p => {
+      if (!existIds.has(p._id)) pois.push(p)
+    })
+  }
+
+  // 3. 如果有坐标，重新排序
+  if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    pois = pois.map(item => {
+      const poiLat = toNumber(item.location?.lat, 0)
+      const poiLng = toNumber(item.location?.lng, 0)
+      return { ...item, distance: calcDistanceMeters(lat, lng, poiLat, poiLng) }
+    }).sort((a, b) => a.distance - b.distance)
+  }
+
+  // 4. 取前 3 个，附带关联文章
+  const top3 = pois.slice(0, 3)
+  const result = await Promise.all(top3.map(async poi => {
+    const articles = await fetchArticlesByPoiId(poi._id)
+    return {
+      poi,
+      articles,
+      summary: poi.summary || poi.recommend_reason || '',
+      booking_url: poi.booking_url || '',
+      distance: poi.distance || null,
+    }
+  }))
+
+  return ok({ places: result, query, total: pois.length })
+}
+
+// ============================================================
+// Map: 附近地点搜索
+// ============================================================
+
+async function mapSearchNearby(params = {}) {
+  const lat = toNumber(params.lat)
+  const lng = toNumber(params.lng)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return fail(400, 'lat/lng is required')
+  }
+  const radius = Math.max(100, Math.min(50000, toInteger(params.radius) || 3000))
+  const keyword = sanitizeString(params.keyword) || ''
+  const page = Math.max(toInteger(params.page) || 1, 1)
+  const pageSize = Math.min(Math.max(toInteger(params.pageSize) || 20, 1), 50)
+
+  let where = { status: 'published' }
+  if (keyword) {
+    where.$or = [
+      { name: new dbRegExp({ regexp: keyword, options: 'i' }) },
+      { category: new dbRegExp({ regexp: keyword, options: 'i' }) },
+      { tags: new dbRegExp({ regexp: keyword, options: 'i' }) },
+    ]
+  }
+
+  const result = await db.collection('babyplace-poi').where(where).limit(500).get()
+  const list = (result.data || [])
+    .map(item => {
+      const poiLat = toNumber(item.location?.lat, 0)
+      const poiLng = toNumber(item.location?.lng, 0)
+      return { ...item, distance: calcDistanceMeters(lat, lng, poiLat, poiLng) }
+    })
+    .filter(item => item.distance <= radius)
+    .sort((a, b) => a.distance - b.distance)
+
+  const total = list.length
+  const start = (page - 1) * pageSize
+  return ok({
+    list: list.slice(start, start + pageSize),
+    total,
+    page,
+    pageSize,
+    radius,
+  })
+}
+
+// ============================================================
+// Map: 高德地图搜索
+// ============================================================
+
+async function mapSearchAmap(params = {}) {
+  const keyword = sanitizeString(params.keyword)
+  if (!keyword) return fail(400, 'keyword is required')
+  const lat = toNumber(params.lat)
+  const lng = toNumber(params.lng)
+  const city = sanitizeString(params.city) || '广州'
+  const radius = toInteger(params.radius) || 3000
+
+  const key = sanitizeString(routeConfig.config('key'))
+  if (!key) return fail(500, 'amap key is not configured')
+
+  try {
+    // 高德 POI 搜索 API
+    const data = {
+      key,
+      keywords: keyword,
+      city,
+      offset: Math.min(toInteger(params.pageSize) || 20, 25),
+      page: Math.max(toInteger(params.page) || 1, 1),
+      output: 'json',
+    }
+
+    // 如果有坐标，使用周边搜索
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      data.location = `${lng},${lat}`
+      data.radius = Math.max(100, Math.min(50000, radius))
+      data.sortrule = 'distance'
+    }
+
+    const response = await uniCloud.httpclient.request(
+      'https://restapi.amap.com/v3/place/around',
+      {
+        method: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        data,
+      }
+    )
+
+    if (response.status !== 200) return fail(response.status || 500, 'amap request failed')
+    const result = response.data || {}
+    if (sanitizeString(result.status) !== '1') {
+      return fail(502, sanitizeString(result.info) || 'amap search failed')
+    }
+
+    const pois = (result.pois || []).map(poi => ({
+      id: poi.id,
+      name: poi.name,
+      address: poi.address,
+      location: poi.location,
+      type: poi.type,
+      tel: poi.tel || '',
+      distance: poi.distance || '',
+      poiid: poi.poiid || '',
+    }))
+
+    return ok({
+      list: pois,
+      total: parseInt(result.count) || 0,
+      page: data.page,
+      pageSize: data.offset,
+    })
+  } catch (error) {
+    return fail(500, error.message || 'amap search failed')
+  }
+}
+
+// ============================================================
+// Map: 腾讯地图搜索
+// ============================================================
+
+async function mapTencentSearch(params = {}) {
+  const keyword = sanitizeString(params.keyword)
+  if (!keyword) return fail(400, 'keyword is required')
+  const lat = toNumber(params.lat)
+  const lng = toNumber(params.lng)
+  const region = sanitizeString(params.region) || '广州'
+  const page = Math.max(toInteger(params.page) || 1, 1)
+  const pageSize = Math.min(Math.max(toInteger(params.pageSize) || 20, 1), 20)
+
+  const tencentConfig = createConfig({
+    pluginId: 'tencent-map',
+    defaultConfig: { key: '' },
+  })
+  const key = sanitizeString(tencentConfig.config('key'))
+  if (!key) return fail(500, 'tencent map key is not configured')
+
+  try {
+    const requestData = {
+      keyword,
+      boundary: `region(${region},0)`,
+      page_size: pageSize,
+      page_index: page,
+      key,
+    }
+
+    // 如果有坐标，使用圆形范围搜索
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      requestData.boundary = `circle(${lng},${lat},${Math.min(toInteger(params.radius) || 3000, 50000)})`
+    }
+
+    const response = await uniCloud.httpclient.request(
+      'https://apis.map.qq.com/ws/place/v1/search',
+      {
+        method: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        data: requestData,
+      }
+    )
+
+    if (response.status !== 200) return fail(response.status || 500, 'tencent map request failed')
+    const result = response.data || {}
+    if (result.status !== 0) {
+      return fail(502, result.message || 'tencent map search failed')
+    }
+
+    const pois = (result.data || []).map(poi => ({
+      id: poi.id,
+      title: poi.title,
+      address: poi.address,
+      location: poi.location,
+      tel: poi.tel || '',
+      category: poi.category || '',
+      distance: poi._distance || '',
+    }))
+
+    return ok({
+      list: pois,
+      total: result.count || 0,
+      page,
+      pageSize,
+    })
+  } catch (error) {
+    return fail(500, error.message || 'tencent map search failed')
+  }
+}
+
+// ============================================================
+// Meituan: 美团美食搜索
+// ============================================================
+
+async function meituanSearch(params = {}) {
+  const lat = toNumber(params.lat)
+  const lng = toNumber(params.lng)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return fail(400, 'lat/lng is required for meituan search')
+  }
+  const keyword = sanitizeString(params.keyword) || '美食'
+  const category = sanitizeString(params.category) || ''
+  const radius = Math.max(500, Math.min(10000, toInteger(params.radius) || 3000))
+
+  const meituanConfig = createConfig({
+    pluginId: 'meituan',
+    defaultConfig: { app_key: '', app_secret: '' },
+  })
+  const appKey = sanitizeString(meituanConfig.config('app_key'))
+
+  // 如果美团 API 未配置，返回模拟数据
+  if (!appKey) {
+    return ok({
+      list: [],
+      total: 0,
+      message: '美团 API 未配置，请联系管理员',
+      hint: '可通过配置 uni-config-center meituan 插件启用',
+    })
+  }
+
+  try {
+    // 调用美团开放平台搜索 API（示例）
+    const timestamp = Math.floor(Date.now() / 1000)
+    const response = await uniCloud.httpclient.request(
+      'https://openapi.meituan.com/api/v1/food/search',
+      {
+        method: 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        timeout: 10000,
+        data: {
+          app_key: appKey,
+          timestamp,
+          lat,
+          lng,
+          keyword,
+          category,
+          radius,
+          limit: Math.min(toInteger(params.pageSize) || 20, 50),
+          offset: (Math.max(toInteger(params.page) || 1, 1) - 1) * Math.min(toInteger(params.pageSize) || 20, 50),
+        },
+      }
+    )
+
+    const result = response.data || {}
+    const pois = (result.data || []).map(item => ({
+      id: item.id,
+      name: item.name,
+      address: item.address,
+      rating: item.rating || 0,
+      avg_price: item.avg_price || 0,
+      images: item.images || [],
+      category: item.category || '',
+      distance: item.distance || 0,
+    }))
+
+    return ok({
+      list: pois,
+      total: result.total || 0,
+      page: Math.max(toInteger(params.page) || 1, 1),
+      pageSize: Math.min(toInteger(params.pageSize) || 20, 50),
+    })
+  } catch (error) {
+    return fail(500, error.message || 'meituan search failed')
+  }
+}
+
+// ============================================================
+// Video: 图片 AI 增强
+// ============================================================
+
+function getAIApiKey() {
+  return 't7npV6raGbd2f4HOMR4RRi0gsK2MbvPWk5TMs4i8Q9eJ80cG'
+}
+
+function getStylePrompt(style) {
+  const prompts = {
+    enhance: 'high quality, detailed, vibrant colors, professional photography',
+    cartoon: 'cartoon style, anime, colorful, cute, child-friendly',
+    watercolor: 'watercolor painting, soft colors, artistic, dreamy',
+    sketch: 'pencil sketch, hand-drawn, artistic, detailed linework',
+  }
+  return prompts[style] || prompts.enhance
+}
+
+async function videoUploadAndEnhance(params = {}) {
+  const images = Array.isArray(params.images) ? params.images : []
+  const style = sanitizeString(params.style) || 'enhance'
+
+  if (!images.length) return fail(400, 'images is required')
+
+  const enhancedImages = []
+
+  for (let i = 0; i < images.length; i++) {
+    const imageUrl = sanitizeString(images[i])
+    if (!imageUrl) continue
+
+    try {
+      const result = await uniCloud.httpclient.request(
+        'https://aikey.aixifs.com/v1/images/generations',
+        {
+          method: 'POST',
+          dataType: 'json',
+          contentType: 'application/json',
+          headers: {
+            'Authorization': `Bearer ${getAIApiKey()}`,
+          },
+          data: {
+            model: 'stable-diffusion-xl',
+            prompt: getStylePrompt(style),
+            image: imageUrl,
+            strength: 0.3,
+            num_inference_steps: 30,
+          },
+          timeout: 60000,
+        }
+      )
+
+      if (result.data?.data?.[0]?.url) {
+        enhancedImages.push(result.data.data[0].url)
+      } else {
+        enhancedImages.push(imageUrl)
+      }
+    } catch (error) {
+      console.error(`[videoUploadAndEnhance] image ${i} failed:`, error.message)
+      enhancedImages.push(imageUrl)
+    }
+  }
+
+  return ok({ images: enhancedImages })
+}
+
+// ============================================================
+// Video: 提交 Remotion 渲染
+// ============================================================
+
+async function videoRender(params = {}) {
+  const images = Array.isArray(params.images) ? params.images : []
+  const poiName = sanitizeString(params.poiName) || '遛娃好去处'
+  const poiAddress = sanitizeString(params.poiAddress) || ''
+  const tags = Array.isArray(params.tags) ? params.tags : ['亲子', '遛娃', '推荐']
+  const summary = sanitizeString(params.summary) || '适合带小朋友来玩的好地方'
+  const audioSrc = sanitizeString(params.audioSrc) || ''
+
+  if (!images.length) return fail(400, 'images is required')
+
+  try {
+    const result = await uniCloud.httpclient.request(
+      'http://lanes.ymxt.top:3010/api/renders',
+      {
+        method: 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        data: {
+          templateId: 'BabyplacePoi',
+          inputProps: {
+            poiName,
+            poiAddress,
+            images,
+            tags,
+            summary,
+            audioSrc,
+          },
+        },
+        timeout: 30000,
+      }
+    )
+
+    if (result.data?.renderId) {
+      return ok({
+        renderId: result.data.renderId,
+        status: result.data.status,
+      })
+    }
+
+    return fail(500, '渲染提交失败')
+  } catch (error) {
+    return fail(500, error.message || '渲染提交失败')
+  }
+}
+
+// ============================================================
+// Video: 查询渲染状态
+// ============================================================
+
+async function videoRenderStatus(params = {}) {
+  const renderId = sanitizeString(params.renderId)
+  if (!renderId) return fail(400, 'renderId is required')
+
+  try {
+    const result = await uniCloud.httpclient.request(
+      `http://lanes.ymxt.top:3010/api/renders/${renderId}`,
+      {
+        method: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+      }
+    )
+
+    return ok({
+      renderId: result.data?.renderId,
+      status: result.data?.status,
+      progress: result.data?.progress || 0,
+      videoUrl: result.data?.videoUrl || null,
+      error: result.data?.error || null,
+    })
+  } catch (error) {
+    return fail(500, error.message || '查询渲染状态失败')
+  }
+}
+
+// ============================================================
+// Video: 上传到小红书（预留接口）
+// ============================================================
+
+async function videoUploadToXHS(params = {}) {
+  const videoUrl = sanitizeString(params.videoUrl)
+  const title = sanitizeString(params.title)
+  const content = sanitizeString(params.content)
+  const tags = Array.isArray(params.tags) ? params.tags : []
+
+  if (!videoUrl) return fail(400, 'videoUrl is required')
+  if (!title) return fail(400, 'title is required')
+
+  // 读取小红书配置
+  try {
+    const xhsConfig = createConfig({
+      pluginId: 'xiaohongshu',
+      defaultConfig: {
+        app_id: '',
+        app_secret: '',
+        redirect_uri: '',
+        scopes: [],
+      },
+    })
+    const appId = sanitizeString(xhsConfig.config('app_id'))
+    const appSecret = sanitizeString(xhsConfig.config('app_secret'))
+
+    if (!appId || !appSecret) {
+      return fail(400, '小红书 API 未配置，请联系管理员')
+    }
+
+    // TODO: 实现完整的 OAuth 2.0 流程和视频上传
+    // 1. 获取 access_token
+    // 2. 下载视频文件
+    // 3. 上传视频到小红书
+    // 4. 发布笔记
+
+    return fail(501, '小红书发布功能开发中，敬请期待')
+  } catch (error) {
+    return fail(500, error.message || '小红书上传失败')
+  }
+}
+
+// ============================================================
+// Dispatch
+// ============================================================
+
 async function dispatchAdminAction(action, params = {}) {
   if (action === 'review.listByPoi') return listReviewByPoi(params)
   if (action === 'poi.nearby') return nearbyPoi(params)
   if (action === 'recommend.home') return recommendHome(params)
   if (action === 'route.drive') return routeDrive(params)
+  if (action === 'ai.searchPlaces') return searchPlaces(params)
+  if (action === 'map.searchNearby') return mapSearchNearby(params)
+  if (action === 'map.searchAmap') return mapSearchAmap(params)
+  if (action === 'meituan.search') return meituanSearch(params)
+  if (action === 'map.tencentSearch') return mapTencentSearch(params)
+  if (action === 'video.uploadAndEnhance') return videoUploadAndEnhance(params)
+  if (action === 'video.render') return videoRender(params)
+  if (action === 'video.renderStatus') return videoRenderStatus(params)
+  if (action === 'video.uploadToXHS') return videoUploadToXHS(params)
   const parsed = parseAdminAction(action)
   if (!parsed) return fail(400, 'invalid action')
   const { entity, operation } = parsed

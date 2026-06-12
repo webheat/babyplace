@@ -1,0 +1,62 @@
+<view class="meituan-card" wx:if="{{foods && foods.length > 0}}">
+  <view class="food-header">
+    <view class="food-header-left">
+      <text class="food-icon">🍜</text>
+      <text class="food-title">附近美食</text>
+    </view>
+    <text class="food-more" bindtap="onMoreFood">查看更多 ></text>
+  </view>
+
+  <!-- 美食列表 -->
+  <view class="food-list">
+    <view
+      wx:for="{{foods}}"
+      wx:key="id"
+      class="food-item"
+      data-food="{{item}}"
+      bindtap="onFoodTap"
+    >
+      <!-- 美食图片 -->
+      <view class="food-img-wrap">
+        <image
+          wx:if="{{item.image}}"
+          src="{{item.image}}"
+          mode="aspectFill"
+          class="food-img"
+        />
+        <view wx:else class="food-img-placeholder">🍽️</view>
+      </view>
+
+      <!-- 美食信息 -->
+      <view class="food-info">
+        <text class="food-name">{{item.name}}</text>
+        <view class="food-meta">
+          <text class="food-rating" wx:if="{{item.rating}}">⭐ {{item.rating}}</text>
+          <text class="food-price" wx:if="{{item.price}}">¥{{item.price}}/人</text>
+          <text class="food-distance" wx:if="{{item.distance}}">{{item.distanceText || item.distance}}</text>
+        </view>
+        <text class="food-category" wx:if="{{item.category}}">{{item.category}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 跳转美团按钮 -->
+  <view class="order-btn" bindtap="onJumpMeituan">
+    <text class="order-icon">🛵</text>
+    <text class="order-text">打开美团下单</text>
+  </view>
+</view>
+
+<!-- 空状态 -->
+<view class="meituan-empty" wx:if="{{!foods || foods.length === 0}}">
+  <view class="empty-header">
+    <text class="food-icon">🍜</text>
+    <text class="food-title">附近美食</text>
+  </view>
+  <view class="empty-content">
+    <text class="empty-hint">暂无美食数据</text>
+    <view class="empty-btn" bindtap="onJumpMeituan">
+      <text>在美团搜索</text>
+    </view>
+  </view>
+</view>

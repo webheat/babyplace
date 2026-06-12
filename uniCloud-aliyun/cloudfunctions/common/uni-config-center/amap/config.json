@@ -1,0 +1,7 @@
+{
+  "key": "",
+  "driveUrl": "https://restapi.amap.com/v3/direction/driving",
+  "extensions": "all",
+  "timeout": 15000,
+  "_comment": "高德地图开放平台 Web 服务 API 密钥，从 https://console.amap.com/ 申请"
+}

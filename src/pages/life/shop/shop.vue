@@ -50,6 +50,16 @@
         :longitude="Number(poi.location?.lng || 0)"
       />
 
+      <!-- 生成视频入口 -->
+      <view class="video-section" @tap="goToVideoCapture">
+        <view class="video-icon">🎬</view>
+        <view class="video-text">
+          <text class="video-title">生成遛娃视频</text>
+          <text class="video-desc">拍照自动生成精美短视频</text>
+        </view>
+        <text class="video-arrow">›</text>
+      </view>
+
       <view class="section">
         <view class="section-head section-head-inline">
           <view>
@@ -370,6 +380,16 @@ function openCustomerService() {
   uni.showToast({ title: 'AI 客服即将上线', icon: 'none' });
 }
 
+function goToVideoCapture() {
+  if (!poi.value._id) {
+    uni.showToast({ title: '请先加载地点信息', icon: 'none' })
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/video/capture?poiId=${poi.value._id}&poiName=${encodeURIComponent(poi.value.name || '')}&poiAddress=${encodeURIComponent(poi.value.address || '')}`
+  })
+}
+
 onLoad((options) => {
   poiId = options?.id || options?.shopId || '';
   loadDetail();
@@ -654,5 +674,35 @@ onShareTimeline(() => ({
 }
 .contact-text {
   font-size: 30rpx;
+}
+.video-section {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20rpx;
+  color: #fff;
+}
+.video-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+.video-text {
+  flex: 1;
+}
+.video-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  display: block;
+}
+.video-desc {
+  font-size: 24rpx;
+  opacity: 0.8;
+  display: block;
+  margin-top: 8rpx;
+}
+.video-arrow {
+  font-size: 40rpx;
+  opacity: 0.7;
 }
 </style>
