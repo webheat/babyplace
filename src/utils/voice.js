@@ -28,14 +28,29 @@ export function startVoiceRecognize(onResult, onError) {
     return;
   }
 
+  // 防止 onFinish/onStop 双重触发 isFinal
+  let finalFired = false
+
   // 先注册回调再 start，避免错过事件
   recognitionManager.onRecognize((res) => {
     console.warn('[voice.js] >>> onRecognize:', JSON.stringify(res));
     onResult({ text: res.result, isFinal: false })
   })
+  // onFinish 是识别完成回调（插件文档标准事件）
+  recognitionManager.onFinish((res) => {
+    console.warn('[voice.js] >>> onFinish:', JSON.stringify(res));
+    if (!finalFired) {
+      finalFired = true
+      onResult({ text: res.result, isFinal: true })
+    }
+  })
+  // onStop 兜底：onFinish 未触发时仍能拿到最终结果
   recognitionManager.onStop((res) => {
     console.warn('[voice.js] >>> onStop:', JSON.stringify(res));
-    onResult({ text: res.result, isFinal: true })
+    if (!finalFired && res.result) {
+      finalFired = true
+      onResult({ text: res.result, isFinal: true })
+    }
   })
   recognitionManager.onError((err) => {
     console.warn('[voice.js] >>> onError:', JSON.stringify(err));
@@ -43,7 +58,7 @@ export function startVoiceRecognize(onResult, onError) {
   })
 
   try {
-    recognitionManager.start({ lang: 'zh_CN' });
+    recognitionManager.start({ lang: 'zh_CN', duration: 60000 });
     console.warn('[voice.js] start() called successfully');
   } catch (err) {
     console.warn('[voice.js] start threw:', JSON.stringify(err));
@@ -118,7 +133,6 @@ export function speak(text, options = {}) {
     // #ifdef MP-WEIXIN
     plugin.textToSpeech({
       lang: options.lang || 'zh_CN',
-      tts: true,
       content: text,
       success: (res) => {
         const audio = wx.createInnerAudioContext()
