@@ -4,28 +4,9 @@
     "pages/ele/ele",
     "pages/meituan/meituan",
     "pages/life/arrive/arrive",
-    "pages/life/shop/shop",
-    "pages/index/debug",
     "pages/user/mine/mine",
-    "pages/message/message/message",
-    "pages/message/sysmessage/sysmessage",
-    "pages/webview/webview/webview",
-    "pages/user/login/login",
-    "pages/common/poster/poster",
-    "pages/taobao/taobao",
-    "pages/taobao/tbk/tbk",
-    "pages/taobao/tbk/search/search",
-    "pages/taobao/tbk/searchGoodsList/searchGoodsList",
-    "pages/taobao/tbk/goodsDetails/goodsDetails",
-    "pages/poi/list",
-    "pages/poi/detail",
-    "pages/admin/index",
-    "pages/admin/events",
-    "pages/auth/index",
-    "pages/auth/wechat-h5",
-    "pages/chat/chat",
-    "pages/video/capture",
-    "pages/video/preview"
+    "pages/life/shop/shop",
+    "pages/index/debug"
   ],
   "subPackages": [
     {
@@ -55,6 +36,81 @@
         "qrcode/qrcode",
         "changephone/changephone",
         "userinfo/userinfo"
+      ]
+    },
+    {
+      "root": "pages/taobao",
+      "pages": [
+        "taobao",
+        "tbk/tbk",
+        "tbk/search/search",
+        "tbk/searchGoodsList/searchGoodsList",
+        "tbk/goodsDetails/goodsDetails"
+      ]
+    },
+    {
+      "root": "pages/poi",
+      "pages": [
+        "list",
+        "detail"
+      ]
+    },
+    {
+      "root": "pages/video",
+      "pages": [
+        "capture",
+        "preview"
+      ]
+    },
+    {
+      "root": "pages/chat",
+      "pages": [
+        "chat"
+      ]
+    },
+    {
+      "root": "pages/admin",
+      "pages": [
+        "index",
+        "events"
+      ]
+    },
+    {
+      "root": "pages/message",
+      "pages": [
+        "message/message",
+        "sysmessage/sysmessage"
+      ]
+    },
+    {
+      "root": "pages/common/poster",
+      "pages": [
+        "poster"
+      ]
+    },
+    {
+      "root": "pages/user/login",
+      "pages": [
+        "login"
+      ]
+    },
+    {
+      "root": "pages/user/homepage",
+      "pages": [
+        "homepage"
+      ]
+    },
+    {
+      "root": "pages/auth",
+      "pages": [
+        "index",
+        "wechat-h5"
+      ]
+    },
+    {
+      "root": "pages/webview/webview",
+      "pages": [
+        "webview"
       ]
     }
   ],

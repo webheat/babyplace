@@ -1,7 +1,6 @@
 {
   "navigationBarTitleText": "地点列表",
   "usingComponents": {
-    "poi-card": "../../components/poi-card",
-    "customer-service-fab": "../../components/customer-service-fab"
+    "poi-card": "../../components/poi-card"
   }
 }

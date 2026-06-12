@@ -5,7 +5,6 @@
   "usingComponents": {
     "route-planner-card": "../../../components/RoutePlannerCard",
     "rating-stars": "../../../components/rating-stars",
-    "tag-list": "../../../components/tag-list",
-    "customer-service-fab": "../../../components/customer-service-fab"
+    "tag-list": "../../../components/tag-list"
   }
 }

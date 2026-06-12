@@ -1,1 +1,0 @@
-<view wx:if="{{a}}" class="fab data-v-9b6c1e7a" bindtap="{{b}}"><view class="fab-btn data-v-9b6c1e7a"><text class="fab-icon data-v-9b6c1e7a">🎤</text></view><text class="fab-label data-v-9b6c1e7a">AI助手</text></view>

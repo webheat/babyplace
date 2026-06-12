@@ -1,1 +1,0 @@
-"use strict";const e=require("../common/vendor.js"),o={__name:"customer-service-fab",props:{show:{type:Boolean,default:!0}},setup(o){function t(){e.index.navigateTo({url:"/pages/chat/chat"})}return(a,s)=>e.e({a:o.show},o.show?{b:e.o(t,"87")}:{})}},t=e._export_sfc(o,[["__scopeId","data-v-9b6c1e7a"]]);wx.createComponent(t);

@@ -1,1 +1,1 @@
-"use strict";const a={baseUrl:"https://byupload.aixifs.com/babyplace-admin",openclawApi:"https://oc.aixifs.com/api/openclaw/chat",amapDriveUrl:"https://restapi.amap.com/v3/direction/driving"};exports.config=a;
+"use strict";const a={baseUrl:"https://byupload.aixifs.com/babyplace-admin",openclawApi:"https://oc.aixifs.com/api/openclaw/chat",debug:!0};exports.config=a;
