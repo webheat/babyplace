@@ -1,5 +1,6 @@
 {
   "usingComponents": {
-    "poi-card": "../../../components/poi-card"
+    "poi-card": "../../../components/poi-card",
+    "customer-service-fab": "../../../components/customer-service-fab"
   }
 }

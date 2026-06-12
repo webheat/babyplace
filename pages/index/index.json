@@ -4,6 +4,7 @@
   "enableShareTimeline": true,
   "usingComponents": {
     "poi-card": "../../components/poi-card",
-    "dx-tag": "../../components/dx-tag/dx-tag"
+    "dx-tag": "../../components/dx-tag/dx-tag",
+    "customer-service-fab": "../../components/customer-service-fab"
   }
 }
