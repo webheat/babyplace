@@ -11,16 +11,16 @@
 	"app": {
 		"oauth": {
 			"weixin": {
-				"appid": "wx5b42aea7e7ba9c04",
-				"appsecret": "eb720ced736a36bbd7cf4d54d331838a"
+				"appid": "wx0097f2621a6cb4b1",
+				"appsecret": "1faa26c6bb68da2142b4169bf4d56654"
 			}
 		}
 	},
 	"mp-weixin": {
 		"oauth": {
 			"weixin": {
-				"appid": "wx5b42aea7e7ba9c04",
-				"appsecret": "eb720ced736a36bbd7cf4d54d331838a"
+				"appid": "wx0097f2621a6cb4b1",
+				"appsecret": "1faa26c6bb68da2142b4169bf4d56654"
 			}
 		}
 	},	

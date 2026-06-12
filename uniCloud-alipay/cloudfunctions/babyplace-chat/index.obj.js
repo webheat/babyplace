@@ -1,15 +1,25 @@
 'use strict';
 
-const createConfig = require('uni-config-center');
+const fs = require('fs');
+const path = require('path');
 
-const astrbotConfig = createConfig({
-  pluginId: 'astrbot',
-  defaultConfig: {
+function loadAstrbotConfig() {
+  try {
+    const configPath = path.resolve(__dirname, '../common/uni-config-center/astrbot/config.json');
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
+  } catch (error) {
+    console.warn('Failed to load astrbot config:', error.message);
+  }
+  return {
     baseUrl: '',
     apiKey: '',
     timeout: 120000,
-  },
-});
+  };
+}
+
+const astrbotConfig = loadAstrbotConfig();
 
 function ok(data, message = 'ok') {
   return { code: 0, message, data };
@@ -21,6 +31,19 @@ function fail(code, message, data = null) {
 
 function sanitizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function pickReply(result) {
+  if (!result || typeof result !== 'object') return '';
+  const data = result.data && typeof result.data === 'object' ? result.data : result;
+  return sanitizeString(
+    data.reply ||
+    data.message ||
+    data.content ||
+    data.text ||
+    data.response ||
+    data.result
+  );
 }
 
 module.exports = {
@@ -35,13 +58,13 @@ module.exports = {
       sessionId = `mp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     }
 
-    const baseUrl = sanitizeString(astrbotConfig.config('baseUrl'));
+    const baseUrl = sanitizeString(astrbotConfig.baseUrl);
     if (!baseUrl) {
       return fail(500, 'AstrBot chat service is not configured');
     }
 
-    const apiKey = sanitizeString(astrbotConfig.config('apiKey'));
-    const timeout = Math.max(10000, Number(astrbotConfig.config('timeout')) || 120000);
+    const apiKey = sanitizeString(astrbotConfig.apiKey);
+    const timeout = Math.max(10000, Number(astrbotConfig.timeout) || 120000);
 
     const url = `${baseUrl.replace(/\/+$/, '')}/api/v1/chat/sync`;
 
@@ -70,7 +93,10 @@ module.exports = {
         return fail(502, result.message || 'AstrBot returned error');
       }
 
-      return ok(result.data);
+      return ok({
+        ...(result.data && typeof result.data === 'object' ? result.data : {}),
+        reply: pickReply(result),
+      });
     } catch (error) {
       return fail(500, error.message || 'chat request failed');
     }

@@ -1,0 +1,210 @@
+{
+  "apis": [
+    {
+      "name": "askDify",
+      "description": "向 Dify 知识库提问，获取 AI 回答。\n调用前置条件：用户提出了一个问题，需要从知识库中检索答案。\n适用场景：用户询问知识、政策、产品信息、客服问题等。\n【禁止场景】闲聊、打招呼、与知识库无关的问题，不应调用本接口。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "用户的问题，取自用户原话中的核心问题内容。禁止编造或改写用户问题。"
+          }
+        },
+        "required": ["question"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string",
+            "description": "Dify 知识库返回的 AI 回答"
+          },
+          "conversationId": {
+            "type": "string",
+            "description": "会话 ID，可用于多轮对话"
+          },
+          "query": {
+            "type": "string",
+            "description": "原始问题"
+          }
+        }
+      },
+      "_meta": {
+        "ui": {
+          "componentPath": "components/answer-card/index"
+        }
+      }
+    },
+    {
+      "name": "searchPlaces",
+      "description": "搜索并推荐遛娃地点，并提供导航和预约能力。\n调用前置条件：用户询问去哪里玩、推荐遛娃地点、附近有什么好玩的、怎么去等问题。\n适用场景：用户想找遛娃地点、亲子活动场所、带孩子去哪里玩。\n返回3个推荐地点，每个地点附带：公众号文章介绍、距离信息、导航路线、预约入口。\n选中地点后可一键导航过去。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "用户的搜索需求或问题"
+          },
+          "lat": {
+            "type": "number",
+            "description": "用户纬度（可选，有位置信息时传入）"
+          },
+          "lng": {
+            "type": "number",
+            "description": "用户经度（可选，有位置信息时传入）"
+          }
+        },
+        "required": ["query"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "places": {
+            "type": "array",
+            "description": "推荐地点列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "poi": { "type": "object", "description": "地点信息" },
+                "articles": { "type": "array", "description": "相关文章列表" },
+                "summary": { "type": "string", "description": "地点摘要" },
+                "booking_url": { "type": "string", "description": "预约链接" },
+                "distance": { "type": "number", "description": "距离（米）" }
+              }
+            }
+          },
+          "query": { "type": "string", "description": "原始搜索词" },
+          "total": { "type": "number", "description": "搜索结果总数" }
+        }
+      },
+      "_meta": {
+        "ui": {
+          "componentPath": "components/places-card/index"
+        }
+      }
+    },
+    {
+      "name": "searchNearby",
+      "description": "搜索附近的遛娃地点。\n调用前置条件：用户想查找附近的亲子活动场所、遛娃地点。\n适用场景：用户说附近有什么、离我最近的、3公里内等。\n返回按距离排序的地点列表，支持关键词过滤。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "description": "用户纬度（必需）"
+          },
+          "lng": {
+            "type": "number",
+            "description": "用户经度（必需）"
+          },
+          "keyword": {
+            "type": "string",
+            "description": "搜索关键词（可选）"
+          },
+          "radius": {
+            "type": "number",
+            "description": "搜索半径（米），默认3000"
+          }
+        },
+        "required": ["lat", "lng"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "array",
+            "description": "附近地点列表"
+          },
+          "total": { "type": "number", "description": "结果总数" },
+          "radius": { "type": "number", "description": "搜索半径" }
+        }
+      },
+      "_meta": {
+        "ui": {
+          "componentPath": "components/places-card/index"
+        }
+      }
+    },
+    {
+      "name": "searchAmap",
+      "description": "使用高德地图搜索 POI 地点。\n调用前置条件：用户想查找特定类型的地点，需要更丰富的 POI 数据。\n适用场景：需要高德地图数据补充时使用，作为 searchPlaces 的补充。\n返回高德地图的 POI 搜索结果。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "搜索关键词"
+          },
+          "lat": {
+            "type": "number",
+            "description": "用户纬度（可选）"
+          },
+          "lng": {
+            "type": "number",
+            "description": "用户经度（可选）"
+          },
+          "city": {
+            "type": "string",
+            "description": "城市名称（可选），默认广州"
+          },
+          "radius": {
+            "type": "number",
+            "description": "搜索半径（米）"
+          }
+        },
+        "required": ["keyword"]
+      },
+      "_meta": {
+        "ui": {
+          "componentPath": "components/places-card/index"
+        }
+      }
+    },
+    {
+      "name": "searchMeituan",
+      "description": "搜索附近美食，可跳转美团下单。\n调用前置条件：用户想查找附近美食、餐厅、吃什么。\n适用场景：用户说附近有什么好吃的、推荐餐厅、想吃火锅等。\n返回附近美食列表，可跳转美团小程序下单。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "description": "用户纬度（必需）"
+          },
+          "lng": {
+            "type": "number",
+            "description": "用户经度（必需）"
+          },
+          "keyword": {
+            "type": "string",
+            "description": "搜索关键词（可选）"
+          },
+          "category": {
+            "type": "string",
+            "description": "分类（可选）"
+          },
+          "radius": {
+            "type": "number",
+            "description": "搜索半径（米），默认3000"
+          }
+        },
+        "required": ["lat", "lng"]
+      },
+      "_meta": {
+        "ui": {
+          "componentPath": "components/places-card/index"
+        }
+      }
+    }
+  ],
+  "components": [
+    {
+      "path": "components/answer-card/index",
+      "relatedPage": "/pages/ai-home/ai-home"
+    },
+    {
+      "path": "components/places-card/index",
+      "relatedPage": "/pages/ai-home/ai-home"
+    }
+  ]
+}

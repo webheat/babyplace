@@ -1,5 +1,9 @@
 {
-  "baseUrl": "",
-  "apiKey": "",
-  "timeout": 120000
+  "baseUrl": "https://oc4k.aixifs.com",
+  "apiKey": "abk_kS8TY3Cz0lqdu04E20plZStJSv8pvyp18TCm6qxgAY4",
+  "timeout": 120000,
+  "wechatReplyTimeout": 30000,
+  "wechatToken": "tianyujkxt",
+  "officialAccountAppId": "",
+  "officialAccountAppSecret": ""
 }

@@ -1,0 +1,102 @@
+{
+  "bsonType": "object",
+  "required": [
+    "title",
+    "source_account",
+    "publish_time",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "permission": {
+    "read": "auth.uid != null",
+    "create": "auth.uid != null",
+    "update": "auth.uid != null",
+    "delete": "auth.uid != null"
+  },
+  "properties": {
+    "_id": {
+      "description": "系统自动生成ID"
+    },
+    "title": {
+      "bsonType": "string",
+      "title": "文章标题"
+    },
+    "source_account": {
+      "bsonType": "string",
+      "title": "公众号名称"
+    },
+    "source_account_id": {
+      "bsonType": "string",
+      "title": "公众号唯一标识",
+      "defaultValue": ""
+    },
+    "publish_time": {
+      "bsonType": "timestamp",
+      "title": "发布时间"
+    },
+    "url": {
+      "bsonType": "string",
+      "title": "原文链接",
+      "defaultValue": ""
+    },
+    "cover_image": {
+      "bsonType": "string",
+      "title": "文章封面",
+      "defaultValue": ""
+    },
+    "content_text": {
+      "bsonType": "string",
+      "title": "正文纯文本",
+      "defaultValue": ""
+    },
+    "content_html": {
+      "bsonType": "string",
+      "title": "正文HTML",
+      "defaultValue": ""
+    },
+    "images": {
+      "bsonType": "array",
+      "title": "图片列表",
+      "defaultValue": []
+    },
+    "extracted_poi_names": {
+      "bsonType": "array",
+      "title": "提取出的地点名称",
+      "defaultValue": []
+    },
+    "parse_result": {
+      "bsonType": "object",
+      "title": "解析结果缓存",
+      "defaultValue": {}
+    },
+    "status": {
+      "bsonType": "string",
+      "title": "处理状态",
+      "enum": [
+        { "text": "待解析", "value": "pending" },
+        { "text": "已解析", "value": "parsed" },
+        { "text": "需复核", "value": "review" },
+        { "text": "已废弃", "value": "discarded" }
+      ],
+      "defaultValue": "pending"
+    },
+    "parse_confidence": {
+      "bsonType": "double",
+      "title": "解析置信度",
+      "defaultValue": 0
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "title": "创建时间"
+    },
+    "updated_at": {
+      "bsonType": "timestamp",
+      "title": "更新时间"
+    },
+    "dify_synced_at": {
+      "bsonType": "timestamp",
+      "title": "同步到 Dify 的时间"
+    }
+  }
+}

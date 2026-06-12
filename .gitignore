@@ -26,3 +26,5 @@ __pycache__/
 *.sw?" " 
 .gstack/
 server/babyplace-chat-server
+server/babyplace-server
+test-images/

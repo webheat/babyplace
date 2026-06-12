@@ -1,0 +1,19 @@
+{
+  "collection": "babyplace-poi",
+  "enableCache": false,
+  "orderBy": "updated_at desc",
+  "fieldRules": [
+    { "label": "地点名称", "name": "name", "required": true },
+    { "label": "标准名称", "name": "canonical_name" },
+    { "label": "城市", "name": "city", "required": true },
+    { "label": "行政区", "name": "district", "required": true },
+    { "label": "地址", "name": "address" },
+    { "label": "分类", "name": "category" },
+    { "label": "标签", "name": "tags" },
+    { "label": "平均评分", "name": "avg_rating" },
+    { "label": "评价数", "name": "review_count" },
+    { "label": "状态", "name": "status", "required": true },
+    { "label": "创建时间", "name": "created_at" },
+    { "label": "更新时间", "name": "updated_at" }
+  ]
+}

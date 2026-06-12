@@ -50,6 +50,16 @@
         :longitude="Number(poi.location?.lng || 0)"
       />
 
+      <!-- 生成视频入口 -->
+      <view class="video-section" @tap="goToVideoCapture">
+        <view class="video-icon">🎬</view>
+        <view class="video-text">
+          <text class="video-title">生成遛娃视频</text>
+          <text class="video-desc">拍照自动生成精美短视频</text>
+        </view>
+        <text class="video-arrow">›</text>
+      </view>
+
       <view class="section">
         <view class="section-head section-head-inline">
           <view>
@@ -124,14 +134,12 @@
         </view>
       </view>
 
-      <!-- #ifdef MP-WEIXIN -->
-      <view class="section contact-section">
-        <button class="contact-btn" open-type="contact" @tap="handleContact">
+      <view class="section contact-section" @click="openCustomerService">
+        <view class="contact-btn">
           <text class="contact-icon">服</text>
           <text class="contact-text">联系客服</text>
-        </button>
+        </view>
       </view>
-      <!-- #endif -->
       <customer-service-fab :show="false" />
     </view>
   </view>
@@ -146,7 +154,6 @@ import TagList from '@/components/tag-list.vue';
 import { detailPoi } from '@/api/poi';
 import { getRestaurantLink, listRestaurantByPlace, trackRestaurantEvent } from '@/api/restaurant';
 import { createReview } from '@/api/review';
-import { openEnterpriseChat } from '@/utils/customer-service.js';
 import CustomerServiceFab from '@/components/customer-service-fab.vue';
 
 const loading = ref(false);
@@ -371,8 +378,18 @@ async function submitReview() {
   }
 }
 
-function handleContact() {
-  openEnterpriseChat();
+function openCustomerService() {
+  uni.navigateTo({ url: '/pages/chat/chat' });
+}
+
+function goToVideoCapture() {
+  if (!poi.value._id) {
+    uni.showToast({ title: '请先加载地点信息', icon: 'none' })
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/video/capture?poiId=${poi.value._id}&poiName=${encodeURIComponent(poi.value.name || '')}&poiAddress=${encodeURIComponent(poi.value.address || '')}`
+  })
 }
 
 onLoad((options) => {
@@ -659,5 +676,35 @@ onShareTimeline(() => ({
 }
 .contact-text {
   font-size: 30rpx;
+}
+.video-section {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20rpx;
+  color: #fff;
+}
+.video-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+.video-text {
+  flex: 1;
+}
+.video-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  display: block;
+}
+.video-desc {
+  font-size: 24rpx;
+  opacity: 0.8;
+  display: block;
+  margin-top: 8rpx;
+}
+.video-arrow {
+  font-size: 40rpx;
+  opacity: 0.7;
 }
 </style>

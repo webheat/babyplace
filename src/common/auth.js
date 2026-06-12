@@ -134,6 +134,7 @@ function codeLogin(code, callback) {
 			store.commit('userInfo', res.data.user);
 			store.commit('token', res.data.token);
 			uni.setStorageSync('token', res.data.token);
+			uni.showToast({ title: '登录成功', icon: 'success' });
 			if (callback) {
 				callback();
 			} else {
@@ -142,8 +143,17 @@ function codeLogin(code, callback) {
 				});
 			}
 		} else {
-
+			uni.showToast({
+				title: api.getErrorMessage(res.code).message || '登录失败',
+				icon: 'none'
+			});
 		}
+	}).catch(err => {
+		console.error('codeLogin error:', err);
+		uni.showToast({
+			title: err.message || '登录异常',
+			icon: 'none'
+		});
 	});
 }
 

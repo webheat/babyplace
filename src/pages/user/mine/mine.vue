@@ -109,6 +109,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import PoiCard from '@/components/poi-card.vue';
 import { listPoi } from '@/api/poi';
 import { extractTags, extractUniqueCities, openPoiMap, pickTop } from '@/utils/poi';
@@ -135,7 +136,8 @@ const quickActions = [
 
 const accountItems = [
   { title: '修改手机号', desc: '管理登录手机号与短信校验', url: '/pages/user/mine/info/changephone/changephone', icon: '机', bg: '#eff6ff' },
-  { title: '联系客服', desc: '在线咨询，快速解答疑问', url: 'customer-service', icon: '服', bg: '#ecfdf5' },
+  { title: '联系客服', desc: '企业微信客服，人工在线咨询', url: 'customer-service', icon: '服', bg: '#ecfdf5' },
+  { title: 'AI 助手', desc: '智能问答，快速解答疑问', url: '/pages/chat/chat', icon: '智', bg: '#f0fdf4' },
   { title: '意见反馈', desc: '提交建议与问题记录', url: '/pages/user/mine/feedback/feedback', icon: '反', bg: '#fff7ed' },
 ];
 
@@ -208,6 +210,7 @@ async function loadPage() {
 }
 
 onMounted(loadPage);
+onShow(syncUserInfo);
 </script>
 
 <style scoped>

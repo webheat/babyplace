@@ -1,22 +1,19 @@
 <template>
-  <!-- #ifdef MP-WEIXIN -->
-  <view v-if="show" class="fab">
-    <button class="fab-btn" open-type="contact" @tap="handleTap">
-      <text class="fab-icon">服</text>
-    </button>
+  <view v-if="show" class="fab" @click="openChat">
+    <view class="fab-btn">
+      <text class="fab-icon">🎤</text>
+    </view>
+    <text class="fab-label">AI助手</text>
   </view>
-  <!-- #endif -->
 </template>
 
 <script setup>
-import { openEnterpriseChat } from '@/utils/customer-service.js';
-
 defineProps({
   show: { type: Boolean, default: true },
 });
 
-function handleTap() {
-  openEnterpriseChat();
+function openChat() {
+  uni.navigateTo({ url: '/pages/chat/chat' });
 }
 </script>
 
