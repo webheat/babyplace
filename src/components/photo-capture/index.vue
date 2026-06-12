@@ -40,7 +40,7 @@ function takePhoto() {
 
   uni.chooseImage({
     count: remaining,
-    sourceType: ['camera'],
+    sourceType: ['camera', 'album'],
     sizeType: ['compressed'],
     success: (res) => {
       const newPhotos = (res.tempFiles || []).map(f => ({

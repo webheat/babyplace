@@ -94,6 +94,9 @@ func main() {
 	// 小红书模块初始化
 	initXHS()
 
+	// 视频模块初始化
+	initVideo()
+
 	// OpenClaw CLI path
 	openclawBin = os.Getenv("OPENCLAW_BIN")
 	if openclawBin == "" {
@@ -106,6 +109,10 @@ func main() {
 	http.HandleFunc("/api/xhs/auth", corsMiddleware(handleXHSAuth))
 	http.HandleFunc("/api/xhs/callback", corsMiddleware(handleXHSCallback))
 	http.HandleFunc("/api/xhs/publish", corsMiddleware(handleXHSPublish))
+	http.HandleFunc("/api/video/upload", corsMiddleware(handleVideoUpload))
+	http.HandleFunc("/api/video/enhance", corsMiddleware(handleVideoEnhance))
+	http.HandleFunc("/api/video/render", corsMiddleware(handleVideoRender))
+	http.HandleFunc("/api/video/render/", corsMiddleware(handleVideoRenderStatus))
 	http.HandleFunc("/health", handleHealth)
 
 	log.Printf("Babyplace chat server starting on :%s", port)

@@ -1,0 +1,401 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+)
+
+var (
+	remotionServerURL string
+	aiAPIURL          string
+	aiAPIKey          string
+)
+
+func initVideo() {
+	remotionServerURL = os.Getenv("REMOTION_SERVER_URL")
+	if remotionServerURL == "" {
+		remotionServerURL = "http://lanes.ymxt.top:3010"
+	}
+	aiAPIURL = os.Getenv("AI_API_URL")
+	if aiAPIURL == "" {
+		aiAPIURL = "https://aikey.aixifs.com/v1"
+	}
+	aiAPIKey = os.Getenv("AI_API_KEY")
+	if aiAPIKey == "" {
+		aiAPIKey = "t7npV6raGbd2f4HOMR4RRi0gsK2MbvPWk5TMs4i8Q9eJ80cG"
+	}
+}
+
+// ─── 请求/响应结构体 ────────────────────────────────────────
+
+type VideoEnhanceRequest struct {
+	Images []string `json:"images"`
+	Style  string   `json:"style"`
+}
+
+type VideoRenderRequest struct {
+	Images     []string `json:"images"`
+	PoiName    string   `json:"poiName"`
+	PoiAddress string   `json:"poiAddress"`
+	Tags       []string `json:"tags"`
+	Summary    string   `json:"summary"`
+	AudioSrc   string   `json:"audioSrc"`
+}
+
+type VideoResponse struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
+// ─── 图片上传 ──────────────────────────────────────────────
+
+func handleVideoUpload(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeVideoError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	// 解析 multipart 文件
+	r.ParseMultipartForm(32 << 20) // 32MB max
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		writeVideoError(w, http.StatusBadRequest, "file is required")
+		return
+	}
+	defer file.Close()
+
+	// 写入临时文件
+	tmpDir := os.TempDir()
+	ext := filepath.Ext(header.Filename)
+	if ext == "" {
+		ext = ".jpg"
+	}
+	tmpPath := filepath.Join(tmpDir, fmt.Sprintf("babyplace-upload-%d%s", time.Now().UnixNano(), ext))
+	tmpFile, err := os.Create(tmpPath)
+	if err != nil {
+		log.Printf("[videoUpload] create temp file failed: %v", err)
+		writeVideoError(w, http.StatusInternalServerError, "Failed to save file")
+		return
+	}
+	defer os.Remove(tmpPath)
+	defer tmpFile.Close()
+
+	if _, err := io.Copy(tmpFile, file); err != nil {
+		log.Printf("[videoUpload] write temp file failed: %v", err)
+		writeVideoError(w, http.StatusInternalServerError, "Failed to save file")
+		return
+	}
+	tmpFile.Close()
+
+	// 上传到 Remotion 服务的 /api/assets/upload
+	remotionURL, err := uploadToRemotion(tmpPath, header.Filename)
+	if err != nil {
+		log.Printf("[videoUpload] upload to remotion failed: %v", err)
+		writeVideoError(w, http.StatusBadGateway, "Failed to upload to render service")
+		return
+	}
+
+	writeVideoJSON(w, http.StatusOK, VideoResponse{
+		Status: "ok",
+		Data: map[string]string{
+			"url": remotionURL,
+		},
+	})
+}
+
+func uploadToRemotion(filePath, filename string) (string, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	part, err := writer.CreateFormFile("file", filename)
+	if err != nil {
+		return "", err
+	}
+	if _, err := io.Copy(part, f); err != nil {
+		return "", err
+	}
+	writer.Close()
+
+	url := remotionServerURL + "/api/assets/upload"
+	req, err := http.NewRequest(http.MethodPost, url, &body)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{Timeout: 60 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		AssetID string `json:"assetId"`
+		URL     string `json:"url"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+	if result.URL == "" {
+		return "", fmt.Errorf("remotion returned empty URL")
+	}
+
+	return result.URL, nil
+}
+
+// ─── AI 图片增强 ────────────────────────────────────────────
+
+func getStylePrompt(style string) string {
+	prompts := map[string]string{
+		"enhance":    "high quality, detailed, vibrant colors, professional photography",
+		"cartoon":    "cartoon style, anime, colorful, cute, child-friendly",
+		"watercolor": "watercolor painting, soft colors, artistic, dreamy",
+		"sketch":     "pencil sketch, hand-drawn, artistic, detailed linework",
+	}
+	if p, ok := prompts[style]; ok {
+		return p
+	}
+	return prompts["enhance"]
+}
+
+func handleVideoEnhance(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeVideoError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	var req VideoEnhanceRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeVideoError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if len(req.Images) == 0 {
+		writeVideoError(w, http.StatusBadRequest, "images is required")
+		return
+	}
+
+	style := req.Style
+	if style == "" {
+		style = "enhance"
+	}
+
+	enhancedImages := make([]string, 0, len(req.Images))
+	for i, imageURL := range req.Images {
+		enhanced, err := enhanceSingleImage(imageURL, style)
+		if err != nil {
+			log.Printf("[videoEnhance] image %d failed: %v, using original", i, err)
+			enhancedImages = append(enhancedImages, imageURL)
+		} else {
+			enhancedImages = append(enhancedImages, enhanced)
+		}
+	}
+
+	writeVideoJSON(w, http.StatusOK, VideoResponse{
+		Status: "ok",
+		Data: map[string]interface{}{
+			"images": enhancedImages,
+		},
+	})
+}
+
+func enhanceSingleImage(imageURL, style string) (string, error) {
+	payload := map[string]interface{}{
+		"model":               "stable-diffusion-xl",
+		"prompt":              getStylePrompt(style),
+		"image":               imageURL,
+		"strength":            0.3,
+		"num_inference_steps": 30,
+	}
+
+	body, _ := json.Marshal(payload)
+	url := aiAPIURL + "/images/generations"
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+aiAPIKey)
+
+	client := &http.Client{Timeout: 60 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Data []struct {
+			URL string `json:"url"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+	if len(result.Data) == 0 || result.Data[0].URL == "" {
+		return "", fmt.Errorf("AI API returned no image")
+	}
+
+	return result.Data[0].URL, nil
+}
+
+// ─── 提交 Remotion 渲染 ────────────────────────────────────
+
+func handleVideoRender(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeVideoError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	var req VideoRenderRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeVideoError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if len(req.Images) == 0 {
+		writeVideoError(w, http.StatusBadRequest, "images is required")
+		return
+	}
+
+	if req.PoiName == "" {
+		req.PoiName = "遛娃好去处"
+	}
+	if req.Tags == nil {
+		req.Tags = []string{"亲子", "遛娃", "推荐"}
+	}
+	if req.Summary == "" {
+		req.Summary = "适合带小朋友来玩的好地方"
+	}
+
+	// 构建 Remotion 请求
+	remotionReq := map[string]interface{}{
+		"templateId": "BabyplacePoi",
+		"inputProps": map[string]interface{}{
+			"poiName":    req.PoiName,
+			"poiAddress": req.PoiAddress,
+			"images":     req.Images,
+			"tags":       req.Tags,
+			"summary":    req.Summary,
+			"audioSrc":   req.AudioSrc,
+		},
+	}
+
+	body, _ := json.Marshal(remotionReq)
+	url := remotionServerURL + "/api/renders"
+
+	httpReq, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		writeVideoError(w, http.StatusInternalServerError, "Failed to create request")
+		return
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		log.Printf("[videoRender] remotion request failed: %v", err)
+		writeVideoError(w, http.StatusBadGateway, "Render service unavailable")
+		return
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		RenderID string `json:"renderId"`
+		Status   string `json:"status"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		writeVideoError(w, http.StatusBadGateway, "Invalid render service response")
+		return
+	}
+
+	if result.RenderID == "" {
+		writeVideoError(w, http.StatusBadGateway, "Render service returned no renderId")
+		return
+	}
+
+	writeVideoJSON(w, http.StatusOK, VideoResponse{
+		Status: "ok",
+		Data: map[string]string{
+			"renderId": result.RenderID,
+			"status":   result.Status,
+		},
+	})
+}
+
+// ─── 查询渲染状态 ──────────────────────────────────────────
+
+func handleVideoRenderStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeVideoError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	// 从 URL 路径提取 renderId: /api/video/render/{id}
+	renderID := strings.TrimPrefix(r.URL.Path, "/api/video/render/")
+	if renderID == "" {
+		writeVideoError(w, http.StatusBadRequest, "renderId is required")
+		return
+	}
+
+	url := fmt.Sprintf("%s/api/renders/%s", remotionServerURL, renderID)
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Printf("[videoRenderStatus] request failed: %v", err)
+		writeVideoError(w, http.StatusBadGateway, "Render service unavailable")
+		return
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		RenderID string  `json:"renderId"`
+		Status   string  `json:"status"`
+		Progress float64 `json:"progress"`
+		VideoURL string  `json:"videoUrl"`
+		Error    string  `json:"error"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		writeVideoError(w, http.StatusBadGateway, "Invalid render service response")
+		return
+	}
+
+	writeVideoJSON(w, http.StatusOK, VideoResponse{
+		Status: "ok",
+		Data: map[string]interface{}{
+			"renderId": result.RenderID,
+			"status":   result.Status,
+			"progress": result.Progress,
+			"videoUrl": result.VideoURL,
+			"error":    result.Error,
+		},
+	})
+}
+
+// ─── 工具函数 ──────────────────────────────────────────────
+
+func writeVideoJSON(w http.ResponseWriter, code int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(data)
+}
+
+func writeVideoError(w http.ResponseWriter, code int, message string) {
+	writeVideoJSON(w, code, VideoResponse{Status: "error", Message: message})
+}
