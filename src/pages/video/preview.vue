@@ -171,18 +171,22 @@ onLoad(async (options) => {
 function downloadVideoTemp(url) {
   isDownloading.value = true
   downloadProgress.value = 0
-  const downloadTask = uni.downloadFile({ url })
+  const downloadTask = uni.downloadFile({
+    url,
+    success: (res) => {
+      if (res.statusCode === 200) {
+        videoPath.value = res.tempFilePath
+      }
+    },
+    fail: (e) => {
+      console.error('预下载视频失败:', e)
+    },
+    complete: () => {
+      isDownloading.value = false
+    },
+  })
   downloadTask.onProgressUpdate((res) => {
     downloadProgress.value = res.progress / 100
-  })
-  downloadTask.then((res) => {
-    if (res.statusCode === 200) {
-      videoPath.value = res.tempFilePath
-    }
-  }).catch((e) => {
-    console.error('预下载视频失败:', e)
-  }).finally(() => {
-    isDownloading.value = false
   })
 }
 
@@ -219,21 +223,25 @@ function saveVideo() {
   } else {
     isDownloading.value = true
     downloadProgress.value = 0
-    const downloadTask = uni.downloadFile({ url: videoUrl.value })
+    const downloadTask = uni.downloadFile({
+      url: videoUrl.value,
+      success: (res) => {
+        if (res.statusCode === 200) {
+          doSave(res.tempFilePath)
+        } else {
+          uni.showToast({ title: '视频下载失败', icon: 'none' })
+        }
+      },
+      fail: (err) => {
+        console.error('下载视频失败:', err)
+        uni.showToast({ title: '视频下载失败，请重试', icon: 'none' })
+      },
+      complete: () => {
+        isDownloading.value = false
+      },
+    })
     downloadTask.onProgressUpdate((res) => {
       downloadProgress.value = res.progress / 100
-    })
-    downloadTask.then((res) => {
-      if (res.statusCode === 200) {
-        doSave(res.tempFilePath)
-      } else {
-        uni.showToast({ title: '视频下载失败', icon: 'none' })
-      }
-    }).catch((err) => {
-      console.error('下载视频失败:', err)
-      uni.showToast({ title: '视频下载失败，请重试', icon: 'none' })
-    }).finally(() => {
-      isDownloading.value = false
     })
   }
 }
