@@ -25,7 +25,7 @@ config.packOptions = {
     { type: 'folder', value: 'uniCloud-alipay' },
     { type: 'folder', value: 'scripts' },
     { type: 'folder', value: 'server' },
-    { type: 'folder', value: 'skills' },
+    // skills 不忽略 — 上传脚本会混包 AI Skills 到 dist
     { type: 'folder', value: 'docs' },
     { type: 'folder', value: 'seed' },
     { type: 'folder', value: 'babyplace-remote' },
