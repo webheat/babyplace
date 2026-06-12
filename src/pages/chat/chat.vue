@@ -14,6 +14,12 @@
       >
         <view class="bubble">
           <text>{{ msg.text }}</text>
+          <view v-if="msg.sources && msg.sources.length" class="sources">
+            <text class="sources-title">📚 参考来源：</text>
+            <text v-for="(s, j) in msg.sources" :key="j" class="source-item">
+              · {{ s.dataset_name || s.title || '知识库' }}
+            </text>
+          </view>
         </view>
       </view>
       <view v-if="sending" class="message-row bot">
@@ -46,13 +52,21 @@
 
 <script setup>
 import { ref, nextTick } from 'vue';
-import { sendCustomerServiceMessage } from '@/api/customer-service.js';
+
+const DIFY_API = 'https://oc.aixifs.com/v1/chat-messages';
+const DIFY_KEY = 'app-aMB5cKJpDqNxR3tV7yW8eU2hL4fG9bZ1';
 
 const messages = ref([]);
 const inputText = ref('');
 const sending = ref(false);
 const scrollTarget = ref('');
-const sessionId = ref(`cs_${Date.now()}`);
+const conversationId = ref('');
+
+function getUserId() {
+  const userInfo = uni.getStorageSync('userInfo') || {};
+  const token = uni.getStorageSync('token') || '';
+  return userInfo.wx_openid || userInfo._id || token || 'mp_' + Date.now();
+}
 
 function scrollToBottom() {
   nextTick(() => {
@@ -73,13 +87,35 @@ async function sendMessage() {
 
   sending.value = true;
   try {
-    const result = await sendCustomerServiceMessage(text, sessionId.value);
-    if (result.code === 0 && result.data) {
-      messages.value.push({ role: 'bot', text: result.data.reply || '(无回复)' });
+    const res = await new Promise((resolve, reject) => {
+      uni.request({
+        url: DIFY_API,
+        method: 'POST',
+        header: {
+          'Authorization': `Bearer ${DIFY_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        data: {
+          query: text,
+          user: getUserId(),
+          response_mode: 'blocking',
+          conversation_id: conversationId.value || undefined,
+          inputs: {},
+        },
+        success: (r) => resolve(r),
+        fail: (err) => reject(err),
+      });
+    });
+
+    if (res.statusCode === 200 && res.data?.answer) {
+      conversationId.value = res.data.conversation_id || '';
+      const sources = res.data.metadata?.retriever_resources || [];
+      messages.value.push({ role: 'bot', text: res.data.answer, sources });
     } else {
-      messages.value.push({ role: 'bot', text: `抱歉，出现了错误：${result.message}` });
+      messages.value.push({ role: 'bot', text: `抱歉，查询失败：${res.data?.message || '未知错误'}` });
     }
   } catch (e) {
+    console.error('[chat] error:', e);
     messages.value.push({ role: 'bot', text: '网络异常，请稍后重试' });
   } finally {
     sending.value = false;
@@ -139,6 +175,25 @@ async function sendMessage() {
 
 .bubble.loading {
   opacity: 0.6;
+}
+
+.sources {
+  margin-top: 12rpx;
+  padding-top: 12rpx;
+  border-top: 1rpx solid #eee;
+  font-size: 22rpx;
+  color: #888;
+}
+
+.sources-title {
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.source-item {
+  display: block;
+  font-size: 22rpx;
+  color: #666;
 }
 
 .input-bar {

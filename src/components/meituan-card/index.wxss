@@ -1,0 +1,189 @@
+.meituan-card {
+  margin-top: 20rpx;
+  padding: 24rpx;
+  background: #fffbeb;
+  border-radius: 16rpx;
+  border: 1rpx solid #fde68a;
+}
+
+.food-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.food-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.food-icon {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+
+.food-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #92400e;
+}
+
+.food-more {
+  font-size: 24rpx;
+  color: #d97706;
+}
+
+/* 美食列表 */
+.food-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.food-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx;
+  background: #fff;
+  border-radius: 12rpx;
+  border: 1rpx solid #fde68a;
+}
+
+.food-img-wrap {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-right: 16rpx;
+}
+
+.food-img {
+  width: 100%;
+  height: 100%;
+}
+
+.food-img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef3c7;
+  font-size: 40rpx;
+}
+
+.food-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.food-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #1f2937;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.food-meta {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 6rpx;
+}
+
+.food-rating {
+  font-size: 22rpx;
+  color: #d97706;
+}
+
+.food-price {
+  font-size: 22rpx;
+  color: #ef4444;
+}
+
+.food-distance {
+  font-size: 22rpx;
+  color: #6b7280;
+}
+
+.food-category {
+  font-size: 20rpx;
+  color: #9ca3af;
+  margin-top: 4rpx;
+  display: block;
+}
+
+/* 跳转美团按钮 */
+.order-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20rpx;
+  padding: 16rpx 0;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 999rpx;
+  color: #fff;
+}
+
+.order-icon {
+  font-size: 28rpx;
+  margin-right: 8rpx;
+}
+
+.order-text {
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.order-btn:active {
+  opacity: 0.8;
+}
+
+/* 空状态 */
+.meituan-empty {
+  margin-top: 20rpx;
+  padding: 24rpx;
+  background: #f9fafb;
+  border-radius: 16rpx;
+  border: 1rpx solid #e5e7eb;
+}
+
+.meituan-empty .empty-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.meituan-empty .food-title {
+  color: #6b7280;
+}
+
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.empty-hint {
+  font-size: 26rpx;
+  color: #9ca3af;
+  margin-bottom: 16rpx;
+}
+
+.empty-btn {
+  padding: 12rpx 32rpx;
+  background: #f59e0b;
+  color: #fff;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+}
+
+.empty-btn:active {
+  opacity: 0.8;
+}

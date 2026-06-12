@@ -1,0 +1,144 @@
+<view class="places-card">
+  <view class="card-header">
+    <text class="card-icon">📍</text>
+    <text class="card-title">遛娃地点推荐</text>
+  </view>
+
+  <!-- 地点列表 -->
+  <view class="places-list">
+    <view
+      wx:for="{{places}}"
+      wx:key="index"
+      class="place-item"
+    >
+      <!-- 地点核心信息 -->
+      <view class="place-main">
+        <view class="place-header">
+          <text class="place-name">{{item.poi.name}}</text>
+          <view class="place-rating" wx:if="{{item.poi.avg_rating > 0}}">
+            <text class="rating-icon">⭐</text>
+            <text class="rating-text">{{item.poi.avg_rating}}</text>
+          </view>
+        </view>
+
+        <!-- 标签行 -->
+        <view class="place-tags">
+          <text class="tag category" wx:if="{{item.poi.category}}">{{item.poi.category}}</text>
+          <text class="tag indoor" wx:if="{{item.poi.indoor}}">室内</text>
+          <text class="tag outdoor" wx:if="{{!item.poi.indoor}}">室外</text>
+          <text class="tag price" wx:if="{{item.poi.price_type === 'free'}}">免费</text>
+          <text class="tag distance" wx:if="{{item.distance}}">
+            📏 {{item.distance >= 1000 ? item.distanceText || (item.distance/1000).toFixed(1) + 'km' : item.distanceText || item.distance + 'm'}}
+          </text>
+        </view>
+
+        <!-- 地址 -->
+        <view class="place-address" wx:if="{{item.poi.address}}">
+          <text class="address-icon">📍</text>
+          <text class="address-text">{{item.poi.address}}</text>
+        </view>
+
+        <!-- 摘要 -->
+        <view class="place-summary" wx:if="{{item.summary}}">
+          <text class="summary-text">{{item.summary}}</text>
+        </view>
+
+        <!-- 相关文章 -->
+        <view class="place-articles" wx:if="{{item.articles && item.articles.length > 0}}">
+          <text class="articles-label">📄 相关文章 {{item.articles.length}} 篇</text>
+          <view class="articles-list">
+            <view
+              wx:for="{{item.articles}}"
+              wx:for-item="article"
+              wx:key="_id"
+              class="article-item"
+              data-url="{{article.url}}"
+              bindtap="onArticleTap"
+            >
+              <text class="article-title">{{article.title}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 行动按钮区 -->
+      <view class="place-actions">
+        <!-- 一键导航（主按钮） -->
+        <view class="action-btn primary" data-poi="{{item.poi}}" bindtap="onNavigate">
+          <text class="btn-icon">🗺️</text>
+          <text class="btn-text">导航过去</text>
+        </view>
+
+        <!-- 一键预约（如有 booking_url） -->
+        <view
+          class="action-btn secondary"
+          wx:if="{{item.booking_url}}"
+          data-url="{{item.booking_url}}"
+          bindtap="onBooking"
+        >
+          <text class="btn-icon">🎫</text>
+          <text class="btn-text">一键预约</text>
+        </view>
+
+        <!-- 附近美食 -->
+        <view
+          class="action-btn secondary"
+          data-poi="{{item.poi}}"
+          bindtap="onSearchFood"
+        >
+          <text class="btn-icon">🍜</text>
+          <text class="btn-text">附近美食</text>
+        </view>
+      </view>
+
+      <!-- 美团美食模块 -->
+      <view class="food-section" wx:if="{{item.foods && item.foods.length > 0}}">
+        <view class="food-header">
+          <view class="food-header-left">
+            <text class="food-icon">🍜</text>
+            <text class="food-title">附近美食</text>
+          </view>
+          <text class="food-more" data-poi="{{item.poi}}" bindtap="onMoreFood">查看更多 ></text>
+        </view>
+
+        <view class="food-list">
+          <view
+            wx:for="{{item.foods}}"
+            wx:for-item="food"
+            wx:key="id"
+            class="food-item"
+          >
+            <view class="food-img-wrap">
+              <image
+                wx:if="{{food.image}}"
+                src="{{food.image}}"
+                mode="aspectFill"
+                class="food-img"
+              />
+              <view wx:else class="food-img-placeholder">🍽️</view>
+            </view>
+            <view class="food-info">
+              <text class="food-name">{{food.name}}</text>
+              <view class="food-meta">
+                <text class="food-rating" wx:if="{{food.rating}}">⭐ {{food.rating}}</text>
+                <text class="food-price" wx:if="{{food.price}}">¥{{food.price}}/人</text>
+                <text class="food-distance" wx:if="{{food.distance}}">{{food.distanceText || food.distance}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="food-order-btn" data-poi="{{item.poi}}" bindtap="onJumpMeituan">
+          <text class="order-icon">🛵</text>
+          <text class="order-text">打开美团下单</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!places || places.length === 0}}">
+    <text class="empty-icon">🔍</text>
+    <text class="empty-text">暂无推荐地点</text>
+  </view>
+</view>
