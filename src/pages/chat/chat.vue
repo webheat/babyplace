@@ -88,6 +88,7 @@ import { startVoiceRecognize, stopVoiceRecognize, speak } from '@/utils/voice';
 // #endif
 
 const OPENCLAW_API = config.openclawApi;
+const CHAT_MODEL = config.chatModel || 'deepseek-v4-flash';
 
 const messages = ref([]);
 const inputText = ref('');
@@ -285,7 +286,7 @@ async function sendMessage() {
     const payload = {
       message: text,
       agent_id: 'main',
-      model: 'deepseek-v4-flash',
+      model: CHAT_MODEL,
       timeout: 300,
     };
     if (sessionKey.value) {
