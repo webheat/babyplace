@@ -1,0 +1,10 @@
+{
+  "key": "abcef158da87a62e42e1fb968ed33dd4",
+  "driveUrl": "https://restapi.amap.com/v3/direction/driving",
+  "poiAroundUrl": "https://restapi.amap.com/v3/place/around",
+  "restaurantType": "050000",
+  "restaurantRadius": 2000,
+  "restaurantOffset": 20,
+  "extensions": "all",
+  "timeout": 15000
+}

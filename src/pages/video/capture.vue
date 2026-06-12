@@ -46,7 +46,7 @@
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import PhotoCapture from '@/components/photo-capture/index.vue'
-import { uploadAndEnhance, renderVideo } from '@/api/video'
+import { uploadImage, uploadAndEnhance, renderVideo } from '@/api/video'
 
 const poiId = ref('')
 const poiName = ref('')
@@ -116,11 +116,11 @@ async function handleGenerate({ photos }) {
       enhanceProgress.value = (i + 0.5) / photos.length
       enhanceDetail.value = `正在上传第 ${i + 1}/${photos.length} 张...`
 
-      const result = await uni.cloud.uploadFile({
-        cloudPath: `video-photos/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`,
-        filePath: photos[i].tempPath,
-      })
-      uploadedUrls.push(result.fileID)
+      const result = await uploadImage(photos[i].tempPath)
+      if (result.code !== 0) {
+        throw new Error(result.message || `第 ${i + 1} 张图片上传失败`)
+      }
+      uploadedUrls.push(result.data.url)
 
       enhanceProgress.value = (i + 1) / photos.length
       enhanceDetail.value = `已上传 ${i + 1}/${photos.length} 张`

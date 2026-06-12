@@ -1,0 +1,151 @@
+{
+  "bsonType": "object",
+  "required": [
+    "place_id",
+    "name",
+    "source",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "permission": {
+    "read": true,
+    "create": "auth.uid != null",
+    "update": "auth.uid != null",
+    "delete": "auth.uid != null"
+  },
+  "properties": {
+    "_id": {
+      "description": "系统自动生成ID"
+    },
+    "place_id": {
+      "bsonType": "string",
+      "title": "关联地点ID"
+    },
+    "source_id": {
+      "bsonType": "string",
+      "title": "第三方POI ID",
+      "defaultValue": ""
+    },
+    "source": {
+      "bsonType": "string",
+      "title": "数据来源",
+      "enum": [
+        { "text": "高德", "value": "gaode" },
+        { "text": "腾讯", "value": "tencent" },
+        { "text": "兜底推荐", "value": "fallback" }
+      ],
+      "defaultValue": "fallback"
+    },
+    "name": {
+      "bsonType": "string",
+      "title": "餐厅名称"
+    },
+    "lat": {
+      "bsonType": "double",
+      "title": "纬度",
+      "defaultValue": 0
+    },
+    "lng": {
+      "bsonType": "double",
+      "title": "经度",
+      "defaultValue": 0
+    },
+    "address": {
+      "bsonType": "string",
+      "title": "地址",
+      "defaultValue": ""
+    },
+    "tel": {
+      "bsonType": "string",
+      "title": "电话",
+      "defaultValue": ""
+    },
+    "category": {
+      "bsonType": "string",
+      "title": "分类",
+      "defaultValue": ""
+    },
+    "avg_price": {
+      "bsonType": "double",
+      "title": "人均",
+      "defaultValue": 0
+    },
+    "rating": {
+      "bsonType": "double",
+      "title": "评分",
+      "defaultValue": 0
+    },
+    "distance": {
+      "bsonType": "double",
+      "title": "距离(米)",
+      "defaultValue": 0
+    },
+    "tags": {
+      "bsonType": "array",
+      "title": "展示标签",
+      "defaultValue": []
+    },
+    "tag_meta": {
+      "bsonType": "object",
+      "title": "亲子标签",
+      "defaultValue": {
+        "kid_friendly": false,
+        "baby_chair": false,
+        "stroller_ok": false,
+        "quiet": false,
+        "kids_menu": false,
+        "space_large": false
+      },
+      "properties": {
+        "kid_friendly": { "bsonType": "bool", "title": "亲子友好" },
+        "baby_chair": { "bsonType": "bool", "title": "宝宝椅" },
+        "stroller_ok": { "bsonType": "bool", "title": "可推车" },
+        "quiet": { "bsonType": "bool", "title": "安静" },
+        "kids_menu": { "bsonType": "bool", "title": "儿童餐" },
+        "space_large": { "bsonType": "bool", "title": "空间大" }
+      }
+    },
+    "score": {
+      "bsonType": "double",
+      "title": "推荐分",
+      "defaultValue": 0
+    },
+    "coupon_info": {
+      "bsonType": "string",
+      "title": "优惠信息",
+      "defaultValue": ""
+    },
+    "jump_url": {
+      "bsonType": "string",
+      "title": "跳转链接",
+      "defaultValue": ""
+    },
+    "note": {
+      "bsonType": "string",
+      "title": "备注",
+      "defaultValue": ""
+    },
+    "status": {
+      "bsonType": "string",
+      "title": "状态",
+      "enum": [
+        { "text": "可用", "value": "active" },
+        { "text": "已失效", "value": "archived" }
+      ],
+      "defaultValue": "active"
+    },
+    "fetched_at": {
+      "bsonType": "timestamp",
+      "title": "抓取时间"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "title": "创建时间"
+    },
+    "updated_at": {
+      "bsonType": "timestamp",
+      "title": "更新时间"
+    }
+  }
+}

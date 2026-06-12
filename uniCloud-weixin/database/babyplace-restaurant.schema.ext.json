@@ -1,0 +1,21 @@
+{
+  "collection": "babyplace-restaurant",
+  "fields": [
+    { "label": "地点ID", "name": "place_id", "required": true },
+    { "label": "来源ID", "name": "source_id" },
+    { "label": "来源", "name": "source", "required": true },
+    { "label": "餐厅名称", "name": "name", "required": true },
+    { "label": "纬度", "name": "lat" },
+    { "label": "经度", "name": "lng" },
+    { "label": "地址", "name": "address" },
+    { "label": "电话", "name": "tel" },
+    { "label": "分类", "name": "category" },
+    { "label": "人均", "name": "avg_price" },
+    { "label": "评分", "name": "rating" },
+    { "label": "距离", "name": "distance" },
+    { "label": "标签", "name": "tags" },
+    { "label": "优惠", "name": "coupon_info" },
+    { "label": "跳转链接", "name": "jump_url" },
+    { "label": "状态", "name": "status", "required": true }
+  ]
+}

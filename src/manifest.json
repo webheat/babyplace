@@ -65,6 +65,9 @@
         "permission" : {
             "scope.userLocation" : {
                 "desc" : "用于获取当前位置并规划前往景点的交通路线"
+            },
+            "scope.record" : {
+                "desc" : "用于语音输入并识别为文字"
             }
         },
         "usingComponents" : true,
