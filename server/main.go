@@ -2,12 +2,14 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -41,10 +43,27 @@ type AstrBotResponse struct {
 	} `json:"data"`
 }
 
+type OpenClawRequest struct {
+	Message    string `json:"message"`
+	AgentID    string `json:"agent_id,omitempty"`
+	SessionKey string `json:"session_key,omitempty"`
+	Model      string `json:"model,omitempty"`
+	Timeout    int    `json:"timeout,omitempty"`
+}
+
+type OpenClawReply struct {
+	Reply      string `json:"reply"`
+	AgentID    string `json:"agent_id"`
+	SessionKey string `json:"session_key,omitempty"`
+	Model      string `json:"model,omitempty"`
+	DurationMs int64  `json:"duration_ms"`
+}
+
 var (
 	astrbotBaseURL string
 	astrbotAPIKey  string
 	astrbotTimeout time.Duration
+	openclawBin    string
 )
 
 func main() {
@@ -75,7 +94,14 @@ func main() {
 	// 小红书模块初始化
 	initXHS()
 
+	// OpenClaw CLI path
+	openclawBin = os.Getenv("OPENCLAW_BIN")
+	if openclawBin == "" {
+		openclawBin = "openclaw"
+	}
+
 	http.HandleFunc("/api/chat", corsMiddleware(handleChat))
+	http.HandleFunc("/api/openclaw/chat", corsMiddleware(handleOpenClawChat))
 	http.HandleFunc("/api/xhs/status", corsMiddleware(handleXHSStatus))
 	http.HandleFunc("/api/xhs/auth", corsMiddleware(handleXHSAuth))
 	http.HandleFunc("/api/xhs/callback", corsMiddleware(handleXHSCallback))
@@ -170,6 +196,121 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		Data: map[string]string{
 			"session_id": astrbotResp.Data.SessionID,
 			"reply":      astrbotResp.Data.Reply,
+		},
+	})
+}
+
+func handleOpenClawChat(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, ChatResponse{Status: "error", Message: "Method not allowed"})
+		return
+	}
+
+	var req OpenClawRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, ChatResponse{Status: "error", Message: "Invalid request body"})
+		return
+	}
+
+	req.Message = strings.TrimSpace(req.Message)
+	if req.Message == "" {
+		writeJSON(w, http.StatusBadRequest, ChatResponse{Status: "error", Message: "message is required"})
+		return
+	}
+
+	// defaults
+	if req.AgentID == "" {
+		req.AgentID = "main"
+	}
+	if req.Model == "" {
+		req.Model = "deepseek-v4-pro"
+	}
+	if req.Timeout <= 0 {
+		req.Timeout = 300
+	}
+
+	// build command args
+	args := []string{
+		"agent",
+		"--agent", req.AgentID,
+		"--message", req.Message,
+		"--json",
+		"--timeout", fmt.Sprintf("%d", req.Timeout),
+	}
+	if req.SessionKey != "" {
+		args = append(args, "--session-key", req.SessionKey)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(req.Timeout)*time.Second)
+	defer cancel()
+
+	start := time.Now()
+	cmd := exec.CommandContext(ctx, openclawBin, args...)
+	stdout, err := cmd.Output()
+	durationMs := time.Since(start).Milliseconds()
+
+	// openclaw may exit non-zero on gateway fallback but still produce valid JSON
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			log.Printf("OpenClaw exit code %d, stderr: %s", exitErr.ExitCode(), string(exitErr.Stderr))
+		} else {
+			log.Printf("OpenClaw exec failed: %v", err)
+			writeJSON(w, http.StatusBadGateway, ChatResponse{Status: "error", Message: "OpenClaw CLI execution failed"})
+			return
+		}
+	}
+
+	if len(stdout) == 0 {
+		log.Printf("OpenClaw produced no output")
+		writeJSON(w, http.StatusBadGateway, ChatResponse{Status: "error", Message: "OpenClaw CLI produced no output"})
+		return
+	}
+
+	// parse openclaw JSON output
+	var ocOutput struct {
+		Payloads []struct {
+			Text string `json:"text"`
+		} `json:"payloads"`
+		Meta struct {
+			AgentMeta struct {
+				SessionId string `json:"sessionId"`
+				Model     string `json:"model"`
+			} `json:"agentMeta"`
+			DurationMs int64 `json:"durationMs"`
+		} `json:"meta"`
+	}
+	if err := json.Unmarshal(stdout, &ocOutput); err != nil {
+		log.Printf("OpenClaw response parse failed: %v, raw: %s", err, string(stdout))
+		writeJSON(w, http.StatusBadGateway, ChatResponse{Status: "error", Message: "Invalid OpenClaw response"})
+		return
+	}
+
+	reply := ""
+	if len(ocOutput.Payloads) > 0 {
+		reply = ocOutput.Payloads[0].Text
+	}
+
+	sessionKey := ocOutput.Meta.AgentMeta.SessionId
+	if sessionKey == "" {
+		sessionKey = req.SessionKey
+	}
+	model := ocOutput.Meta.AgentMeta.Model
+	if model == "" {
+		model = req.Model
+	}
+	dur := ocOutput.Meta.DurationMs
+	if dur == 0 {
+		dur = durationMs
+	}
+
+	writeJSON(w, http.StatusOK, ChatResponse{
+		Status: "ok",
+		Data: OpenClawReply{
+			Reply:      reply,
+			AgentID:    req.AgentID,
+			SessionKey: sessionKey,
+			Model:      model,
+			DurationMs: dur,
 		},
 	})
 }
