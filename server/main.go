@@ -245,7 +245,7 @@ func handleOpenClawChat(w http.ResponseWriter, r *http.Request) {
 		"--timeout", fmt.Sprintf("%d", req.Timeout),
 	}
 	if req.SessionKey != "" {
-		args = append(args, "--session-key", req.SessionKey)
+		args = append(args, "--session-id", req.SessionKey)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(req.Timeout)*time.Second)
