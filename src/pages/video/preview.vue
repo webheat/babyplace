@@ -19,6 +19,14 @@
       :show-play-btn="true"
     />
 
+    <!-- 下载进度 -->
+    <view v-if="videoUrl && isDownloading" class="download-progress">
+      <text class="download-text">正在缓存视频... {{ Math.round(downloadProgress * 100) }}%</text>
+      <view class="download-bar">
+        <view class="download-fill" :style="{ width: (downloadProgress * 100) + '%' }"></view>
+      </view>
+    </view>
+
     <!-- 操作按钮：两个出口 -->
     <view v-if="videoUrl" class="action-buttons">
       <!-- 出口1：保存到本地，用户手工上传视频号 -->
@@ -96,6 +104,8 @@ const videoPath = ref('')
 const status = ref('pending')
 const progress = ref(0)
 const error = ref('')
+const downloadProgress = ref(0)
+const isDownloading = ref(false)
 
 // 小红书上传相关
 const showXHSDialog = ref(false)
@@ -158,15 +168,22 @@ onLoad(async (options) => {
 })
 
 // 预下载视频到临时目录
-async function downloadVideoTemp(url) {
-  try {
-    const res = await uni.downloadFile({ url })
+function downloadVideoTemp(url) {
+  isDownloading.value = true
+  downloadProgress.value = 0
+  const downloadTask = uni.downloadFile({ url })
+  downloadTask.onProgressUpdate((res) => {
+    downloadProgress.value = res.progress / 100
+  })
+  downloadTask.then((res) => {
     if (res.statusCode === 200) {
       videoPath.value = res.tempFilePath
     }
-  } catch (e) {
+  }).catch((e) => {
     console.error('预下载视频失败:', e)
-  }
+  }).finally(() => {
+    isDownloading.value = false
+  })
 }
 
 // ========== 出口1：保存到本地 ==========
@@ -200,15 +217,23 @@ function saveVideo() {
   if (videoPath.value) {
     doSave(videoPath.value)
   } else {
-    uni.showLoading({ title: '下载中...' })
-    uni.downloadFile({
-      url: videoUrl.value,
-      success: (res) => {
-        if (res.statusCode === 200) {
-          doSave(res.tempFilePath)
-        }
-      },
-      complete: () => uni.hideLoading(),
+    isDownloading.value = true
+    downloadProgress.value = 0
+    const downloadTask = uni.downloadFile({ url: videoUrl.value })
+    downloadTask.onProgressUpdate((res) => {
+      downloadProgress.value = res.progress / 100
+    })
+    downloadTask.then((res) => {
+      if (res.statusCode === 200) {
+        doSave(res.tempFilePath)
+      } else {
+        uni.showToast({ title: '视频下载失败', icon: 'none' })
+      }
+    }).catch((err) => {
+      console.error('下载视频失败:', err)
+      uni.showToast({ title: '视频下载失败，请重试', icon: 'none' })
+    }).finally(() => {
+      isDownloading.value = false
     })
   }
 }
@@ -339,6 +364,31 @@ async function confirmUploadXHS() {
 .video-player {
   width: 100%;
   height: 70vh;
+}
+
+.download-progress {
+  padding: 16rpx 30rpx;
+}
+
+.download-text {
+  color: #aaa;
+  font-size: 24rpx;
+  display: block;
+  margin-bottom: 8rpx;
+  text-align: center;
+}
+
+.download-bar {
+  height: 8rpx;
+  background: #333;
+  border-radius: 4rpx;
+  overflow: hidden;
+}
+
+.download-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  transition: width 0.3s ease;
 }
 
 .action-buttons {

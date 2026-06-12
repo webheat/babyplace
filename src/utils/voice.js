@@ -123,15 +123,47 @@ export function stopVoiceRecognize() {
 }
 
 /**
- * 文字转语音并播放（TTS）
- * @param {string} text - 要朗读的文字
- * @param {Object} options - 配置项
- * @param {string} options.lang - 语言，默认 'zh_CN'
- * @returns {Promise<void>} 播放完成 resolve，失败 reject
+ * 将长文本按句子拆分成多段，每段不超过 maxLen
+ * @param {string} text
+ * @param {number} maxLen - 每段最大字符数，默认 200
+ * @returns {string[]}
  */
-export function speak(text, options = {}) {
+function splitTextForTTS(text, maxLen = 200) {
+  // 按中英文句号、问号、感叹号、换行拆分
+  const sentences = text.split(/(?<=[。！？!?\n])\s*/).filter(Boolean)
+  const chunks = []
+  let current = ''
+  for (const s of sentences) {
+    if (current.length + s.length > maxLen && current) {
+      chunks.push(current)
+      current = ''
+    }
+    current += s
+  }
+  if (current) chunks.push(current)
+  // 如果单句超长，硬切
+  const result = []
+  for (const c of chunks) {
+    if (c.length <= maxLen) {
+      result.push(c)
+    } else {
+      for (let i = 0; i < c.length; i += maxLen) {
+        result.push(c.slice(i, i + maxLen))
+      }
+    }
+  }
+  return result
+}
+
+// #ifdef MP-WEIXIN
+/**
+ * 播放单段 TTS 音频（内部辅助）
+ * @param {string} text - 单段文本
+ * @param {Object} options
+ * @returns {Promise<void>}
+ */
+function speakOneChunk(text, options) {
   return new Promise((resolve, reject) => {
-    // #ifdef MP-WEIXIN
     plugin.textToSpeech({
       lang: options.lang || 'zh_CN',
       content: text,
@@ -143,29 +175,67 @@ export function speak(text, options = {}) {
           resolve()
         })
         audio.onError((err) => {
+          console.error('[voice.js] InnerAudioContext onError:', err)
           audio.destroy()
           reject(err)
         })
         audio.play()
       },
       fail: (err) => {
+        console.error('[voice.js] textToSpeech fail:', err)
         reject(err)
       },
     })
-    // #endif
+  })
+}
+// #endif
 
-    // #ifdef H5
-    // H5 环境降级：使用 Web Speech API 的 SpeechSynthesis
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      const utterance = new SpeechSynthesisUtterance(text)
-      utterance.lang = options.lang || 'zh-CN'
-      utterance.onend = () => resolve()
-      utterance.onerror = (err) => reject(err)
-      window.speechSynthesis.speak(utterance)
-    } else {
-      reject(new Error('当前环境不支持语音合成'))
+/**
+ * 文字转语音并播放（TTS）
+ * 长文本自动按句子拆分，逐段播放
+ * @param {string} text - 要朗读的文字
+ * @param {Object} options - 配置项
+ * @param {string} options.lang - 语言，默认 'zh_CN'
+ * @returns {Promise<void>} 全部播放完成 resolve，失败 reject
+ */
+export function speak(text, options = {}) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const chunks = splitTextForTTS(text)
+
+      // #ifdef MP-WEIXIN
+      for (const chunk of chunks) {
+        await speakOneChunk(chunk, options)
+      }
+      resolve()
+      // #endif
+
+      // #ifdef H5
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        let index = 0
+        const playNext = () => {
+          if (index >= chunks.length) {
+            resolve()
+            return
+          }
+          const utterance = new SpeechSynthesisUtterance(chunks[index])
+          utterance.lang = options.lang || 'zh-CN'
+          utterance.onend = () => {
+            index++
+            playNext()
+          }
+          utterance.onerror = (err) => reject(err)
+          window.speechSynthesis.speak(utterance)
+        }
+        playNext()
+      } else {
+        reject(new Error('当前环境不支持语音合成'))
+      }
+      // #endif
+    } catch (err) {
+      console.error('[voice.js] speak unexpected error:', err)
+      reject(err)
     }
-    // #endif
   })
 }
 

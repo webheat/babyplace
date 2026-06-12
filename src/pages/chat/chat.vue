@@ -323,7 +323,9 @@ async function sendMessage() {
       // 语音播报 AI 回复
       // #ifdef MP-WEIXIN
       if (reply) {
-        speak(reply).catch(() => {});
+        speak(reply).catch((err) => {
+          console.error('[chat] TTS failed:', err)
+        })
       }
       // #endif
     } else {
