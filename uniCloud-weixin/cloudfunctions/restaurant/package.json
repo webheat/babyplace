@@ -1,0 +1,8 @@
+{
+  "name": "restaurant",
+  "version": "1.0.0",
+  "main": "index.obj.js",
+  "dependencies": {
+    "uni-config-center": "file:../common/uni-config-center"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "bsonType": "object",
+  "required": [
+    "content",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": {
+      "description": "ID，系统自动生成"
+    },
+    "content": {
+      "bsonType": "string",
+      "title": "反馈内容"
+    },
+    "contact": {
+      "bsonType": "string",
+      "title": "联系方式"
+    },
+    "status": {
+      "bsonType": "string",
+      "title": "状态"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "title": "创建时间"
+    },
+    "updated_at": {
+      "bsonType": "timestamp",
+      "title": "更新时间"
+    }
+  }
+}

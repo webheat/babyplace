@@ -1,0 +1,84 @@
+{
+  "bsonType": "object",
+  "required": [
+    "poi_id",
+    "rating",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "permission": {
+    "read": true,
+    "create": "auth.uid != null",
+    "update": "auth.uid != null",
+    "delete": "auth.uid != null"
+  },
+  "properties": {
+    "_id": {
+      "description": "系统自动生成ID"
+    },
+    "poi_id": {
+      "bsonType": "string",
+      "title": "地点ID"
+    },
+    "user_id": {
+      "bsonType": "string",
+      "title": "用户ID",
+      "defaultValue": ""
+    },
+    "nickname": {
+      "bsonType": "string",
+      "title": "昵称",
+      "defaultValue": ""
+    },
+    "avatar": {
+      "bsonType": "string",
+      "title": "头像",
+      "defaultValue": ""
+    },
+    "rating": {
+      "bsonType": "int",
+      "title": "评分",
+      "minimum": 1,
+      "maximum": 5,
+      "defaultValue": 5
+    },
+    "comment": {
+      "bsonType": "string",
+      "title": "评论内容",
+      "defaultValue": ""
+    },
+    "visit_date": {
+      "bsonType": "timestamp",
+      "title": "到访日期"
+    },
+    "tags": {
+      "bsonType": "array",
+      "title": "评价标签",
+      "defaultValue": []
+    },
+    "images": {
+      "bsonType": "array",
+      "title": "评价图片",
+      "defaultValue": []
+    },
+    "status": {
+      "bsonType": "string",
+      "title": "审核状态",
+      "enum": [
+        { "text": "待审核", "value": "pending" },
+        { "text": "已通过", "value": "approved" },
+        { "text": "已拒绝", "value": "rejected" }
+      ],
+      "defaultValue": "pending"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "title": "创建时间"
+    },
+    "updated_at": {
+      "bsonType": "timestamp",
+      "title": "更新时间"
+    }
+  }
+}
