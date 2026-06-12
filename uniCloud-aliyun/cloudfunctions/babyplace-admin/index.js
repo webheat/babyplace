@@ -1136,6 +1136,41 @@ function getAIApiKey() {
   return 't7npV6raGbd2f4HOMR4RRi0gsK2MbvPWk5TMs4i8Q9eJ80cG'
 }
 
+/**
+ * 将 cloud:// fileID 转换为临时公网 URL
+ * 非 cloud:// 开头的 URL 原样返回
+ */
+async function resolveFileUrls(urls) {
+  const cloudIds = []
+  const cloudIdxMap = []
+
+  urls.forEach((url, idx) => {
+    if (url && url.startsWith('cloud://')) {
+      cloudIds.push(url)
+      cloudIdxMap.push(idx)
+    }
+  })
+
+  if (!cloudIds.length) return urls
+
+  try {
+    const result = await uniCloud.getTempFileURL({ fileList: cloudIds })
+    const resolved = [...urls]
+    if (result.fileList) {
+      result.fileList.forEach((item, i) => {
+        const origIdx = cloudIdxMap[i]
+        if (item.tempFileURL) {
+          resolved[origIdx] = item.tempFileURL
+        }
+      })
+    }
+    return resolved
+  } catch (error) {
+    console.error('[resolveFileUrls] getTempFileURL failed:', error.message)
+    return urls
+  }
+}
+
 function getStylePrompt(style) {
   const prompts = {
     enhance: 'high quality, detailed, vibrant colors, professional photography',
@@ -1147,15 +1182,18 @@ function getStylePrompt(style) {
 }
 
 async function videoUploadAndEnhance(params = {}) {
-  const images = Array.isArray(params.images) ? params.images : []
+  const rawImages = Array.isArray(params.images) ? params.images : []
   const style = sanitizeString(params.style) || 'enhance'
 
-  if (!images.length) return fail(400, 'images is required')
+  if (!rawImages.length) return fail(400, 'images is required')
+
+  // cloud:// fileID → 临时公网 URL
+  const images = await resolveFileUrls(rawImages.map(sanitizeString).filter(Boolean))
 
   const enhancedImages = []
 
   for (let i = 0; i < images.length; i++) {
-    const imageUrl = sanitizeString(images[i])
+    const imageUrl = images[i]
     if (!imageUrl) continue
 
     try {
@@ -1198,14 +1236,17 @@ async function videoUploadAndEnhance(params = {}) {
 // ============================================================
 
 async function videoRender(params = {}) {
-  const images = Array.isArray(params.images) ? params.images : []
+  const rawImages = Array.isArray(params.images) ? params.images : []
   const poiName = sanitizeString(params.poiName) || '遛娃好去处'
   const poiAddress = sanitizeString(params.poiAddress) || ''
   const tags = Array.isArray(params.tags) ? params.tags : ['亲子', '遛娃', '推荐']
   const summary = sanitizeString(params.summary) || '适合带小朋友来玩的好地方'
   const audioSrc = sanitizeString(params.audioSrc) || ''
 
-  if (!images.length) return fail(400, 'images is required')
+  if (!rawImages.length) return fail(400, 'images is required')
+
+  // cloud:// fileID → 临时公网 URL
+  const images = await resolveFileUrls(rawImages.map(sanitizeString).filter(Boolean))
 
   try {
     const result = await uniCloud.httpclient.request(

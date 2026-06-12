@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, onMounted } from 'vue';
 import config from '@/config/config';
 // #ifdef MP-WEIXIN
 import { startVoiceRecognize, stopVoiceRecognize, speak } from '@/utils/voice';
@@ -97,6 +97,26 @@ const sessionKey = ref('');
 const isListening = ref(false);
 const voiceText = ref('');
 const inputMode = ref('voice'); // 'voice' | 'text'
+
+// 页面加载时尝试获取定位坐标（用于推荐当地地点）
+const userLat = ref(0);
+const userLng = ref(0);
+
+onMounted(() => {
+  // #ifdef MP-WEIXIN
+  uni.getLocation({
+    type: 'gcj02',
+    success: (res) => {
+      userLat.value = res.latitude;
+      userLng.value = res.longitude;
+      console.log('[chat] got location:', res.latitude, res.longitude);
+    },
+    fail: (err) => {
+      console.warn('[chat] getLocation failed:', err);
+    }
+  });
+  // #endif
+})
 
 function scrollToBottom() {
   nextTick(() => {
@@ -250,14 +270,32 @@ async function sendMessage() {
 
   sending.value = true;
   try {
+    // 获取用户城市信息，带上地域上下文
+    const storedUser = uni.getStorageSync('mock-user-info');
+    let userCity = storedUser?.city || '';
+
+    // 如果用户没设置城市，尝试从缓存的定位获取
+    if (!userCity) {
+      try {
+        const cachedLocation = uni.getStorageSync('user-city');
+        if (cachedLocation) userCity = cachedLocation;
+      } catch (e) {}
+    }
+
     const payload = {
       message: text,
       agent_id: 'main',
-      model: 'deepseek-v4-pro',
+      model: 'deepseek-v4-flash',
       timeout: 300,
     };
     if (sessionKey.value) {
       payload.session_key = sessionKey.value;
+    }
+    // 在消息前注入地理位置上下文，让 AI 推荐当地地点
+    if (userCity) {
+      payload.message = `[用户所在城市：${userCity}] ${text}`;
+    } else if (userLat.value && userLng.value) {
+      payload.message = `[用户坐标：${userLat.value.toFixed(4)},${userLng.value.toFixed(4)}] ${text}`;
     }
 
     const res = await new Promise((resolve, reject) => {
