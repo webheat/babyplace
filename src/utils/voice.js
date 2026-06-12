@@ -19,16 +19,31 @@ const recognitionManager = plugin.getRecordRecognitionManager()
  */
 export function startVoiceRecognize(onResult, onError) {
   // #ifdef MP-WEIXIN
-  recognitionManager.start({ lang: 'zh_CN' })
+  console.log('[voice.js] startVoiceRecognize called');
+  console.log('[voice.js] plugin:', plugin);
+  console.log('[voice.js] recognitionManager:', recognitionManager);
+
+  try {
+    recognitionManager.start({ lang: 'zh_CN' });
+    console.log('[voice.js] recognitionManager.start() called');
+  } catch (err) {
+    console.error('[voice.js] start error:', err);
+    onError(err);
+    return;
+  }
+
   recognitionManager.onRecognize((res) => {
+    console.log('[voice.js] onRecognize:', res);
     // 实时识别结果（增量）
     onResult({ text: res.result, isFinal: false })
   })
   recognitionManager.onStop((res) => {
+    console.log('[voice.js] onStop:', res);
     // 最终识别结果
     onResult({ text: res.result, isFinal: true })
   })
   recognitionManager.onError((err) => {
+    console.error('[voice.js] onError:', err);
     onError(err)
   })
   // #endif

@@ -1,20 +1,18 @@
 <template>
-  <view v-if="show" class="fab" @click="openCustomerService">
+  <view v-if="show" class="fab" @click="openChat">
     <view class="fab-btn">
-      <text class="fab-icon">服</text>
+      <text class="fab-icon">🎤</text>
     </view>
+    <text class="fab-label">AI助手</text>
   </view>
 </template>
 
 <script setup>
-import { sendCustomerServiceMessage } from '@/api/customer-service.js';
-
 defineProps({
   show: { type: Boolean, default: true },
 });
 
-function openCustomerService() {
-  // 打开客服聊天页面
+function openChat() {
   uni.navigateTo({ url: '/pages/chat/chat' });
 }
 </script>
