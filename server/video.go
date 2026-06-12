@@ -270,6 +270,8 @@ func handleVideoRender(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("[videoRender] 收到渲染请求: poi=%s images=%d tags=%v", req.PoiName, len(req.Images), req.Tags)
+
 	if len(req.Images) == 0 {
 		writeVideoError(w, http.StatusBadRequest, "images is required")
 		return
@@ -331,6 +333,8 @@ func handleVideoRender(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("[videoRender] 渲染任务已创建: renderId=%s status=%s", result.RenderID, result.Status)
+
 	writeVideoJSON(w, http.StatusOK, VideoResponse{
 		Status: "ok",
 		Data: map[string]string{
@@ -381,6 +385,8 @@ func handleVideoRenderStatus(w http.ResponseWriter, r *http.Request) {
 	if videoURL != "" {
 		videoURL = strings.Replace(videoURL, "http://lanes.ymxt.top:3010/api/", "https://oc.aixifs.com/api/remotion/", 1)
 	}
+
+	log.Printf("[videoRenderStatus] 查询渲染状态: renderId=%s status=%s progress=%.2f videoURL=%s", renderID, result.Status, result.Progress, videoURL)
 
 	writeVideoJSON(w, http.StatusOK, VideoResponse{
 		Status: "ok",
