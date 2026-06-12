@@ -28,29 +28,28 @@ export function startVoiceRecognize(onResult, onError) {
     return;
   }
 
-  try {
-    recognitionManager.start({ lang: 'zh_CN' });
-    console.log('[voice.js] recognitionManager.start() called');
-  } catch (err) {
-    console.error('[voice.js] start error:', err);
-    onError(err);
-    return;
-  }
-
+  // 先注册回调再 start，避免错过事件
   recognitionManager.onRecognize((res) => {
-    console.log('[voice.js] onRecognize:', res);
-    // 实时识别结果（增量）
+    console.warn('[voice.js] >>> onRecognize:', JSON.stringify(res));
     onResult({ text: res.result, isFinal: false })
   })
   recognitionManager.onStop((res) => {
-    console.log('[voice.js] onStop:', res);
-    // 最终识别结果
+    console.warn('[voice.js] >>> onStop:', JSON.stringify(res));
     onResult({ text: res.result, isFinal: true })
   })
   recognitionManager.onError((err) => {
-    console.error('[voice.js] onError:', err);
+    console.warn('[voice.js] >>> onError:', JSON.stringify(err));
     onError(err)
   })
+
+  try {
+    recognitionManager.start({ lang: 'zh_CN' });
+    console.warn('[voice.js] start() called successfully');
+  } catch (err) {
+    console.warn('[voice.js] start threw:', JSON.stringify(err));
+    onError(err);
+    return;
+  }
   // #endif
 
   // #ifdef H5
