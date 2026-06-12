@@ -38,16 +38,23 @@ function takePhoto() {
   const remaining = props.maxCount - photos.value.length
   if (remaining <= 0) return
 
-  uni.chooseImage({
-    count: remaining,
-    sourceType: ['camera', 'album'],
-    sizeType: ['compressed'],
-    success: (res) => {
-      const newPhotos = (res.tempFiles || []).map(f => ({
-        tempPath: f.path,
-        size: f.size,
-      }))
-      photos.value.push(...newPhotos)
+  uni.showActionSheet({
+    itemList: ['拍照', '从相册选择'],
+    success: (tapRes) => {
+      const sourceType = tapRes.tapIndex === 0 ? ['camera'] : ['album']
+      uni.chooseMedia({
+        count: remaining,
+        sourceType,
+        mediaType: ['image'],
+        sizeType: ['compressed'],
+        success: (res) => {
+          const newPhotos = (res.tempFiles || []).map(f => ({
+            tempPath: f.tempFilePath,
+            size: f.size,
+          }))
+          photos.value.push(...newPhotos)
+        },
+      })
     },
   })
 }
