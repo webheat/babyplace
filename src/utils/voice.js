@@ -31,31 +31,29 @@ export function startVoiceRecognize(onResult, onError) {
   // 防止 onFinish/onStop 双重触发 isFinal
   let finalFired = false
 
-  // 先注册回调再 start，避免错过事件
-  recognitionManager.onRecognize((res) => {
+  // 用赋值方式注册回调（WechatSI 插件 API）
+  recognitionManager.onRecognize = (res) => {
     console.warn('[voice.js] >>> onRecognize:', JSON.stringify(res));
     onResult({ text: res.result, isFinal: false })
-  })
-  // onFinish 是识别完成回调（插件文档标准事件）
-  recognitionManager.onFinish((res) => {
+  }
+  recognitionManager.onFinish = (res) => {
     console.warn('[voice.js] >>> onFinish:', JSON.stringify(res));
     if (!finalFired) {
       finalFired = true
       onResult({ text: res.result, isFinal: true })
     }
-  })
-  // onStop 兜底：onFinish 未触发时仍能拿到最终结果
-  recognitionManager.onStop((res) => {
+  }
+  recognitionManager.onStop = (res) => {
     console.warn('[voice.js] >>> onStop:', JSON.stringify(res));
     if (!finalFired && res.result) {
       finalFired = true
       onResult({ text: res.result, isFinal: true })
     }
-  })
-  recognitionManager.onError((err) => {
+  }
+  recognitionManager.onError = (err) => {
     console.warn('[voice.js] >>> onError:', JSON.stringify(err));
     onError(err)
-  })
+  }
 
   try {
     recognitionManager.start({ lang: 'zh_CN', duration: 60000 });
