@@ -119,7 +119,8 @@ function onVoiceStart() {
   isListening.value = true;
   voiceText.value = '';
 
-  console.log('[voice] calling startVoiceRecognize');
+  console.log('[voice] calling startVoiceRecognize, isListening:', isListening.value);
+  try {
   startVoiceRecognize(
     (res) => {
       console.log('[voice] result:', res);
@@ -141,6 +142,11 @@ function onVoiceStart() {
       uni.showToast({ title: '语音识别失败: ' + (err.errMsg || JSON.stringify(err)), icon: 'none' });
     }
   );
+  } catch (e) {
+    console.error('[voice] startVoiceRecognize threw:', e);
+    isListening.value = false;
+    uni.showToast({ title: '语音初始化失败: ' + e.message, icon: 'none' });
+  }
 }
 
 function onVoiceEnd() {

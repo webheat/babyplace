@@ -19,9 +19,14 @@ const recognitionManager = plugin.getRecordRecognitionManager()
  */
 export function startVoiceRecognize(onResult, onError) {
   // #ifdef MP-WEIXIN
-  console.log('[voice.js] startVoiceRecognize called');
-  console.log('[voice.js] plugin:', plugin);
-  console.log('[voice.js] recognitionManager:', recognitionManager);
+  console.warn('[voice.js] startVoiceRecognize called');
+  console.warn('[voice.js] plugin type:', typeof plugin);
+  console.warn('[voice.js] recognitionManager type:', typeof recognitionManager);
+  if (!recognitionManager) {
+    console.error('[voice.js] recognitionManager is null/undefined!');
+    onError && onError({ errMsg: '语音插件未加载，请检查 WechatSI 插件配置' });
+    return;
+  }
 
   try {
     recognitionManager.start({ lang: 'zh_CN' });
@@ -49,8 +54,47 @@ export function startVoiceRecognize(onResult, onError) {
   // #endif
 
   // #ifdef H5
-  // H5 环境不支持 WechatSI，降级提示
-  onError && onError({ errMsg: 'H5 环境不支持语音识别，请使用微信小程序' })
+  // H5 使用 Web Speech API（Chrome/Edge 支持）
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+  if (!SpeechRecognition) {
+    onError && onError({ errMsg: '当前浏览器不支持语音识别，请使用 Chrome/Edge' })
+    return
+  }
+  const recognition = new SpeechRecognition()
+  recognition.lang = 'zh-CN'
+  recognition.continuous = true
+  recognition.interimResults = true
+  window.__h5Recognition = recognition
+
+  recognition.onresult = (event) => {
+    let interimTranscript = ''
+    let finalTranscript = ''
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript
+      if (event.results[i].isFinal) {
+        finalTranscript += transcript
+      } else {
+        interimTranscript += transcript
+      }
+    }
+    if (interimTranscript) {
+      onResult({ text: interimTranscript, isFinal: false })
+    }
+    if (finalTranscript) {
+      onResult({ text: finalTranscript, isFinal: true })
+    }
+  }
+  recognition.onerror = (err) => {
+    onError && onError({ errMsg: err.error || '语音识别错误' })
+  }
+  recognition.onend = () => {
+    // 自动停止时触发 final
+  }
+  try {
+    recognition.start()
+  } catch (err) {
+    onError && onError({ errMsg: '启动语音识别失败: ' + err.message })
+  }
   // #endif
 }
 
