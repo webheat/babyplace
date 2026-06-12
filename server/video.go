@@ -376,13 +376,19 @@ func handleVideoRenderStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 将 Remotion 内部 URL 替换为 HTTPS 代理 URL
+	videoURL := result.VideoURL
+	if videoURL != "" {
+		videoURL = strings.Replace(videoURL, "http://lanes.ymxt.top:3010/api/", "https://oc.aixifs.com/api/remotion/", 1)
+	}
+
 	writeVideoJSON(w, http.StatusOK, VideoResponse{
 		Status: "ok",
 		Data: map[string]interface{}{
 			"renderId": result.RenderID,
 			"status":   result.Status,
 			"progress": result.Progress,
-			"videoUrl": result.VideoURL,
+			"videoUrl": videoURL,
 			"error":    result.Error,
 		},
 	})

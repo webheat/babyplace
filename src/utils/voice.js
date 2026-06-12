@@ -117,7 +117,10 @@ export function startVoiceRecognize(onResult, onError) {
  */
 export function stopVoiceRecognize() {
   // #ifdef MP-WEIXIN
-  recognitionManager.stop()
+  // 延迟 300ms 再停止，让识别有时间处理最后的音频
+  setTimeout(() => {
+    recognitionManager.stop()
+  }, 300)
   // #endif
 }
 
