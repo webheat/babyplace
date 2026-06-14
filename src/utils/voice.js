@@ -60,7 +60,7 @@ export function startVoiceRecognize(onResult, onError) {
   }
 
   try {
-    mgr.start({ lang: 'zh_CN', duration: 60000 })
+    mgr.start({ lang: 'zh_CN' })
   } catch (err) {
     onError(err)
   }
