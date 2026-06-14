@@ -9,13 +9,122 @@
 // #ifdef MP-WEIXIN
 let plugin = null
 let recognitionManager = null
+let realtimeLogger = null
+let commonObject = null
+
+function safeStringify(value) {
+  if (typeof value === 'string') return value
+  try {
+    return JSON.stringify(value)
+  } catch (error) {
+    return String(value)
+  }
+}
+
+function normalizeError(error) {
+  if (!error) return {}
+  if (typeof error === 'string') return { message: error }
+  return {
+    errCode: error.errCode,
+    errMsg: error.errMsg,
+    message: error.message,
+    stack: error.stack,
+    raw: safeStringify(error),
+  }
+}
+
+function getRuntimeContext() {
+  const accountInfo = wx.getAccountInfoSync ? wx.getAccountInfoSync() : {}
+  const systemInfo = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {}
+  const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : []
+  const currentPage = pages.length ? pages[pages.length - 1] : null
+  return {
+    envVersion: accountInfo?.miniProgram?.envVersion || '',
+    appId: accountInfo?.miniProgram?.appId || '',
+    SDKVersion: systemInfo.SDKVersion || '',
+    brand: systemInfo.brand || '',
+    model: systemInfo.model || '',
+    platform: systemInfo.platform || '',
+    system: systemInfo.system || '',
+    page: currentPage?.route || '',
+  }
+}
+
+function getRealtimeLogger() {
+  if (realtimeLogger) return realtimeLogger
+  if (wx.getRealtimeLogManager) {
+    realtimeLogger = wx.getRealtimeLogManager()
+  }
+  return realtimeLogger
+}
+
+function writeRealtimeLog(level, eventName, detail = {}) {
+  const logger = getRealtimeLogger()
+  if (!logger) return
+  const payload = {
+    event: eventName,
+    ...getRuntimeContext(),
+    ...detail,
+  }
+  const method = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'info'
+  logger[method]('[voice]', payload)
+}
+
+function reportVoiceLog(eventName, detail = {}) {
+  try {
+    if (!commonObject) {
+      commonObject = uniCloud.importObject('common')
+    }
+    const context = getRuntimeContext()
+    commonObject.addErrorLog({
+      message: `[voice] ${eventName}`,
+      stack: detail?.error?.stack || '',
+      page: context.page,
+      extra: {
+        event: eventName,
+        ...context,
+        ...detail,
+      },
+    }).catch((error) => {
+      console.warn('[voice.js] reportVoiceLog failed:', error?.message || error)
+    })
+  } catch (error) {
+    console.warn('[voice.js] reportVoiceLog unavailable:', error?.message || error)
+  }
+}
+
+function logVoiceInfo(eventName, detail = {}) {
+  writeRealtimeLog('info', eventName, detail)
+}
+
+function logVoiceError(eventName, error, detail = {}) {
+  const normalizedError = normalizeError(error)
+  const payload = {
+    ...detail,
+    error: normalizedError,
+  }
+  writeRealtimeLog('error', eventName, payload)
+  reportVoiceLog(eventName, payload)
+}
 
 function ensurePlugin() {
   if (!plugin) {
-    plugin = requirePlugin('WechatSI')
+    try {
+      plugin = requirePlugin('WechatSI')
+      logVoiceInfo('plugin.require.success')
+    } catch (error) {
+      logVoiceError('plugin.require.fail', error)
+      throw error
+    }
   }
   if (!recognitionManager) {
-    recognitionManager = plugin.getRecordRecognitionManager()
+    try {
+      recognitionManager = plugin.getRecordRecognitionManager()
+      logVoiceInfo('plugin.recognitionManager.success')
+    } catch (error) {
+      logVoiceError('plugin.recognitionManager.fail', error)
+      throw error
+    }
   }
   return recognitionManager
 }
@@ -30,9 +139,17 @@ const TTS_CHUNK_MAX_LENGTH = 100
  */
 export function startVoiceRecognize(onResult, onError) {
   // #ifdef MP-WEIXIN
-  const mgr = ensurePlugin()
+  let mgr = null
+  try {
+    mgr = ensurePlugin()
+  } catch (error) {
+    onError && onError(error)
+    return
+  }
   if (!mgr) {
-    onError && onError({ errMsg: '语音插件未加载，请检查 WechatSI 插件配置' })
+    const error = { errMsg: '语音插件未加载，请检查 WechatSI 插件配置' }
+    logVoiceError('asr.manager.empty', error)
+    onError && onError(error)
     return
   }
 
@@ -46,22 +163,30 @@ export function startVoiceRecognize(onResult, onError) {
   mgr.onFinish = (res) => {
     if (!finalFired) {
       finalFired = true
+      logVoiceInfo('asr.finish', { resultLength: String(res?.result || '').length })
       onResult({ text: res.result, isFinal: true })
     }
   }
   mgr.onStop = (res) => {
     if (!finalFired && res.result) {
       finalFired = true
+      logVoiceInfo('asr.stop.final', { resultLength: String(res?.result || '').length })
       onResult({ text: res.result, isFinal: true })
+    } else {
+      logVoiceInfo('asr.stop.empty', { hasResult: !!res?.result })
     }
   }
   mgr.onError = (err) => {
+    logVoiceError('asr.onError', err)
     onError(err)
   }
 
   try {
+    logVoiceInfo('asr.start.before', { lang: 'zh_CN' })
     mgr.start({ lang: 'zh_CN' })
+    logVoiceInfo('asr.start.success', { lang: 'zh_CN' })
   } catch (err) {
+    logVoiceError('asr.start.throw', err, { lang: 'zh_CN' })
     onError(err)
   }
   // #endif
@@ -116,14 +241,23 @@ export function startVoiceRecognize(onResult, onError) {
  */
 export function stopVoiceRecognize() {
   // #ifdef MP-WEIXIN
-  const mgr = ensurePlugin()
+  let mgr = null
+  try {
+    mgr = ensurePlugin()
+  } catch (error) {
+    logVoiceError('asr.stop.ensurePlugin.fail', error)
+    return
+  }
   if (mgr) {
+    logVoiceInfo('asr.stop.before')
     // 延迟 300ms 再停止，让识别有时间处理最后的音频
     setTimeout(() => {
       try {
         mgr.stop()
+        logVoiceInfo('asr.stop.success')
       } catch (err) {
         console.warn('[voice.js] stop threw:', JSON.stringify(err))
+        logVoiceError('asr.stop.throw', err)
       }
     }, 300)
   }
@@ -175,11 +309,22 @@ function splitTextForTTS(text, maxLen = TTS_CHUNK_MAX_LENGTH) {
  */
 function speakOneChunk(text, options) {
   return new Promise((resolve, reject) => {
-    ensurePlugin()
+    try {
+      ensurePlugin()
+    } catch (error) {
+      logVoiceError('tts.ensurePlugin.fail', error)
+      reject(error)
+      return
+    }
+    logVoiceInfo('tts.request.before', { textLength: text.length })
     plugin.textToSpeech({
       lang: options.lang || 'zh_CN',
       content: text,
       success: (res) => {
+        logVoiceInfo('tts.request.success', {
+          textLength: text.length,
+          hasFilename: !!res?.filename,
+        })
         const audio = wx.createInnerAudioContext()
         audio.src = res.filename
         audio.onEnded(() => {
@@ -188,6 +333,7 @@ function speakOneChunk(text, options) {
         })
         audio.onError((err) => {
           console.error('[voice.js] InnerAudioContext onError:', err)
+          logVoiceError('tts.audio.error', err, { textLength: text.length })
           audio.destroy()
           reject(err)
         })
@@ -195,6 +341,7 @@ function speakOneChunk(text, options) {
       },
       fail: (err) => {
         console.error('[voice.js] textToSpeech fail:', JSON.stringify(err))
+        logVoiceError('tts.request.fail', err, { textLength: text.length })
         reject(err)
       },
     })
