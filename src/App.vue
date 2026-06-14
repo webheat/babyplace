@@ -1,14 +1,25 @@
 <script>
+import { logInfo, logError } from '@/utils/logger'
+
 export default {
   onLaunch() {
     console.log('App Launch')
+    logInfo('app_launch')
   },
   onShow() {
     console.log('App Show')
   },
   onHide() {
     console.log('App Hide')
-  }
+  },
+  onError(err) {
+    console.error('App Error:', err)
+    logError('app_error', err)
+  },
+  onUnhandledRejection(res) {
+    console.error('Unhandled Rejection:', res?.reason)
+    logError('unhandled_rejection', res?.reason || 'unknown')
+  },
 }
 </script>
 

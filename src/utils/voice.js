@@ -6,106 +6,11 @@
  * TTS（语音合成）：文字 → AI 说话
  */
 
+import { logInfo as logVoiceInfo, logError as logVoiceError } from '@/utils/logger'
+
 // #ifdef MP-WEIXIN
 let plugin = null
 let recognitionManager = null
-let realtimeLogger = null
-const VOICE_LOG_URL = `${(import.meta.env.VITE_GO_SERVER || 'https://oc.aixifs.com').replace(/\/$/, '')}/api/client-log`
-
-function safeStringify(value) {
-  if (typeof value === 'string') return value
-  try {
-    return JSON.stringify(value)
-  } catch (error) {
-    return String(value)
-  }
-}
-
-function normalizeError(error) {
-  if (!error) return {}
-  if (typeof error === 'string') return { message: error }
-  return {
-    errCode: error.errCode,
-    errMsg: error.errMsg,
-    message: error.message,
-    stack: error.stack,
-    raw: safeStringify(error),
-  }
-}
-
-function getRuntimeContext() {
-  const accountInfo = wx.getAccountInfoSync ? wx.getAccountInfoSync() : {}
-  const systemInfo = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {}
-  const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : []
-  const currentPage = pages.length ? pages[pages.length - 1] : null
-  return {
-    envVersion: accountInfo?.miniProgram?.envVersion || '',
-    appId: accountInfo?.miniProgram?.appId || '',
-    SDKVersion: systemInfo.SDKVersion || '',
-    brand: systemInfo.brand || '',
-    model: systemInfo.model || '',
-    platform: systemInfo.platform || '',
-    system: systemInfo.system || '',
-    page: currentPage?.route || '',
-  }
-}
-
-function getRealtimeLogger() {
-  if (realtimeLogger) return realtimeLogger
-  if (wx.getRealtimeLogManager) {
-    realtimeLogger = wx.getRealtimeLogManager()
-  }
-  return realtimeLogger
-}
-
-function writeRealtimeLog(level, eventName, detail = {}) {
-  const logger = getRealtimeLogger()
-  if (!logger) return
-  const payload = {
-    event: eventName,
-    ...getRuntimeContext(),
-    ...detail,
-  }
-  const method = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'info'
-  logger[method]('[voice]', payload)
-}
-
-function reportVoiceLog(eventName, detail = {}) {
-  try {
-    const context = getRuntimeContext()
-    uni.request({
-      url: VOICE_LOG_URL,
-      method: 'POST',
-      header: { 'Content-Type': 'application/json' },
-      timeout: 5000,
-      data: {
-        source: 'mp-weixin-voice',
-        event: eventName,
-        ...context,
-        ...detail,
-      },
-      fail: (error) => {
-        console.warn('[voice.js] reportVoiceLog failed:', error?.errMsg || error)
-      },
-    })
-  } catch (error) {
-    console.warn('[voice.js] reportVoiceLog unavailable:', error?.message || error)
-  }
-}
-
-function logVoiceInfo(eventName, detail = {}) {
-  writeRealtimeLog('info', eventName, detail)
-}
-
-function logVoiceError(eventName, error, detail = {}) {
-  const normalizedError = normalizeError(error)
-  const payload = {
-    ...detail,
-    error: normalizedError,
-  }
-  writeRealtimeLog('error', eventName, payload)
-  reportVoiceLog(eventName, payload)
-}
 
 function ensurePlugin() {
   if (!plugin) {
