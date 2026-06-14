@@ -10,7 +10,7 @@
 let plugin = null
 let recognitionManager = null
 let realtimeLogger = null
-let commonObject = null
+const VOICE_LOG_URL = `${(import.meta.env.VITE_GO_SERVER || 'https://oc.aixifs.com').replace(/\/$/, '')}/api/client-log`
 
 function safeStringify(value) {
   if (typeof value === 'string') return value
@@ -72,21 +72,21 @@ function writeRealtimeLog(level, eventName, detail = {}) {
 
 function reportVoiceLog(eventName, detail = {}) {
   try {
-    if (!commonObject) {
-      commonObject = uniCloud.importObject('common')
-    }
     const context = getRuntimeContext()
-    commonObject.addErrorLog({
-      message: `[voice] ${eventName}`,
-      stack: detail?.error?.stack || '',
-      page: context.page,
-      extra: {
+    uni.request({
+      url: VOICE_LOG_URL,
+      method: 'POST',
+      header: { 'Content-Type': 'application/json' },
+      timeout: 5000,
+      data: {
+        source: 'mp-weixin-voice',
         event: eventName,
         ...context,
         ...detail,
       },
-    }).catch((error) => {
-      console.warn('[voice.js] reportVoiceLog failed:', error?.message || error)
+      fail: (error) => {
+        console.warn('[voice.js] reportVoiceLog failed:', error?.errMsg || error)
+      },
     })
   } catch (error) {
     console.warn('[voice.js] reportVoiceLog unavailable:', error?.message || error)

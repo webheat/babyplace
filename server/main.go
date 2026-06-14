@@ -105,6 +105,7 @@ func main() {
 
 	http.HandleFunc("/api/chat", corsMiddleware(handleChat))
 	http.HandleFunc("/api/openclaw/chat", corsMiddleware(handleOpenClawChat))
+	http.HandleFunc("/api/client-log", corsMiddleware(handleClientLog))
 	http.HandleFunc("/api/xhs/status", corsMiddleware(handleXHSStatus))
 	http.HandleFunc("/api/xhs/auth", corsMiddleware(handleXHSAuth))
 	http.HandleFunc("/api/xhs/callback", corsMiddleware(handleXHSCallback))
@@ -320,6 +321,42 @@ func handleOpenClawChat(w http.ResponseWriter, r *http.Request) {
 			DurationMs: dur,
 		},
 	})
+}
+
+func handleClientLog(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, ChatResponse{Status: "error", Message: "Method not allowed"})
+		return
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, 32<<10)
+	defer r.Body.Close()
+
+	var raw map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&raw); err != nil {
+		writeJSON(w, http.StatusBadRequest, ChatResponse{Status: "error", Message: "Invalid request body"})
+		return
+	}
+
+	event, _ := raw["event"].(string)
+	source, _ := raw["source"].(string)
+	if event == "" {
+		writeJSON(w, http.StatusBadRequest, ChatResponse{Status: "error", Message: "event is required"})
+		return
+	}
+	if source == "" {
+		source = "client"
+		raw["source"] = source
+	}
+
+	body, _ := json.Marshal(raw)
+	message := string(body)
+	if len(message) > 4096 {
+		message = message[:4096] + "...(truncated)"
+	}
+	log.Printf("[client-log] %s", message)
+
+	writeJSON(w, http.StatusOK, ChatResponse{Status: "ok"})
 }
 
 func writeJSON(w http.ResponseWriter, code int, data interface{}) {
