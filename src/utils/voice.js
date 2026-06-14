@@ -8,9 +8,10 @@
 
 // #ifdef MP-WEIXIN
 const plugin = requirePlugin('WechatSI')
-const recorderManager = wx.getRecorderManager()
 const recognitionManager = plugin.getRecordRecognitionManager()
 // #endif
+
+const TTS_CHUNK_MAX_LENGTH = 100
 
 /**
  * 开始语音识别（ASR）
@@ -56,7 +57,7 @@ export function startVoiceRecognize(onResult, onError) {
   }
 
   try {
-    recognitionManager.start({ lang: 'zh_CN', duration: 60000 });
+    recognitionManager.start({ lang: 'zh_CN' });
     console.warn('[voice.js] start() called successfully');
   } catch (err) {
     console.warn('[voice.js] start threw:', JSON.stringify(err));
@@ -115,9 +116,14 @@ export function startVoiceRecognize(onResult, onError) {
  */
 export function stopVoiceRecognize() {
   // #ifdef MP-WEIXIN
+  if (!recognitionManager) return
   // 延迟 300ms 再停止，让识别有时间处理最后的音频
   setTimeout(() => {
-    recognitionManager.stop()
+    try {
+      recognitionManager.stop()
+    } catch (err) {
+      console.warn('[voice.js] stop threw:', JSON.stringify(err))
+    }
   }, 300)
   // #endif
 }
@@ -128,9 +134,12 @@ export function stopVoiceRecognize() {
  * @param {number} maxLen - 每段最大字符数，默认 200
  * @returns {string[]}
  */
-function splitTextForTTS(text, maxLen = 200) {
+function splitTextForTTS(text, maxLen = TTS_CHUNK_MAX_LENGTH) {
+  const normalizedText = String(text || '').trim()
+  if (!normalizedText) return []
+
   // 按中英文句号、问号、感叹号、换行拆分
-  const sentences = text.split(/(?<=[。！？!?\n])\s*/).filter(Boolean)
+  const sentences = normalizedText.split(/(?<=[。！？!?\n])\s*/).filter(Boolean)
   const chunks = []
   let current = ''
   for (const s of sentences) {
@@ -148,11 +157,11 @@ function splitTextForTTS(text, maxLen = 200) {
       result.push(c)
     } else {
       for (let i = 0; i < c.length; i += maxLen) {
-        result.push(c.slice(i, i + maxLen))
+        result.push(c.slice(i, i + maxLen).trim())
       }
     }
   }
-  return result
+  return result.filter(Boolean)
 }
 
 // #ifdef MP-WEIXIN
@@ -182,7 +191,7 @@ function speakOneChunk(text, options) {
         audio.play()
       },
       fail: (err) => {
-        console.error('[voice.js] textToSpeech fail:', err)
+        console.error('[voice.js] textToSpeech fail:', JSON.stringify(err))
         reject(err)
       },
     })
@@ -202,6 +211,10 @@ export function speak(text, options = {}) {
   return new Promise(async (resolve, reject) => {
     try {
       const chunks = splitTextForTTS(text)
+      if (!chunks.length) {
+        resolve()
+        return
+      }
 
       // #ifdef MP-WEIXIN
       for (const chunk of chunks) {
