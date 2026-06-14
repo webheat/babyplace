@@ -1,5 +1,15 @@
-const plugin = requirePlugin('WechatSI')
-const recognitionManager = plugin.getRecordRecognitionManager()
+let plugin = null
+let recognitionManager = null
+
+function ensurePlugin() {
+  if (!plugin) {
+    plugin = requirePlugin('WechatSI')
+  }
+  if (!recognitionManager) {
+    recognitionManager = plugin.getRecordRecognitionManager()
+  }
+  return recognitionManager
+}
 
 Component({
   properties: {
@@ -37,8 +47,9 @@ Component({
 
       this.setData({ isListening: true, realtimeText: '', finalText: '', duration: 0 })
 
+      const mgr = ensurePlugin()
       // 开始录音识别
-      recognitionManager.start({ lang: 'zh_CN' })
+      mgr.start({ lang: 'zh_CN' })
 
       // 录音时长计时
       this._durationTimer = setInterval(() => {
@@ -51,12 +62,12 @@ Component({
       }, 1000)
 
       // 实时识别回调
-      recognitionManager.onRecognize((res) => {
+      mgr.onRecognize((res) => {
         this.setData({ realtimeText: res.result })
       })
 
       // 识别完成回调
-      recognitionManager.onStop((res) => {
+      mgr.onStop((res) => {
         this._clearTimers()
         const finalText = res.result || this.data.realtimeText
         this.setData({
@@ -73,7 +84,7 @@ Component({
       })
 
       // 错误回调
-      recognitionManager.onError((err) => {
+      mgr.onError((err) => {
         this._clearTimers()
         this.setData({ isListening: false, realtimeText: '' })
         this.triggerEvent('error', err)
@@ -87,7 +98,8 @@ Component({
      */
     onTouchEnd() {
       if (!this.data.isListening) return
-      recognitionManager.stop()
+      const mgr = ensurePlugin()
+      if (mgr) mgr.stop()
       this.triggerEvent('stop')
     },
 

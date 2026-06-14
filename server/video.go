@@ -2,11 +2,13 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -33,6 +35,52 @@ func initVideo() {
 	if aiAPIKey == "" {
 		aiAPIKey = "t7npV6raGbd2f4HOMR4RRi0gsK2MbvPWk5TMs4i8Q9eJ80cG"
 	}
+	initRemotionClient()
+}
+
+// remotionClient 是 Remotion 服务专用 HTTP 客户端
+// 使用短连接超时 + 每次请求重新解析 DNS，适配 DDNS-GO 动态 IPv6 场景
+var remotionClient *http.Client
+
+func initRemotionClient() {
+	transport := &http.Transport{
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			// 每次拨号都重新解析 DNS，避免缓存旧的 IPv6 地址
+			host, port, err := net.SplitHostPort(addr)
+			if err != nil {
+				return nil, err
+			}
+			resolver := &net.Resolver{}
+			addrs, err := resolver.LookupIPAddr(ctx, host)
+			if err != nil {
+				return nil, fmt.Errorf("DNS 解析 %s 失败: %w", host, err)
+			}
+			if len(addrs) == 0 {
+				return nil, fmt.Errorf("DNS 解析 %s 无结果", host)
+			}
+			// 优先 IPv6，回退 IPv4
+			var chosen net.IP
+			for _, a := range addrs {
+				if a.IP.To4() == nil {
+					chosen = a.IP
+					break
+				}
+			}
+			if chosen == nil {
+				chosen = addrs[0].IP
+			}
+			dialer := &net.Dialer{Timeout: 10 * time.Second}
+			return dialer.DialContext(ctx, "tcp", net.JoinHostPort(chosen.String(), port))
+		},
+		MaxIdleConns:        2,
+		MaxIdleConnsPerHost: 1,
+		IdleConnTimeout:     30 * time.Second, // 30秒后关闭空闲连接，强制重新拨号
+	}
+	remotionClient = &http.Client{
+		Transport: transport,
+		Timeout:   120 * time.Second,
+	}
+	log.Println("[video] Remotion 客户端初始化完成 (DNS 不缓存, 空闲连接 30s 超时)")
 }
 
 // ─── 请求/响应结构体 ────────────────────────────────────────
@@ -138,8 +186,7 @@ func uploadToRemotion(filePath, filename string) (string, error) {
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	client := &http.Client{Timeout: 60 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := remotionClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -310,8 +357,7 @@ func handleVideoRender(w http.ResponseWriter, r *http.Request) {
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(httpReq)
+	resp, err := remotionClient.Do(httpReq)
 	if err != nil {
 		log.Printf("[videoRender] remotion request failed: %v", err)
 		writeVideoError(w, http.StatusBadGateway, "Render service unavailable")
@@ -360,7 +406,7 @@ func handleVideoRenderStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	url := fmt.Sprintf("%s/api/renders/%s", remotionServerURL, renderID)
-	resp, err := http.Get(url)
+	resp, err := remotionClient.Get(url)
 	if err != nil {
 		log.Printf("[videoRenderStatus] request failed: %v", err)
 		writeVideoError(w, http.StatusBadGateway, "Render service unavailable")

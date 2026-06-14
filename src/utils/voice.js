@@ -7,8 +7,18 @@
  */
 
 // #ifdef MP-WEIXIN
-const plugin = requirePlugin('WechatSI')
-const recognitionManager = plugin.getRecordRecognitionManager()
+let plugin = null
+let recognitionManager = null
+
+function ensurePlugin() {
+  if (!plugin) {
+    plugin = requirePlugin('WechatSI')
+  }
+  if (!recognitionManager) {
+    recognitionManager = plugin.getRecordRecognitionManager()
+  }
+  return recognitionManager
+}
 // #endif
 
 const TTS_CHUNK_MAX_LENGTH = 100
@@ -20,49 +30,39 @@ const TTS_CHUNK_MAX_LENGTH = 100
  */
 export function startVoiceRecognize(onResult, onError) {
   // #ifdef MP-WEIXIN
-  console.warn('[voice.js] startVoiceRecognize called');
-  console.warn('[voice.js] plugin type:', typeof plugin);
-  console.warn('[voice.js] recognitionManager type:', typeof recognitionManager);
-  if (!recognitionManager) {
-    console.error('[voice.js] recognitionManager is null/undefined!');
-    onError && onError({ errMsg: '语音插件未加载，请检查 WechatSI 插件配置' });
-    return;
+  const mgr = ensurePlugin()
+  if (!mgr) {
+    onError && onError({ errMsg: '语音插件未加载，请检查 WechatSI 插件配置' })
+    return
   }
 
   // 防止 onFinish/onStop 双重触发 isFinal
   let finalFired = false
 
   // 用赋值方式注册回调（WechatSI 插件 API）
-  recognitionManager.onRecognize = (res) => {
-    console.warn('[voice.js] >>> onRecognize:', JSON.stringify(res));
+  mgr.onRecognize = (res) => {
     onResult({ text: res.result, isFinal: false })
   }
-  recognitionManager.onFinish = (res) => {
-    console.warn('[voice.js] >>> onFinish:', JSON.stringify(res));
+  mgr.onFinish = (res) => {
     if (!finalFired) {
       finalFired = true
       onResult({ text: res.result, isFinal: true })
     }
   }
-  recognitionManager.onStop = (res) => {
-    console.warn('[voice.js] >>> onStop:', JSON.stringify(res));
+  mgr.onStop = (res) => {
     if (!finalFired && res.result) {
       finalFired = true
       onResult({ text: res.result, isFinal: true })
     }
   }
-  recognitionManager.onError = (err) => {
-    console.warn('[voice.js] >>> onError:', JSON.stringify(err));
+  mgr.onError = (err) => {
     onError(err)
   }
 
   try {
-    recognitionManager.start({ lang: 'zh_CN' });
-    console.warn('[voice.js] start() called successfully');
+    mgr.start({ lang: 'zh_CN', duration: 60000 })
   } catch (err) {
-    console.warn('[voice.js] start threw:', JSON.stringify(err));
-    onError(err);
-    return;
+    onError(err)
   }
   // #endif
 
@@ -116,15 +116,17 @@ export function startVoiceRecognize(onResult, onError) {
  */
 export function stopVoiceRecognize() {
   // #ifdef MP-WEIXIN
-  if (!recognitionManager) return
-  // 延迟 300ms 再停止，让识别有时间处理最后的音频
-  setTimeout(() => {
-    try {
-      recognitionManager.stop()
-    } catch (err) {
-      console.warn('[voice.js] stop threw:', JSON.stringify(err))
-    }
-  }, 300)
+  const mgr = ensurePlugin()
+  if (mgr) {
+    // 延迟 300ms 再停止，让识别有时间处理最后的音频
+    setTimeout(() => {
+      try {
+        mgr.stop()
+      } catch (err) {
+        console.warn('[voice.js] stop threw:', JSON.stringify(err))
+      }
+    }, 300)
+  }
   // #endif
 }
 
@@ -173,6 +175,7 @@ function splitTextForTTS(text, maxLen = TTS_CHUNK_MAX_LENGTH) {
  */
 function speakOneChunk(text, options) {
   return new Promise((resolve, reject) => {
+    ensurePlugin()
     plugin.textToSpeech({
       lang: options.lang || 'zh_CN',
       content: text,
@@ -258,7 +261,12 @@ export function speak(text, options = {}) {
  */
 export function isVoiceAvailable() {
   // #ifdef MP-WEIXIN
-  return typeof plugin !== 'undefined' && typeof recognitionManager !== 'undefined'
+  try {
+    ensurePlugin()
+    return !!plugin && !!recognitionManager
+  } catch (e) {
+    return false
+  }
   // #endif
   // #ifdef H5
   return typeof window !== 'undefined' && !!window.speechSynthesis
