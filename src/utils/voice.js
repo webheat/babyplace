@@ -11,6 +11,7 @@ import { logInfo as logVoiceInfo, logError as logVoiceError } from '@/utils/logg
 // #ifdef MP-WEIXIN
 let plugin = null
 let recognitionManager = null
+let isStopping = false  // 防止 stop→start 竞态
 
 function ensurePlugin() {
   if (!plugin) {
@@ -44,6 +45,12 @@ const TTS_CHUNK_MAX_LENGTH = 100
  */
 export function startVoiceRecognize(onResult, onError) {
   // #ifdef MP-WEIXIN
+  // 防止在 stop 过程中立刻 start，导致 -30011 错误
+  if (isStopping) {
+    logVoiceInfo('asr.start.skipped', { reason: 'isStopping' })
+    return
+  }
+
   let mgr = null
   try {
     mgr = ensurePlugin()
@@ -154,6 +161,7 @@ export function stopVoiceRecognize() {
     return
   }
   if (mgr) {
+    isStopping = true
     logVoiceInfo('asr.stop.before')
     // 延迟 300ms 再停止，让识别有时间处理最后的音频
     setTimeout(() => {
@@ -163,6 +171,9 @@ export function stopVoiceRecognize() {
       } catch (err) {
         console.warn('[voice.js] stop threw:', JSON.stringify(err))
         logVoiceError('asr.stop.throw', err)
+      } finally {
+        // stop 完成后再等 200ms 才允许 start，确保插件状态清理干净
+        setTimeout(() => { isStopping = false }, 200)
       }
     }, 300)
   }
