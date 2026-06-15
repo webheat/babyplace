@@ -1,5 +1,9 @@
 <template>
   <view class="chat-page">
+    <!-- AI 生成内容声明（微信平台合规要求） -->
+    <view class="ai-disclaimer">
+      <text class="ai-disclaimer-text">🤖 以上内容由人工智能生成，仅供参考</text>
+    </view>
     <scroll-view
       class="message-list"
       scroll-y
@@ -13,6 +17,9 @@
         :class="['message-row', msg.role]"
       >
         <view class="bubble">
+          <view v-if="msg.role === 'bot'" class="ai-tag">
+            <text class="ai-tag-text">AI生成</text>
+          </view>
           <text>{{ msg.text }}</text>
           <view v-if="msg.role === 'bot' && hasLocation(msg.text)" class="map-action">
             <view class="map-btn" @tap="openMapFromText(msg.text)">
@@ -35,32 +42,8 @@
       <view id="msg-bottom" style="height: 20rpx" />
     </scroll-view>
 
-    <!-- 语音识别实时文本 -->
-    <view v-if="voiceText" class="voice-preview">
-      <text>{{ voiceText }}</text>
-    </view>
-
-    <!-- 语音模式 -->
-    <view v-if="inputMode === 'voice'" class="voice-bar">
-      <view
-        class="voice-main-btn"
-        :class="{ active: isListening }"
-        @touchstart="onVoiceStart"
-        @touchend="onVoiceEnd"
-      >
-        <text class="voice-main-icon">{{ isListening ? '🔴' : '🎤' }}</text>
-        <text class="voice-main-text">{{ isListening ? '松开结束' : '按住说话' }}</text>
-      </view>
-      <view class="mode-switch" @tap="inputMode = 'text'">
-        <text>键盘</text>
-      </view>
-    </view>
-
-    <!-- 文字模式 -->
-    <view v-else class="input-bar">
-      <view class="mode-switch" @tap="inputMode = 'voice'">
-        <text>🎤</text>
-      </view>
+    <!-- 文字输入 -->
+    <view class="input-bar">
       <input
         v-model="inputText"
         class="input-field"
@@ -83,9 +66,6 @@
 <script setup>
 import { ref, nextTick, onMounted } from 'vue';
 import config from '@/config/config';
-// #ifdef MP-WEIXIN
-import { startVoiceRecognize, stopVoiceRecognize, speak } from '@/utils/voice';
-// #endif
 
 const OPENCLAW_API = config.openclawApi;
 const CHAT_MODEL = config.chatModel || 'deepseek-v4-flash';
@@ -95,9 +75,6 @@ const inputText = ref('');
 const sending = ref(false);
 const scrollTarget = ref('');
 const sessionKey = ref('');
-const isListening = ref(false);
-const voiceText = ref('');
-const inputMode = ref('voice'); // 'voice' | 'text'
 
 // 页面加载时尝试获取定位坐标（用于推荐当地地点）
 const userLat = ref(0);
@@ -133,58 +110,6 @@ function clearChat() {
   sessionKey.value = '';
 }
 
-// #ifdef MP-WEIXIN
-function onVoiceStart() {
-  console.log('[voice] onVoiceStart called, sending:', sending.value);
-  if (sending.value) return;
-  isListening.value = true;
-  voiceText.value = '';
-
-  console.log('[voice] calling startVoiceRecognize, isListening:', isListening.value);
-  try {
-  startVoiceRecognize(
-    (res) => {
-      console.log('[voice] result:', res);
-      if (res.isFinal) {
-        voiceText.value = '';
-        if (res.text) {
-          inputText.value = res.text;
-          // 识别完成自动发送
-          nextTick(() => sendMessage());
-        }
-      } else {
-        voiceText.value = res.text;
-      }
-    },
-    (err) => {
-      console.error('[voice] error:', err);
-      isListening.value = false;
-      voiceText.value = '';
-      uni.showToast({ title: '语音识别失败: ' + (err.errMsg || JSON.stringify(err)), icon: 'none' });
-    }
-  );
-  } catch (e) {
-    console.error('[voice] startVoiceRecognize threw:', e);
-    isListening.value = false;
-    uni.showToast({ title: '语音初始化失败: ' + e.message, icon: 'none' });
-  }
-}
-
-function onVoiceEnd() {
-  console.log('[voice] onVoiceEnd called, isListening:', isListening.value);
-  if (!isListening.value) return;
-  isListening.value = false;
-  stopVoiceRecognize();
-}
-// #endif
-
-// #ifdef H5
-function onVoiceStart() {
-  uni.showToast({ title: 'H5不支持语音，请使用小程序', icon: 'none' });
-}
-function onVoiceEnd() {}
-// #endif
-
 // 判断回复中是否包含地点信息
 function hasLocation(text) {
   if (!text) return false;
@@ -194,7 +119,6 @@ function hasLocation(text) {
 
 // 从文本中提取地点并打开地图
 function openMapFromText(text) {
-  // 提取地名：匹配「XX公园」「XX广场」等模式
   const patterns = [
     /([一-龥]{2,10}(?:公园|广场|商场|购物中心|餐厅|酒店|景区|博物馆|图书馆|医院|学校))/g,
     /(?:推荐|去|到|在)([一-龥]{2,15}(?:路|街|号|区))/g,
@@ -208,7 +132,6 @@ function openMapFromText(text) {
     }
   }
 
-  // 去重
   places = [...new Set(places)].slice(0, 3);
 
   if (places.length === 0) {
@@ -216,13 +139,11 @@ function openMapFromText(text) {
     return;
   }
 
-  // 如果只有一个地点，直接搜索
   if (places.length === 1) {
     openMapSearch(places[0]);
     return;
   }
 
-  // 多个地点让用户选择
   uni.showActionSheet({
     itemList: places,
     success: (res) => {
@@ -231,17 +152,14 @@ function openMapFromText(text) {
   });
 }
 
-// 打开地图搜索
 function openMapSearch(name) {
   // #ifdef MP-WEIXIN
-  // 使用微信内置地图搜索
   uni.openLocation({
     latitude: 0,
     longitude: 0,
     name: name,
     scale: 15,
     fail: () => {
-      // 如果没有坐标，打开腾讯地图 H5
       openExternalMap(name);
     }
   });
@@ -252,10 +170,8 @@ function openMapSearch(name) {
   // #endif
 }
 
-// 打开外部地图
 function openExternalMap(name) {
   const encoded = encodeURIComponent(name);
-  // 腾讯地图 H5
   const url = `https://apis.map.qq.com/chooser/search?type=1&keyword=${encoded}&region=全国`;
   window.open(url, '_blank');
 }
@@ -266,16 +182,13 @@ async function sendMessage() {
 
   messages.value.push({ role: 'user', text });
   inputText.value = '';
-  voiceText.value = '';
   scrollToBottom();
 
   sending.value = true;
   try {
-    // 获取用户城市信息，带上地域上下文
     const storedUser = uni.getStorageSync('mock-user-info');
     let userCity = storedUser?.city || '';
 
-    // 如果用户没设置城市，尝试从缓存的定位获取
     if (!userCity) {
       try {
         const cachedLocation = uni.getStorageSync('user-city');
@@ -292,7 +205,6 @@ async function sendMessage() {
     if (sessionKey.value) {
       payload.session_key = sessionKey.value;
     }
-    // 在消息前注入地理位置上下文，让 AI 推荐当地地点
     if (userCity) {
       payload.message = `[用户所在城市：${userCity}] ${text}`;
     } else if (userLat.value && userLng.value) {
@@ -319,15 +231,6 @@ async function sendMessage() {
         sessionKey.value = newSessionKey;
       }
       messages.value.push({ role: 'bot', text: reply || '（无回复）' });
-
-      // 语音播报 AI 回复
-      // #ifdef MP-WEIXIN
-      if (reply) {
-        speak(reply).catch((err) => {
-          console.error('[chat] TTS failed:', err)
-        })
-      }
-      // #endif
     } else {
       const errMsg = res.data?.message || '未知错误';
       messages.value.push({ role: 'bot', text: `抱歉，查询失败：${errMsg}` });
@@ -430,61 +333,6 @@ async function sendMessage() {
   color: #666;
 }
 
-.voice-preview {
-  padding: 12rpx 24rpx;
-  background: #e8f5e9;
-  font-size: 26rpx;
-  color: #2e7d32;
-  text-align: center;
-}
-
-.voice-bar {
-  display: flex;
-  align-items: center;
-  padding: 16rpx 24rpx;
-  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
-  background: #fff;
-  border-top: 1rpx solid #e5e5e5;
-}
-
-.voice-main-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 96rpx;
-  background: #f0fdf4;
-  border-radius: 48rpx;
-  border: 2rpx solid #bbf7d0;
-}
-
-.voice-main-btn.active {
-  background: #fef2f2;
-  border-color: #fecaca;
-}
-
-.voice-main-icon {
-  font-size: 36rpx;
-  margin-right: 12rpx;
-}
-
-.voice-main-text {
-  font-size: 30rpx;
-  color: #333;
-}
-
-.mode-switch {
-  width: 80rpx;
-  height: 80rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 16rpx;
-  background: #f5f5f5;
-  border-radius: 50%;
-  font-size: 28rpx;
-}
-
 .input-bar {
   display: flex;
   align-items: center;
@@ -492,32 +340,6 @@ async function sendMessage() {
   padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
   background: #fff;
   border-top: 1rpx solid #e5e5e5;
-}
-
-.voice-btn {
-  flex-shrink: 0;
-  height: 72rpx;
-  line-height: 72rpx;
-  padding: 0 24rpx;
-  margin-right: 16rpx;
-  background: #eef2ff;
-  color: #2563eb;
-  font-size: 26rpx;
-  border-radius: 36rpx;
-  border: none;
-}
-
-.voice-btn.active {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.voice-btn[disabled] {
-  opacity: 0.45;
-}
-
-.voice-btn::after {
-  border: none;
 }
 
 .input-field {
@@ -547,5 +369,31 @@ async function sendMessage() {
 
 .send-btn::after {
   border: none;
+}
+
+/* AI 生成内容声明横幅 */
+.ai-disclaimer {
+  padding: 14rpx 24rpx;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  text-align: center;
+}
+.ai-disclaimer-text {
+  font-size: 24rpx;
+  color: #92400e;
+  font-weight: 500;
+}
+
+/* AI 生成标签（每条 bot 回复上方） */
+.ai-tag {
+  margin-bottom: 8rpx;
+}
+.ai-tag-text {
+  display: inline-block;
+  padding: 2rpx 12rpx;
+  font-size: 20rpx;
+  color: #6b7280;
+  background: #f3f4f6;
+  border-radius: 8rpx;
+  border: 1rpx solid #e5e7eb;
 }
 </style>

@@ -97,6 +97,9 @@ func main() {
 	// 视频模块初始化
 	initVideo()
 
+	// 微信登录模块初始化
+	initWxLogin()
+
 	// OpenClaw CLI path
 	openclawBin = os.Getenv("OPENCLAW_BIN")
 	if openclawBin == "" {
@@ -114,6 +117,7 @@ func main() {
 	http.HandleFunc("/api/video/enhance", corsMiddleware(handleVideoEnhance))
 	http.HandleFunc("/api/video/render", corsMiddleware(handleVideoRender))
 	http.HandleFunc("/api/video/render/", corsMiddleware(handleVideoRenderStatus))
+	http.HandleFunc("/api/wx-login", corsMiddleware(handleWxLogin))
 	http.HandleFunc("/health", handleHealth)
 
 	log.Printf("Babyplace chat server starting on :%s", port)
