@@ -71,15 +71,20 @@ func main() {
 	_ = godotenv.Load("../.env")
 	_ = godotenv.Load(".env")
 
+	// 初始化 SQLite 数据库（POI、评价等）
+	if err := initDB(); err != nil {
+		log.Fatalf("[db] init failed: %v", err)
+	}
+
 	astrbotBaseURL = strings.TrimRight(os.Getenv("ASTBOT_BASE_URL"), "/")
 	astrbotAPIKey = os.Getenv("ASTBOT_API_KEY")
 	timeoutSec := 120
 
 	if astrbotBaseURL == "" {
-		log.Fatal("ASTBOT_BASE_URL is required")
+		log.Println("[warn] ASTBOT_BASE_URL not set, chat disabled")
 	}
 	if astrbotAPIKey == "" {
-		log.Fatal("ASTBOT_API_KEY is required")
+		log.Println("[warn] ASTBOT_API_KEY not set, chat disabled")
 	}
 	if v := os.Getenv("ASTBOT_TIMEOUT"); v != "" {
 		fmt.Sscanf(v, "%d", &timeoutSec)
@@ -91,14 +96,12 @@ func main() {
 		port = "8080"
 	}
 
-	// 小红书模块初始化
+	// 模块初始化
 	initXHS()
-
-	// 视频模块初始化
 	initVideo()
-
-	// 微信登录模块初始化
 	initWxLogin()
+	initAmap()
+	initDify()
 
 	// OpenClaw CLI path
 	openclawBin = os.Getenv("OPENCLAW_BIN")
@@ -106,9 +109,15 @@ func main() {
 		openclawBin = "openclaw"
 	}
 
+	// babyplace-admin（兼容原 uniCloud HTTP 云函数 API）
+	http.HandleFunc("/babyplace-admin", corsMiddleware(handleBabyplaceAdmin))
+
 	http.HandleFunc("/api/chat", corsMiddleware(handleChat))
 	http.HandleFunc("/api/openclaw/chat", corsMiddleware(handleOpenClawChat))
 	http.HandleFunc("/api/client-log", corsMiddleware(handleClientLog))
+	http.HandleFunc("/api/dify/chat", corsMiddleware(handleDifyChat))
+	http.HandleFunc("/api/amap/search", corsMiddleware(handleAmapSearch))
+	http.HandleFunc("/api/amap/nearby", corsMiddleware(handleAmapNearby))
 	http.HandleFunc("/api/xhs/status", corsMiddleware(handleXHSStatus))
 	http.HandleFunc("/api/xhs/auth", corsMiddleware(handleXHSAuth))
 	http.HandleFunc("/api/xhs/callback", corsMiddleware(handleXHSCallback))
@@ -120,8 +129,8 @@ func main() {
 	http.HandleFunc("/api/wx-login", corsMiddleware(handleWxLogin))
 	http.HandleFunc("/health", handleHealth)
 
-	log.Printf("Babyplace chat server starting on :%s", port)
-	log.Printf("AstrBot endpoint: %s", astrbotBaseURL)
+	log.Printf("Babyplace server starting on :%s", port)
+	log.Printf("Admin endpoint: POST /babyplace-admin")
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
