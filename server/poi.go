@@ -15,11 +15,14 @@ const poiColumns = `id, name, canonical_name, alias, city, district, address,
 	summary, recommend_reason, notice, cover_image, gallery, tags,
 	source_count, review_count, avg_rating, status, created_at, updated_at`
 
-// POI 列表
+// POI 列表（兼容 poi 云对象：支持 city/district/includeDraft 过滤）
 func handlePoiList(params map[string]interface{}) AdminResponse {
 	page := getInt(params, "page", 1)
 	pageSize := getInt(params, "pageSize", 20)
 	keyword := getString(params, "keyword")
+	city := getString(params, "city")
+	district := getString(params, "district")
+	includeDraft := getBool(params, "includeDraft")
 
 	if page < 1 {
 		page = 1
@@ -28,8 +31,20 @@ func handlePoiList(params map[string]interface{}) AdminResponse {
 		pageSize = 20
 	}
 
-	where := "WHERE status = 'published'"
+	// 状态过滤：默认只看 published，除非 includeDraft=true
+	where := "WHERE 1=1"
 	var args []interface{}
+	if !includeDraft {
+		where += " AND status = 'published'"
+	}
+	if city != "" {
+		where += " AND city = ?"
+		args = append(args, city)
+	}
+	if district != "" {
+		where += " AND district = ?"
+		args = append(args, district)
+	}
 	if keyword != "" {
 		where += " AND (name LIKE ? OR canonical_name LIKE ? OR address LIKE ? OR city LIKE ? OR district LIKE ?)"
 		kw := "%" + keyword + "%"
@@ -74,7 +89,7 @@ func handlePoiList(params map[string]interface{}) AdminResponse {
 	}, "ok")
 }
 
-// POI 详情
+// POI 详情（兼容 poi 云对象：同时返回 reviews + sources）
 func handlePoiDetail(params map[string]interface{}) AdminResponse {
 	id := getString(params, "id")
 	if id == "" {
@@ -91,7 +106,45 @@ func handlePoiDetail(params map[string]interface{}) AdminResponse {
 		return fail(500, "query failed")
 	}
 
-	return ok(p, "ok")
+	// 查询关联评价
+	reviews := make([]Review, 0)
+	reviewRows, err := db.Query(
+		fmt.Sprintf("SELECT %s FROM review WHERE poi_id = ? AND status = 'approved' ORDER BY created_at DESC LIMIT 20", reviewColumns),
+		id,
+	)
+	if err == nil {
+		defer reviewRows.Close()
+		for reviewRows.Next() {
+			r, err := reviewFromRow(reviewRows)
+			if err != nil {
+				continue
+			}
+			reviews = append(reviews, *r)
+		}
+	}
+
+	// 查询关联来源
+	sources := make([]ContentSource, 0)
+	sourceRows, err := db.Query(
+		fmt.Sprintf("SELECT %s FROM content_source WHERE poi_id = ? AND status = 'active' ORDER BY updated_at DESC LIMIT 20", sourceColumns),
+		id,
+	)
+	if err == nil {
+		defer sourceRows.Close()
+		for sourceRows.Next() {
+			s, err := sourceFromRow(sourceRows)
+			if err != nil {
+				continue
+			}
+			sources = append(sources, *s)
+		}
+	}
+
+	return ok(map[string]interface{}{
+		"poi":     p,
+		"reviews": reviews,
+		"sources": sources,
+	}, "ok")
 }
 
 // 附近 POI 搜索
@@ -169,17 +222,18 @@ func handlePoiNearby(params map[string]interface{}) AdminResponse {
 	}, "ok")
 }
 
-// POI 创建
+// POI 创建（兼容 poi 云对象：自动去重，名称相似度>0.85 + 距离<500m → 合并）
 func handlePoiCreate(params map[string]interface{}) AdminResponse {
 	payload := getPayload(params)
 	now := nowMillis()
-	id := generateID()
 
 	name := getString(payload, "name")
 	if name == "" {
 		return fail(400, "name is required")
 	}
 
+	city := getString(payload, "city")
+	district := getString(payload, "district")
 	location, _ := payload["location"].(map[string]interface{})
 	lat := 0.0
 	lng := 0.0
@@ -188,6 +242,46 @@ func handlePoiCreate(params map[string]interface{}) AdminResponse {
 		lng = getFloat(location, "lng", 0)
 	}
 
+	// 去重检查：同城市同区域，名称相似度>0.85 且距离<500m → 合并
+	if city != "" && district != "" {
+		dedupRows, err := db.Query(
+			fmt.Sprintf("SELECT %s FROM poi WHERE city = ? AND district = ?", poiColumns),
+			city, district,
+		)
+		if err == nil {
+			defer dedupRows.Close()
+			var bestMatch *POI
+			var bestSimilarity float64
+			for dedupRows.Next() {
+				existing, err := poiFromRow(dedupRows)
+				if err != nil {
+					continue
+				}
+				similarity := calcNameSimilarity(name, existing.Name)
+				dist := haversineDistance(lat, lng, existing.Location.Lat, existing.Location.Lng)
+				if similarity > 0.85 && dist < 500 {
+					if bestMatch == nil || similarity > bestSimilarity {
+						bestMatch = existing
+						bestSimilarity = similarity
+					}
+				}
+			}
+			if bestMatch != nil {
+				// 合并：更新 source_count，合并 alias
+				mergedAlias := mergeAlias(bestMatch.Alias, name)
+				db.Exec(`UPDATE poi SET alias = ?, source_count = source_count + 1, updated_at = ? WHERE id = ?`,
+					jsonMarshal(mergedAlias), now, bestMatch.ID)
+				log.Printf("[poi.create] dedup merge: %s → %s (similarity=%.2f)", name, bestMatch.Name, bestSimilarity)
+				return ok(map[string]interface{}{
+					"id":        bestMatch.ID,
+					"deduped":   true,
+					"similarity": bestSimilarity,
+				}, "merged")
+			}
+		}
+	}
+
+	id := generateID()
 	facilities, _ := payload["facilities"].(map[string]interface{})
 
 	_, err := db.Exec(`INSERT INTO poi (
@@ -437,4 +531,94 @@ func getStringDefault(params map[string]interface{}, key, def string) string {
 		return def
 	}
 	return v
+}
+
+// 名称相似度计算（Levenshtein 距离）
+func normalizeName(s string) string {
+	s = strings.ToLower(s)
+	replacer := strings.NewReplacer(
+		"(", "", ")", "", "（", "", "）", "",
+		",", "", "，", "", ".", "", "。", "",
+		":", "", "：", "", "/", "", "\\", "", "-", "", " ", "",
+	)
+	return replacer.Replace(s)
+}
+
+func levenshteinDistance(a, b string) int {
+	// 使用 rune 切片以正确处理中文字符
+	ra := []rune(a)
+	rb := []rune(b)
+	la, lb := len(ra), len(rb)
+	if la == 0 {
+		return lb
+	}
+	if lb == 0 {
+		return la
+	}
+	dp := make([]int, lb+1)
+	for j := 0; j <= lb; j++ {
+		dp[j] = j
+	}
+	for i := 1; i <= la; i++ {
+		prev := dp[0]
+		dp[0] = i
+		for j := 1; j <= lb; j++ {
+			temp := dp[j]
+			if ra[i-1] == rb[j-1] {
+				dp[j] = prev
+			} else {
+				dp[j] = min(prev, dp[j], dp[j-1]) + 1
+			}
+			prev = temp
+		}
+	}
+	return dp[lb]
+}
+
+func min(a, b, c int) int {
+	if a < b {
+		if a < c {
+			return a
+		}
+		return c
+	}
+	if b < c {
+		return b
+	}
+	return c
+}
+
+func calcNameSimilarity(a, b string) float64 {
+	left := normalizeName(a)
+	right := normalizeName(b)
+	if left == "" || right == "" {
+		return 0
+	}
+	if left == right {
+		return 1
+	}
+	dist := levenshteinDistance(left, right)
+	maxLen := len([]rune(left))
+	if rLen := len([]rune(right)); rLen > maxLen {
+		maxLen = rLen
+	}
+	if maxLen == 0 {
+		return 0
+	}
+	return 1 - float64(dist)/float64(maxLen)
+}
+
+func mergeAlias(existing []string, newName string) []string {
+	seen := make(map[string]bool)
+	result := make([]string, 0)
+	for _, s := range existing {
+		if s != "" && !seen[s] {
+			seen[s] = true
+			result = append(result, s)
+		}
+	}
+	if newName != "" && !seen[newName] {
+		result = append(result, newName)
+	}
+	return result
 }

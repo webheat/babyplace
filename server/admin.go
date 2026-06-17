@@ -114,6 +114,10 @@ func handleBabyplaceAdmin(w http.ResponseWriter, r *http.Request) {
 	case action == "source.remove":
 		resp = handleSourceRemove(params)
 
+	// 路线规划
+	case action == "route.drive":
+		resp = handleRouteDrive(params)
+
 	// Seed 操作（数据导入）
 	case action == "seed.ping", action == "ping":
 		resp = ok(map[string]int64{"now": nowMillis()}, "pong")
@@ -125,6 +129,20 @@ func handleBabyplaceAdmin(w http.ResponseWriter, r *http.Request) {
 		resp = handleSeedUpsertPoiBatch(params)
 	case action == "seed.listPoiByNames":
 		resp = handleSeedListPoiByNames(params)
+
+	// 旧版无前缀 goods 操作（goods.js 使用 action: 'list' 而非 'poi.list'）
+	case action == "list":
+		resp = handleGoodsList(params)
+	case action == "detail":
+		resp = handleGoodsDetail(params)
+	case action == "create":
+		resp = handleGoodsCreate(params)
+	case action == "update":
+		resp = handleGoodsUpdate(params)
+	case action == "remove":
+		resp = handleGoodsRemove(params)
+	case action == "batchImport":
+		resp = handleGoodsBatchImport(params)
 
 	default:
 		resp = fail(400, "invalid action: "+action)
