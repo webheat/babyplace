@@ -1,19 +1,13 @@
 /**
- * AI 客服 API
- * 支持两种后端模式：
- *   1. uniCloud 云函数（默认）
- *   2. Golang HTTP 后端（设置 CHAT_API_URL 后启用）
+ * AI 客服 API — 通过 Go 后端 HTTP 接口调用
  */
 
-const CHAT_API_URL = ''; // 例: https://your-server.com/api/chat，留空则使用云函数
-
-const chatObject = CHAT_API_URL ? null : uniCloud.importObject('babyplace-chat');
+import { callAdminAction } from '@/api/admin';
 
 export async function sendChatMessage(message, sessionId) {
-  if (CHAT_API_URL) {
-    // Golang HTTP 后端模式
+  try {
     const [err, res] = await uni.request({
-      url: CHAT_API_URL,
+      url: 'https://byupload.aixifs.com/api/chat',
       method: 'POST',
       header: { 'Content-Type': 'application/json' },
       data: { message, session_id: sessionId },
@@ -23,7 +17,7 @@ export async function sendChatMessage(message, sessionId) {
       return { code: -1, message: err.errMsg || '网络请求失败' };
     }
     return res.data;
+  } catch (error) {
+    return { code: -1, message: error.message || '网络请求失败' };
   }
-  // uniCloud 云函数模式
-  return chatObject.send({ message, sessionId });
 }

@@ -3,17 +3,6 @@ import { callAdminAction } from '@/api/admin';
 const AMAP_DRIVE_URL = 'https://restapi.amap.com/v3/direction/driving';
 const AMAP_WEB_KEY = 'abcef158da87a62e42e1fb968ed33dd4';
 
-function getRouteObject() {
-  if (typeof uniCloud === 'undefined' || !uniCloud || typeof uniCloud.importObject !== 'function') {
-    return null;
-  }
-  try {
-    return uniCloud.importObject('route');
-  } catch (_error) {
-    return null;
-  }
-}
-
 function sanitizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
@@ -135,16 +124,6 @@ function requestAmapDrive(params = {}) {
 }
 
 export async function planDriveRoute(params = {}) {
-  const routeObject = getRouteObject();
-  if (routeObject && typeof routeObject.drive === 'function') {
-    try {
-      const result = await routeObject.drive(params);
-      if (result?.code === 0) return result;
-    } catch (_error) {
-      // Fall through to HTTP/admin fallback.
-    }
-  }
-
   try {
     const adminResult = await callAdminAction('route.drive', params);
     if (adminResult?.code === 0) return adminResult;

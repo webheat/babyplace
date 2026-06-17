@@ -28,3 +28,6 @@ __pycache__/
 server/babyplace-chat-server
 server/babyplace-server
 test-images/
+
+# SQLite database
+data/

@@ -1,7 +1,5 @@
 import { detailPoi } from '@/api/poi';
 
-const restaurantObject = uniCloud.importObject('restaurant');
-
 function ok(data = {}, message = 'ok') {
   return { code: 0, message, data };
 }
@@ -56,22 +54,10 @@ async function buildFallbackResult(placeId, params = {}) {
 }
 
 export async function listRestaurantByPlace(placeId, params = {}) {
-  try {
-    const result = await restaurantObject.listByPlace({ place_id: placeId, ...params });
-    if (result?.code === 0) return result;
-  } catch (error) {
-    console.error('restaurant.listByPlace importObject failed, fallback to local result', error);
-  }
   return buildFallbackResult(placeId, params);
 }
 
-export async function getRestaurantLink(restaurantId, params = {}) {
-  try {
-    const result = await restaurantObject.getLink({ restaurant_id: restaurantId, ...params });
-    if (result?.code === 0) return result;
-  } catch (error) {
-    console.error('restaurant.getLink importObject failed, fallback to search url', error);
-  }
+export async function getRestaurantLink(restaurantId) {
   return ok({
     restaurant_id: restaurantId,
     jump_url: '',
@@ -84,26 +70,14 @@ export async function getRestaurantLink(restaurantId, params = {}) {
   });
 }
 
-export async function trackRestaurantEvent(payload = {}) {
-  try {
-    const result = await restaurantObject.track(payload);
-    if (result?.code === 0) return result;
-  } catch (error) {
-    console.error('restaurant.track importObject failed, ignore event', error);
-  }
+export async function trackRestaurantEvent() {
   return ok({}, 'ignored');
 }
 
 export async function getRestaurantDashboard(params = {}) {
-  try {
-    const result = await restaurantObject.dashboard(params);
-    if (result?.code === 0) return result;
-  } catch (error) {
-    console.error('restaurant.dashboard importObject failed', error);
-  }
   return {
-    code: -1,
-    message: 'dashboard unavailable',
+    code: 0,
+    message: 'ok',
     data: {
       days: Number(params.days || 7),
       summary: {

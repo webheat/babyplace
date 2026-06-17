@@ -121,6 +121,10 @@ func handleBabyplaceAdmin(w http.ResponseWriter, r *http.Request) {
 		resp = handleMptextArticles(params)
 	case action == "mptext.author":
 		resp = handleMptextAuthor(params)
+	case action == "mptext.search":
+		resp = handleMptextSearch(params)
+	case action == "mptext.accountByURL":
+		resp = handleMptextAccountByURL(params)
 
 	// 路线规划
 	case action == "route.drive":

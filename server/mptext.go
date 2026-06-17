@@ -90,11 +90,75 @@ func mptextGetArticleList(fakeid string, begin, size int) (map[string]interface{
 	return result, nil
 }
 
-// mptextGetAuthorInfo 查询公众号主体信息（无需认证）
+// mptextGetAuthorInfo 查询公众号主体信息（beta，可能需要认证）
 func mptextGetAuthorInfo(fakeid string) (map[string]interface{}, error) {
 	reqURL := fmt.Sprintf("%s/beta/authorinfo?fakeid=%s", mptextBaseURL, fakeid)
 
-	resp, err := mptextClient.Get(reqURL)
+	req, _ := http.NewRequest("GET", reqURL, nil)
+	if mptextAuthKey != "" {
+		req.Header.Set("X-Auth-Key", mptextAuthKey)
+	}
+
+	resp, err := mptextClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read body failed: %w", err)
+	}
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("parse json failed: %w", err)
+	}
+	return result, nil
+}
+
+// mptextSearchAccount 根据关键字搜索公众号（需要认证）
+func mptextSearchAccount(keyword string, begin, size int) (map[string]interface{}, error) {
+	if mptextAuthKey == "" {
+		return nil, fmt.Errorf("auth key not configured")
+	}
+
+	reqURL := fmt.Sprintf("%s/v1/account?keyword=%s&begin=%d&size=%d",
+		mptextBaseURL, url.QueryEscape(keyword), begin, size)
+
+	req, _ := http.NewRequest("GET", reqURL, nil)
+	req.Header.Set("X-Auth-Key", mptextAuthKey)
+
+	resp, err := mptextClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read body failed: %w", err)
+	}
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("parse json failed: %w", err)
+	}
+	return result, nil
+}
+
+// mptextGetAccountByURL 根据文章链接查询公众号（需要认证）
+func mptextGetAccountByURL(articleURL string) (map[string]interface{}, error) {
+	if mptextAuthKey == "" {
+		return nil, fmt.Errorf("auth key not configured")
+	}
+
+	reqURL := fmt.Sprintf("%s/v1/accountbyurl?url=%s", mptextBaseURL, url.QueryEscape(articleURL))
+
+	req, _ := http.NewRequest("GET", reqURL, nil)
+	req.Header.Set("X-Auth-Key", mptextAuthKey)
+
+	resp, err := mptextClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
@@ -309,6 +373,41 @@ func handleMptextAuthor(params map[string]interface{}) AdminResponse {
 	if err != nil {
 		log.Printf("[mptext.author] error: %v", err)
 		return fail(502, "get author info failed: "+err.Error())
+	}
+
+	return ok(data, "ok")
+}
+
+func handleMptextSearch(params map[string]interface{}) AdminResponse {
+	keyword := getString(params, "keyword")
+	if keyword == "" {
+		return fail(400, "keyword is required")
+	}
+	begin := getInt(params, "begin", 0)
+	size := getInt(params, "size", 5)
+	if size > 20 {
+		size = 20
+	}
+
+	data, err := mptextSearchAccount(keyword, begin, size)
+	if err != nil {
+		log.Printf("[mptext.search] error: %v", err)
+		return fail(502, "search account failed: "+err.Error())
+	}
+
+	return ok(data, "ok")
+}
+
+func handleMptextAccountByURL(params map[string]interface{}) AdminResponse {
+	articleURL := getString(params, "url")
+	if articleURL == "" {
+		return fail(400, "url is required")
+	}
+
+	data, err := mptextGetAccountByURL(articleURL)
+	if err != nil {
+		log.Printf("[mptext.accountByURL] error: %v", err)
+		return fail(502, "get account by url failed: "+err.Error())
 	}
 
 	return ok(data, "ok")

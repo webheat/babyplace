@@ -1,8 +1,6 @@
 import { callAdminAction } from '@/api/admin';
 import poiSnapshot from '@/data/poi-snapshot.json';
 
-const poiObject = uniCloud.importObject('poi');
-
 function ok(data = {}, message = 'ok') {
   return { code: 0, message, data };
 }
@@ -69,17 +67,17 @@ function buildSnapshotNearbyResult(params = {}) {
   });
 }
 
-async function fallbackListPoi(params = {}) {
+export async function listPoi(params = {}) {
   const result = await callAdminAction('poi.list', params);
   return result?.code === 0 ? result : buildSnapshotListResult(params);
 }
 
-async function fallbackDetailPoi(id, params = {}) {
+export async function detailPoi(id, params = {}) {
   const [poiResult, reviewResult] = await Promise.all([
     callAdminAction('poi.detail', { id, ...params }),
     callAdminAction('review.listByPoi', { poi_id: id, page: 1, pageSize: 20 }),
   ]);
-  if (poiResult?.code !== 0) return poiResult;
+  if (poiResult?.code !== 0) return buildSnapshotDetailResult(id, params);
   return {
     code: 0,
     message: 'ok',
@@ -91,38 +89,7 @@ async function fallbackDetailPoi(id, params = {}) {
   };
 }
 
-async function fallbackNearbyPoi(params = {}) {
+export async function nearbyPoi(params = {}) {
   const result = await callAdminAction('poi.nearby', params);
   return result?.code === 0 ? result : buildSnapshotNearbyResult(params);
-}
-
-export async function listPoi(params = {}) {
-  try {
-    const result = await poiObject.list(params);
-    if (result?.code === 0) return result;
-  } catch (error) {
-    console.error('poi.list importObject failed, fallback to admin action', error);
-  }
-  return fallbackListPoi(params);
-}
-
-export async function detailPoi(id, params = {}) {
-  try {
-    const result = await poiObject.detail({ id, ...params });
-    if (result?.code === 0) return result;
-  } catch (error) {
-    console.error('poi.detail importObject failed, fallback to admin action', error);
-  }
-  const result = await fallbackDetailPoi(id, params);
-  return result?.code === 0 ? result : buildSnapshotDetailResult(id, params);
-}
-
-export async function nearbyPoi(params = {}) {
-  try {
-    const result = await poiObject.nearby(params);
-    if (result?.code === 0) return result;
-  } catch (error) {
-    console.error('poi.nearby importObject failed, fallback to admin action', error);
-  }
-  return fallbackNearbyPoi(params);
 }

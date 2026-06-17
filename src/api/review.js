@@ -1,9 +1,9 @@
-const reviewObject = uniCloud.importObject('review');
+import { callAdminAction } from '@/api/admin';
 
 export async function createReview(payload) {
-  return reviewObject.create({ payload });
+  return callAdminAction('review.create', { payload });
 }
 
 export async function listReviewByPoi(poi_id, params = {}) {
-  return reviewObject.listByPoi({ poi_id, ...params });
+  return callAdminAction('review.listByPoi', { poi_id, ...params });
 }
