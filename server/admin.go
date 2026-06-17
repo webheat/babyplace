@@ -112,7 +112,23 @@ func handleBabyplaceAdmin(w http.ResponseWriter, r *http.Request) {
 	case action == "source.update":
 		resp = handleSourceUpdate(params)
 	case action == "source.remove":
+
+	// mptext 公众号文章抓取
+	case action == "mptext.fetch":
+		resp = handleMptextFetch(params)
+	case action == "mptext.articles":
+		resp = handleMptextArticles(params)
+	case action == "mptext.author":
+		resp = handleMptextAuthor(params)
 		resp = handleSourceRemove(params)
+
+	// mptext 公众号文章抓取
+	case action == "mptext.fetch":
+		resp = handleMptextFetch(params)
+	case action == "mptext.articles":
+		resp = handleMptextArticles(params)
+	case action == "mptext.author":
+		resp = handleMptextAuthor(params)
 
 	// 路线规划
 	case action == "route.drive":
