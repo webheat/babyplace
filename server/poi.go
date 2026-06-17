@@ -89,7 +89,7 @@ func handlePoiList(params map[string]interface{}) AdminResponse {
 	}, "ok")
 }
 
-// POI 详情（兼容 poi 云对象：同时返回 reviews + sources）
+// POI 详情（直接返回 POI 对象，前端会单独调 review.listByPoi 获取评价）
 func handlePoiDetail(params map[string]interface{}) AdminResponse {
 	id := getString(params, "id")
 	if id == "" {
@@ -106,45 +106,8 @@ func handlePoiDetail(params map[string]interface{}) AdminResponse {
 		return fail(500, "query failed")
 	}
 
-	// 查询关联评价
-	reviews := make([]Review, 0)
-	reviewRows, err := db.Query(
-		fmt.Sprintf("SELECT %s FROM review WHERE poi_id = ? AND status = 'approved' ORDER BY created_at DESC LIMIT 20", reviewColumns),
-		id,
-	)
-	if err == nil {
-		defer reviewRows.Close()
-		for reviewRows.Next() {
-			r, err := reviewFromRow(reviewRows)
-			if err != nil {
-				continue
-			}
-			reviews = append(reviews, *r)
-		}
-	}
-
-	// 查询关联来源
-	sources := make([]ContentSource, 0)
-	sourceRows, err := db.Query(
-		fmt.Sprintf("SELECT %s FROM content_source WHERE poi_id = ? AND status = 'active' ORDER BY updated_at DESC LIMIT 20", sourceColumns),
-		id,
-	)
-	if err == nil {
-		defer sourceRows.Close()
-		for sourceRows.Next() {
-			s, err := sourceFromRow(sourceRows)
-			if err != nil {
-				continue
-			}
-			sources = append(sources, *s)
-		}
-	}
-
-	return ok(map[string]interface{}{
-		"poi":     p,
-		"reviews": reviews,
-		"sources": sources,
-	}, "ok")
+	// 直接返回 POI 对象（与原 babyplace-admin 行为一致）
+	return ok(p, "ok")
 }
 
 // 附近 POI 搜索
