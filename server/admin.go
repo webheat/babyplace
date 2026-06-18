@@ -101,6 +101,10 @@ func handleBabyplaceAdmin(w http.ResponseWriter, r *http.Request) {
 		resp = handleArticleUpdate(params)
 	case action == "article.remove":
 		resp = handleArticleRemove(params)
+	case action == "article.parse":
+		resp = handleArticleParse(params)
+	case action == "article.parseAll":
+		resp = handleArticleParseAll(params)
 
 	// 来源关联操作
 	case action == "source.list":

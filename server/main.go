@@ -103,6 +103,7 @@ func main() {
 	initAmap()
 	initDify()
 	initMptext()
+	initLLM()
 
 	// OpenClaw CLI path
 	openclawBin = os.Getenv("OPENCLAW_BIN")

@@ -163,8 +163,11 @@ func jsonUnmarshalMap(s string) map[string]interface{} {
 }
 
 func initDB() error {
-	exePath, _ := os.Getwd()
-	dbPath := filepath.Join(exePath, "data", "babyplace.db")
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		exePath, _ := os.Getwd()
+		dbPath = filepath.Join(exePath, "data", "babyplace.db")
+	}
 
 	// 确保 data 目录存在
 	if err := os.MkdirAll(filepath.Dir(dbPath), 0755); err != nil {
