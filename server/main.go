@@ -105,6 +105,9 @@ func main() {
 	initMptext()
 	initLLM()
 
+	// 启动定时文章抓取
+	startArticleCrawler()
+
 	// OpenClaw CLI path
 	openclawBin = os.Getenv("OPENCLAW_BIN")
 	if openclawBin == "" {
