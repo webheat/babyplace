@@ -160,6 +160,7 @@
         </view>
       </view>
     </view>
+    <contact-fab />
   </view>
 </template>
 
@@ -168,6 +169,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { onShareAppMessage, onShareTimeline } from '@dcloudio/uni-app';
 import PoiCard from '@/components/poi-card.vue';
 import DxTag from '@/components/dx-tag/dx-tag.vue';
+import ContactFab from '@/components/contact-fab.vue';
 import { recommendHome } from '@/api/recommend';
 import api from '@/common/api-util.js';
 import utils from '@/common/utils.js';

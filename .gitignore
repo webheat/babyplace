@@ -23,5 +23,16 @@ __pycache__/
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?" " 
+*.sw?" "
 .gstack/
+
+# Private keys
+private.*.key
+
+# Go binaries
+server/babyplace-server
+server/babyplace-chat-server
+
+# Data files
+data/
+

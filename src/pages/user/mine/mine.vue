@@ -103,6 +103,7 @@
         <poi-card v-for="item in latestList" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
       </view>
     </view>
+    <contact-fab />
   </view>
 </template>
 
@@ -110,6 +111,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import PoiCard from '@/components/poi-card.vue';
+import ContactFab from '@/components/contact-fab.vue';
 import { listPoi } from '@/api/poi';
 import { extractTags, extractUniqueCities, openPoiMap, pickTop } from '@/utils/poi';
 import auth from '@/common/auth.js';
