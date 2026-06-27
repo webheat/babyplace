@@ -124,12 +124,12 @@
         </view>
       </view>
 
-      <view class="section contact-section" @click="openCustomerService">
+      <button class="section contact-section" open-type="contact">
         <view class="contact-btn">
           <text class="contact-icon">服</text>
           <text class="contact-text">联系客服</text>
         </view>
-      </view>
+      </button>
     </view>
   </view>
 </template>
@@ -366,9 +366,6 @@ async function submitReview() {
   }
 }
 
-function openCustomerService() {
-  uni.showToast({ title: 'AI 客服即将上线', icon: 'none' });
-}
 
 onLoad((options) => {
   poiId = options?.id || options?.shopId || '';
