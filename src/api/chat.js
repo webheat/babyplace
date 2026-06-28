@@ -6,18 +6,19 @@ import { callAdminAction } from '@/api/admin';
 
 export async function sendChatMessage(message, sessionId) {
   try {
-    const [err, res] = await uni.request({
-      url: 'https://byupload.aixifs.com/api/chat',
-      method: 'POST',
-      header: { 'Content-Type': 'application/json' },
-      data: { message, session_id: sessionId },
-      timeout: 120000,
+    const res = await new Promise((resolve, reject) => {
+      uni.request({
+        url: 'https://byupload.aixifs.com/api/chat',
+        method: 'POST',
+        header: { 'Content-Type': 'application/json' },
+        data: { message, session_id: sessionId },
+        timeout: 120000,
+        success: (response) => resolve(response),
+        fail: (error) => reject(error),
+      });
     });
-    if (err) {
-      return { code: -1, message: err.errMsg || '网络请求失败' };
-    }
     return res.data;
   } catch (error) {
-    return { code: -1, message: error.message || '网络请求失败' };
+    return { code: -1, message: error?.errMsg || error?.message || '网络请求失败' };
   }
 }

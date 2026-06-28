@@ -101,6 +101,7 @@ func main() {
 	initVideo()
 	initWxLogin()
 	initAmap()
+	initRoute()
 	initDify()
 	initMptext()
 	initLLM()

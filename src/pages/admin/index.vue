@@ -346,14 +346,17 @@ async function consumeWechatCode(code) {
   uni.showLoading({ title: '微信登录中', mask: true })
   try {
     // 通过 Go 后端 wx-login 获取 openid
-    const [err, res] = await uni.request({
-      url: 'https://byupload.aixifs.com/api/wx-login',
-      method: 'POST',
-      header: { 'Content-Type': 'application/json' },
-      data: { code },
-      timeout: 15000,
-    })
-    if (err) throw new Error(err.errMsg || '网络请求失败')
+    const res = await new Promise((resolve, reject) => {
+      uni.request({
+        url: 'https://byupload.aixifs.com/api/wx-login',
+        method: 'POST',
+        header: { 'Content-Type': 'application/json' },
+        data: { code },
+        timeout: 15000,
+        success: (response) => resolve(response),
+        fail: (error) => reject(error),
+      });
+    });
     if (res.data?.status !== 'ok') throw new Error(res.data?.message || '登录失败')
 
     // 存储登录态
