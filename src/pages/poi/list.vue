@@ -16,7 +16,7 @@
     <view v-else class="list">
       <poi-card v-for="item in list" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
     </view>
-    <customer-service-fab />
+    <contact-fab />
   </view>
 </template>
 
@@ -25,7 +25,7 @@ import { onMounted, ref } from 'vue';
 import PoiCard from '@/components/poi-card.vue';
 import { listPoi } from '@/api/poi';
 import { openPoiMap } from '@/utils/poi';
-import CustomerServiceFab from '@/components/customer-service-fab.vue';
+import ContactFab from '@/components/contact-fab.vue';
 
 const loading = ref(false);
 const errorMessage = ref('');

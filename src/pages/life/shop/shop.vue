@@ -134,13 +134,14 @@
         </view>
       </view>
 
-      <view class="section contact-section" @click="openCustomerService">
+      <!-- #ifdef MP-WEIXIN -->
+      <button class="section contact-section" open-type="contact">
         <view class="contact-btn">
           <text class="contact-icon">服</text>
           <text class="contact-text">联系客服</text>
         </view>
-      </view>
-      <customer-service-fab :show="false" />
+      </button>
+      <!-- #endif -->
     </view>
   </view>
 </template>
@@ -154,7 +155,6 @@ import TagList from '@/components/tag-list.vue';
 import { detailPoi } from '@/api/poi';
 import { getRestaurantLink, listRestaurantByPlace, trackRestaurantEvent } from '@/api/restaurant';
 import { createReview } from '@/api/review';
-import CustomerServiceFab from '@/components/customer-service-fab.vue';
 
 const loading = ref(false);
 const submitting = ref(false);
@@ -376,10 +376,6 @@ async function submitReview() {
   } finally {
     submitting.value = false;
   }
-}
-
-function openCustomerService() {
-  uni.navigateTo({ url: '/pages/chat/chat' });
 }
 
 function goToVideoCapture() {
@@ -651,6 +647,10 @@ onShareTimeline(() => ({
   padding: 24rpx;
   border-radius: 20rpx;
   background: #fff;
+  line-height: normal;
+}
+.contact-section::after {
+  border: none;
 }
 .contact-btn {
   display: flex;

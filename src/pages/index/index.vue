@@ -160,7 +160,7 @@
         </view>
       </view>
     </view>
-    <customer-service-fab />
+    <contact-fab />
   </view>
 </template>
 
@@ -173,7 +173,7 @@ import { recommendHome } from '@/api/recommend';
 import api from '@/common/api-util.js';
 import utils from '@/common/utils.js';
 import { openPoiMap } from '@/utils/poi';
-import CustomerServiceFab from '@/components/customer-service-fab.vue';
+import ContactFab from '@/components/contact-fab.vue';
 
 const loading = ref(false);
 const bannerList = ref([]);
