@@ -16,7 +16,16 @@
     <view v-else class="list">
       <poi-card v-for="item in list" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
     </view>
-    <contact-fab />
+    <contact-fab
+      send-message-title="商品列表-购物咨询"
+      bubble-title="需要帮助？"
+      :questions="[
+        '这个商品有货吗？',
+        '支持什么支付方式？',
+        '可以开发票吗？',
+        '怎么联系人工客服？',
+      ]"
+    />
   </view>
 </template>
 

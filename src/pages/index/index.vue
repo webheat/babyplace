@@ -160,7 +160,16 @@
         </view>
       </view>
     </view>
-    <contact-fab />
+    <contact-fab
+      send-message-title="首页-商城咨询"
+      bubble-title="常见问题"
+      :questions="[
+        '有什么优惠活动？',
+        '怎么使用优惠券？',
+        '商品什么时候发货？',
+        '怎么联系人工客服？',
+      ]"
+    />
   </view>
 </template>
 

@@ -103,7 +103,16 @@
         <poi-card v-for="item in latestList" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
       </view>
     </view>
-    <contact-fab />
+    <contact-fab
+      send-message-title="个人中心-售后服务"
+      bubble-title="需要帮助？"
+      :questions="[
+        '怎么查看订单状态？',
+        '如何申请退款？',
+        '怎么修改收货地址？',
+        '怎么联系人工客服？',
+      ]"
+    />
   </view>
 </template>
 
