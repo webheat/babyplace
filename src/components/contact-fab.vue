@@ -1,37 +1,38 @@
 <template>
   <!-- #ifdef MP-WEIXIN -->
   <view class="fab-wrapper">
-    <view v-if="showBubble && questions.length" class="bubble">
+    <view v-if="showBubble" class="bubble">
       <view class="bubble-title">{{ bubbleTitle }}</view>
       <view
         v-for="(q, i) in questions"
         :key="i"
         class="bubble-item"
-        @click.stop="pickQuestion(q)"
+        @click="pickQuestion(q)"
       >
         {{ q }}
       </view>
+      <button
+        class="bubble-contact-btn"
+        open-type="contact"
+        :send-message-title="currentTitle"
+        :show-message-card="true"
+        @contact="onContact"
+        @error="onError"
+      >
+        直接咨询
+      </button>
       <view class="bubble-arrow" />
     </view>
-    <button
-      class="fab"
-      open-type="contact"
-      :send-message-title="currentTitle"
-      :show-message-card="true"
-      @contact="onContact"
-      @error="onError"
-    >
-      <view class="fab-btn" @click.stop="toggleBubble">
-        <text class="fab-icon">💬</text>
-      </view>
+    <view class="fab-btn" @click="toggleBubble">
+      <text class="fab-icon">💬</text>
       <text class="fab-label">在线客服</text>
-    </button>
+    </view>
   </view>
   <!-- #endif -->
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
   sendMessageTitle: { type: String, default: '' },
@@ -42,17 +43,21 @@ const props = defineProps({
 const showBubble = ref(false);
 const currentTitle = ref(props.sendMessageTitle);
 
+watch(() => props.sendMessageTitle, (val) => {
+  currentTitle.value = val;
+});
+
 function toggleBubble() {
   showBubble.value = !showBubble.value;
 }
 
 function pickQuestion(q) {
   currentTitle.value = q;
-  showBubble.value = false;
 }
 
 function onContact() {
   showBubble.value = false;
+  currentTitle.value = props.sendMessageTitle;
 }
 
 function onError(e) {
@@ -75,30 +80,50 @@ function onError(e) {
   position: absolute;
   bottom: 130rpx;
   right: 0;
-  min-width: 320rpx;
-  max-width: 480rpx;
+  min-width: 340rpx;
+  max-width: 500rpx;
   background: #fff;
   border-radius: 20rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
-  padding: 20rpx 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
+  padding: 24rpx;
 }
 
 .bubble-title {
   font-size: 24rpx;
   color: #999;
-  margin-bottom: 12rpx;
+  margin-bottom: 16rpx;
 }
 
 .bubble-item {
   font-size: 26rpx;
   color: #333;
-  padding: 14rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
+  padding: 16rpx 12rpx;
+  border-radius: 12rpx;
+  margin-bottom: 8rpx;
+  background: #f7f8fa;
   line-height: 1.4;
 }
 
-.bubble-item:last-of-type {
-  border-bottom: none;
+.bubble-item:active {
+  background: #e8f5e9;
+  color: #10b981;
+}
+
+.bubble-contact-btn {
+  margin-top: 16rpx;
+  width: 100%;
+  height: 72rpx;
+  line-height: 72rpx;
+  font-size: 28rpx;
+  color: #fff;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 36rpx;
+  border: none;
+  padding: 0;
+}
+
+.bubble-contact-btn::after {
+  border: none;
 }
 
 .bubble-arrow {
@@ -112,40 +137,25 @@ function onError(e) {
   border-top: 16rpx solid #fff;
 }
 
-.fab {
+.fab-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  border: none;
-  line-height: normal;
-}
-
-.fab::after {
-  border: none;
-}
-
-.fab-btn {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  width: 96rpx;
-  height: 96rpx;
+  width: 110rpx;
+  height: 110rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #10b981, #059669);
   box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.4);
 }
 
 .fab-icon {
-  font-size: 36rpx;
+  font-size: 40rpx;
 }
 
 .fab-label {
-  margin-top: 6rpx;
-  font-size: 20rpx;
-  color: #666;
-  text-align: center;
+  font-size: 18rpx;
+  color: #fff;
+  margin-top: 2rpx;
 }
 </style>
