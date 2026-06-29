@@ -23,11 +23,6 @@ export default {
   baseUrl: BASE_URL,
   hostUrl: BASE_URL,
 
-  // Go 后端（OpenClaw 桥接）
-  openclawApi: 'https://oc.aixifs.com/api/openclaw/chat',
-  // 聊天模型：deepseek-v4-flash（快速）/ deepseek-v4-pro（强推理）
-  chatModel: 'deepseek-v4-flash',
-
   // Dify AI
   difyApiUrl: DIFY_API_URL,
   difyChatApi: DIFY_CHAT_API,

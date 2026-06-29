@@ -1,9 +1,5 @@
 <template>
   <view class="chat-page">
-    <!-- AI 生成内容声明（微信平台合规要求） -->
-    <view class="ai-disclaimer">
-      <text class="ai-disclaimer-text">🤖 以上内容由人工智能生成，仅供参考</text>
-    </view>
     <scroll-view
       class="message-list"
       scroll-y
@@ -17,9 +13,6 @@
         :class="['message-row', msg.role]"
       >
         <view class="bubble">
-          <view v-if="msg.role === 'bot'" class="ai-tag">
-            <text class="ai-tag-text">AI生成</text>
-          </view>
           <text>{{ msg.text }}</text>
           <view v-if="msg.role === 'bot' && hasLocation(msg.text)" class="map-action">
             <view class="map-btn" @tap="openMapFromText(msg.text)">
@@ -55,6 +48,11 @@
 
     <!-- 文字输入 -->
     <view class="input-bar">
+      <!-- #ifdef MP-WEIXIN -->
+      <button class="contact-btn" open-type="contact" @error="onContactError">
+        <text>💬 在线客服</text>
+      </button>
+      <!-- #endif -->
       <input
         v-model="inputText"
         class="input-field"
@@ -76,16 +74,15 @@
 
 <script setup>
 import { ref, nextTick, onMounted } from 'vue';
-import config from '@/config/config';
 
-const OPENCLAW_API = config.openclawApi;
-const CHAT_MODEL = config.chatModel || 'deepseek-v4-flash';
+// Go 后端 AstrBot 聊天接口
+const CHAT_API = 'https://byupload.aixifs.com/api/chat';
 
 const messages = ref([]);
 const inputText = ref('');
 const sending = ref(false);
 const scrollTarget = ref('');
-const sessionKey = ref('');
+const sessionId = ref('');
 const suggestedQuestions = ref([]);
 
 // 页面加载时尝试获取定位坐标（用于推荐当地地点）
@@ -93,7 +90,7 @@ const userLat = ref(0);
 const userLng = ref(0);
 
 // D1 方案：硬编码开场白（不依赖网络请求）
-const OPENING_STATEMENT = '你好！我是抖店智能客服助手 🛒\n\n有什么关于订单、发货、售后的问题都可以问我～';
+const OPENING_STATEMENT = '你好！我是抖店客服助手 🛒\n\n有什么关于订单、发货、售后的问题都可以问我～';
 const PRESET_SUGGESTIONS = [
   '发货要几天？',
   '怎么查物流？',
@@ -130,7 +127,7 @@ function scrollToBottom() {
 
 function clearChat() {
   messages.value = [];
-  sessionKey.value = '';
+  sessionId.value = '';
   suggestedQuestions.value = [];
 }
 
@@ -139,6 +136,11 @@ function sendSuggested(question) {
   inputText.value = question;
   suggestedQuestions.value = [];
   nextTick(() => sendMessage());
+}
+
+// 微信客服按钮错误处理
+function onContactError(e) {
+  console.error('[chat] contact error:', e.detail);
 }
 
 // 判断回复中是否包含地点信息
@@ -230,12 +232,9 @@ async function sendMessage() {
 
     const payload = {
       message: text,
-      agent_id: 'main',
-      model: CHAT_MODEL,
-      timeout: 300,
     };
-    if (sessionKey.value) {
-      payload.session_key = sessionKey.value;
+    if (sessionId.value) {
+      payload.session_id = sessionId.value;
     }
     if (userCity) {
       payload.message = `[用户所在城市：${userCity}] ${text}`;
@@ -245,7 +244,7 @@ async function sendMessage() {
 
     const res = await new Promise((resolve, reject) => {
       uni.request({
-        url: OPENCLAW_API,
+        url: CHAT_API,
         method: 'POST',
         header: {
           'Content-Type': 'application/json',
@@ -258,9 +257,9 @@ async function sendMessage() {
 
     if (res.statusCode === 200 && res.data?.status === 'ok') {
       const reply = res.data.data?.reply || '';
-      const newSessionKey = res.data.data?.session_key || '';
-      if (newSessionKey) {
-        sessionKey.value = newSessionKey;
+      const newSessionId = res.data.data?.session_id || '';
+      if (newSessionId) {
+        sessionId.value = newSessionId;
       }
       messages.value.push({ role: 'bot', text: reply || '（无回复）' });
     } else {
@@ -403,30 +402,24 @@ async function sendMessage() {
   border: none;
 }
 
-/* AI 生成内容声明横幅 */
-.ai-disclaimer {
-  padding: 14rpx 24rpx;
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-  text-align: center;
-}
-.ai-disclaimer-text {
+/* 微信客服按钮 */
+.contact-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 72rpx;
+  padding: 0 20rpx;
+  margin-right: 12rpx;
+  background: #fff;
+  border: 1rpx solid #10b981;
+  border-radius: 36rpx;
   font-size: 24rpx;
-  color: #92400e;
-  font-weight: 500;
+  color: #059669;
+  line-height: 72rpx;
 }
 
-/* AI 生成标签（每条 bot 回复上方） */
-.ai-tag {
-  margin-bottom: 8rpx;
-}
-.ai-tag-text {
-  display: inline-block;
-  padding: 2rpx 12rpx;
-  font-size: 20rpx;
-  color: #6b7280;
-  background: #f3f4f6;
-  border-radius: 8rpx;
-  border: 1rpx solid #e5e7eb;
+.contact-btn::after {
+  border: none;
 }
 
 /* 推荐问题 */

@@ -134,6 +134,7 @@ const quickActions = [
 ];
 
 const accountItems = [
+  { title: '在线客服', desc: '有问题？随时为您解答', url: '/pages/chat/chat', icon: '💬', bg: '#ecfdf5' },
   { title: '修改手机号', desc: '管理登录手机号与短信校验', url: '/pages/user/mine/info/changephone/changephone', icon: '机', bg: '#eff6ff' },
   { title: '意见反馈', desc: '提交建议与问题记录', url: '/pages/user/mine/feedback/feedback', icon: '反', bg: '#fff7ed' },
 ];

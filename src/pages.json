@@ -226,7 +226,7 @@
         {
           "path": "chat",
           "style": {
-            "navigationBarTitleText": "AI 助手",
+            "navigationBarTitleText": "在线客服",
             "enablePullDownRefresh": false
           }
         }

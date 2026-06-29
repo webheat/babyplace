@@ -27,7 +27,6 @@ function onError(e) {
   padding: 0;
   margin: 0;
   background: transparent;
-  border: none;
   line-height: normal;
 }
 

@@ -50,7 +50,7 @@ func initDify() {
 		difyAPIURL = "http://lanes.ymxt.top:3000"
 	}
 	if difyAPIKey == "" {
-		difyAPIKey = "app-sULIoSGR3LQlmejMhehcikKZ"
+		difyAPIKey = "app-aMB5cKJpDqNxR3tV7yW8eU2hL4fG9bZ1"
 	}
 
 	difyAPIURL = strings.TrimRight(difyAPIURL, "/")
