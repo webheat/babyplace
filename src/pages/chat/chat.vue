@@ -39,6 +39,17 @@
           <text>正在思考...</text>
         </view>
       </view>
+      <!-- 推荐问题按钮 -->
+      <view v-if="suggestedQuestions.length && !sending" class="suggested-questions">
+        <view
+          v-for="(q, i) in suggestedQuestions"
+          :key="i"
+          class="suggest-btn"
+          @tap="sendSuggested(q)"
+        >
+          <text>{{ q }}</text>
+        </view>
+      </view>
       <view id="msg-bottom" style="height: 20rpx" />
     </scroll-view>
 
@@ -75,12 +86,24 @@ const inputText = ref('');
 const sending = ref(false);
 const scrollTarget = ref('');
 const sessionKey = ref('');
+const suggestedQuestions = ref([]);
 
 // 页面加载时尝试获取定位坐标（用于推荐当地地点）
 const userLat = ref(0);
 const userLng = ref(0);
 
+// D1 方案：硬编码开场白（不依赖网络请求）
+const OPENING_STATEMENT = '你好！我是抖店智能客服助手 🛒\n\n有什么关于订单、发货、售后的问题都可以问我～';
+const PRESET_SUGGESTIONS = [
+  '发货要几天？',
+  '怎么查物流？',
+  '可以退货吗？',
+];
+
 onMounted(() => {
+  // 显示开场白
+  messages.value.push({ role: 'bot', text: OPENING_STATEMENT });
+  suggestedQuestions.value = PRESET_SUGGESTIONS;
   // #ifdef MP-WEIXIN
   uni.getLocation({
     type: 'gcj02',
@@ -108,6 +131,14 @@ function scrollToBottom() {
 function clearChat() {
   messages.value = [];
   sessionKey.value = '';
+  suggestedQuestions.value = [];
+}
+
+// 发送推荐问题
+function sendSuggested(question) {
+  inputText.value = question;
+  suggestedQuestions.value = [];
+  nextTick(() => sendMessage());
 }
 
 // 判断回复中是否包含地点信息
@@ -182,6 +213,7 @@ async function sendMessage() {
 
   messages.value.push({ role: 'user', text });
   inputText.value = '';
+  suggestedQuestions.value = [];
   scrollToBottom();
 
   sending.value = true;
@@ -395,5 +427,27 @@ async function sendMessage() {
   background: #f3f4f6;
   border-radius: 8rpx;
   border: 1rpx solid #e5e7eb;
+}
+
+/* 推荐问题 */
+.suggested-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  padding: 12rpx 24rpx;
+  justify-content: flex-start;
+}
+
+.suggest-btn {
+  padding: 12rpx 24rpx;
+  background: #fff;
+  border: 1rpx solid #10b981;
+  border-radius: 28rpx;
+  font-size: 24rpx;
+  color: #059669;
+}
+
+.suggest-btn:active {
+  background: #ecfdf5;
 }
 </style>

@@ -6,9 +6,9 @@ const BASE_URL = 'https://byupload.aixifs.com/babyplace-admin';
 // Dify AI 知识库 & 客服Bot
 const DIFY_API_URL = 'http://lanes.ymxt.top:3000';
 const DIFY_CHAT_API = `${DIFY_API_URL}/v1/chat-messages`;
-const DIFY_CHAT_KEY = 'app-sULIoSGR3LQlmejMhehcikKZ';
-const DIFY_DATASET_ID = '58eed52d-9090-4657-ab6b-2db10af49af4';
-const DIFY_APP_ID = 'f5d3b77d-177a-4565-a0a1-e8834082c860';
+const DIFY_CHAT_KEY = 'app-aMB5cKJpDqNxR3tV7yW8eU2hL4fG9bZ1';
+const DIFY_DATASET_ID = 'b5c6d7e8-f901-2345-defa-345678901234';
+const DIFY_APP_ID = 'c9d8e7f6-aaaa-4444-9999-000000000001';
 const DIFY_ADMIN_KEY = 'app-admin-Zx9Km2VpL8nQw3RtYuI5oP7aSdF4gH6j';
 const DIFY_WORKSPACE_ID = '6dcf0717-8cdc-49b7-a437-e8efe88f175f';
 
