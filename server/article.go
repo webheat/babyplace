@@ -8,8 +8,8 @@ import (
 )
 
 const articleColumns = `id, title, source_account, source_account_id, publish_time,
-	url, cover_image, content_text, content_html, images, extracted_poi_names,
-	parse_result, status, parse_confidence, created_at, updated_at`
+	url, cover_image, local_cover_image, content_text, content_html, images, local_images,
+	extracted_poi_names, parse_result, status, parse_confidence, created_at, updated_at`
 
 const sourceColumns = `id, poi_id, article_id, source_type, quoted_text,
 	support_fields, confidence_score, is_primary, status, created_at, updated_at`
@@ -82,9 +82,10 @@ func handleArticleCreate(params map[string]interface{}) AdminResponse {
 
 	_, err := db.Exec(`INSERT INTO article (
 		id, title, source_account, source_account_id, publish_time,
-		url, cover_image, content_text, content_html, images, extracted_poi_names,
+		url, cover_image, local_cover_image, content_text, content_html,
+		images, local_images, extracted_poi_names,
 		parse_result, status, parse_confidence, created_at, updated_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		id,
 		getString(payload, "title"),
 		getString(payload, "source_account"),
@@ -92,9 +93,11 @@ func handleArticleCreate(params map[string]interface{}) AdminResponse {
 		now,
 		getString(payload, "url"),
 		getString(payload, "cover_image"),
+		getStringDefault(payload, "local_cover_image", ""),
 		getString(payload, "content_text"),
 		getString(payload, "content_html"),
 		jsonMarshal(toStringArray(payload["images"])),
+		jsonMarshal(toStringArray(payload["local_images"])),
 		jsonMarshal(toStringArray(payload["extracted_poi_names"])),
 		"{}",
 		getStringDefault(payload, "status", "parsed"),

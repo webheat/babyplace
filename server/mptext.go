@@ -20,10 +20,16 @@ var (
 )
 
 func initMptext() {
-	mptextAuthKey = os.Getenv("websit_key")
+	// 优先使用 down_mptext_top_key，回退到 websit_key
+	mptextAuthKey = os.Getenv("down_mptext_top_key")
+	if mptextAuthKey == "" {
+		mptextAuthKey = os.Getenv("websit_key")
+	}
 	mptextClient = &http.Client{Timeout: 30 * time.Second}
 	if mptextAuthKey == "" {
-		log.Println("[warn] websit_key not set, mptext auth APIs disabled")
+		log.Println("[warn] down_mptext_top_key/websit_key not set, mptext auth APIs disabled")
+	} else {
+		log.Printf("[mptext] auth key loaded (%s...)", mptextAuthKey[:8])
 	}
 }
 
@@ -239,11 +245,11 @@ func saveArticleToDB(a *Article) (string, error) {
 		_, err = db.Exec(`UPDATE article SET
 			title = ?, source_account = ?, source_account_id = ?,
 			publish_time = ?, content_text = ?, content_html = ?,
-			images = ?, cover_image = ?, updated_at = ?
+			images = ?, cover_image = ?, local_cover_image = ?, local_images = ?, updated_at = ?
 			WHERE id = ?`,
 			a.Title, a.SourceAccount, a.SourceAccountID,
 			a.PublishTime, a.ContentText, a.ContentHTML,
-			jsonMarshal(a.Images), a.CoverImage, now, existingID)
+			jsonMarshal(a.Images), a.CoverImage, a.LocalCoverImage, jsonMarshal(a.LocalImages), now, existingID)
 		if err != nil {
 			return "", fmt.Errorf("update failed: %w", err)
 		}
@@ -253,13 +259,13 @@ func saveArticleToDB(a *Article) (string, error) {
 	// 新增
 	_, err = db.Exec(`INSERT INTO article (
 		id, title, source_account, source_account_id, publish_time,
-		url, cover_image, content_text, content_html, images,
+		url, cover_image, local_cover_image, content_text, content_html, images, local_images,
 		extracted_poi_names, parse_result, status, parse_confidence,
 		created_at, updated_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		id, a.Title, a.SourceAccount, a.SourceAccountID, a.PublishTime,
-		a.URL, a.CoverImage, a.ContentText, a.ContentHTML,
-		jsonMarshal(a.Images),
+		a.URL, a.CoverImage, a.LocalCoverImage, a.ContentText, a.ContentHTML,
+		jsonMarshal(a.Images), jsonMarshal(a.LocalImages),
 		"[]", "{}", "fetched", 0,
 		now, now,
 	)

@@ -90,9 +90,11 @@ type Article struct {
 	PublishTime       int64                  `json:"publish_time"`
 	URL               string                 `json:"url"`
 	CoverImage        string                 `json:"cover_image"`
+	LocalCoverImage   string                 `json:"local_cover_image"`
 	ContentText       string                 `json:"content_text"`
 	ContentHTML       string                 `json:"content_html"`
 	Images            []string               `json:"images"`
+	LocalImages       []string               `json:"local_images"`
 	ExtractedPOINames []string               `json:"extracted_poi_names"`
 	ParseResult       map[string]interface{} `json:"parse_result"`
 	Status            string                 `json:"status"`
@@ -254,9 +256,11 @@ func createTables() error {
 			publish_time INTEGER,
 			url TEXT,
 			cover_image TEXT,
+			local_cover_image TEXT DEFAULT '',
 			content_text TEXT,
 			content_html TEXT,
 			images TEXT DEFAULT '[]',
+			local_images TEXT DEFAULT '[]',
 			extracted_poi_names TEXT DEFAULT '[]',
 			parse_result TEXT DEFAULT '{}',
 			status TEXT DEFAULT 'parsed',
@@ -287,6 +291,16 @@ func createTables() error {
 			return fmt.Errorf("exec %q: %w", q[:40], err)
 		}
 	}
+
+	// 为已有 article 表添加新列（兼容旧数据库）
+	alters := []string{
+		`ALTER TABLE article ADD COLUMN local_cover_image TEXT DEFAULT ''`,
+		`ALTER TABLE article ADD COLUMN local_images TEXT DEFAULT '[]'`,
+	}
+	for _, q := range alters {
+		db.Exec(q) // 忽略错误，列已存在时会报 "duplicate column"
+	}
+
 	return nil
 }
 
@@ -440,13 +454,13 @@ func articleFromRow(row interface {
 	Scan(dest ...interface{}) error
 }) (*Article, error) {
 	var a Article
-	var images, extractedPOINames, parseResult string
+	var images, localImages, extractedPOINames, parseResult string
 
 	err := row.Scan(
 		&a.ID, &a.Title, &a.SourceAccount, &a.SourceAccountID,
-		&a.PublishTime, &a.URL, &a.CoverImage,
+		&a.PublishTime, &a.URL, &a.CoverImage, &a.LocalCoverImage,
 		&a.ContentText, &a.ContentHTML,
-		&images, &extractedPOINames, &parseResult,
+		&images, &localImages, &extractedPOINames, &parseResult,
 		&a.Status, &a.ParseConfidence,
 		&a.CreatedAt, &a.UpdatedAt,
 	)
@@ -455,6 +469,7 @@ func articleFromRow(row interface {
 	}
 
 	a.Images = jsonUnmarshalArray(images)
+	a.LocalImages = jsonUnmarshalArray(localImages)
 	a.ExtractedPOINames = jsonUnmarshalArray(extractedPOINames)
 	a.ParseResult = jsonUnmarshalMap(parseResult)
 	return &a, nil

@@ -105,6 +105,7 @@ func main() {
 	initDify()
 	initMptext()
 	initLLM()
+	initWecomNotify()
 
 	// 启动定时文章抓取
 	startArticleCrawler()
