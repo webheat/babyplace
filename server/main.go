@@ -110,6 +110,9 @@ func main() {
 	// 启动定时文章抓取
 	startArticleCrawler()
 
+	// 管理后台（/manage/）
+	initManage()
+
 	// OpenClaw CLI path
 	openclawBin = os.Getenv("OPENCLAW_BIN")
 	if openclawBin == "" {
@@ -138,6 +141,7 @@ func main() {
 
 	log.Printf("Babyplace server starting on :%s", port)
 	log.Printf("Admin endpoint: POST /babyplace-admin")
+	log.Printf("Manage dashboard: /manage/")
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}

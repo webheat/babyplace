@@ -19,17 +19,11 @@
               <text>📍 查看地图</text>
             </view>
           </view>
-          <view v-if="msg.sources && msg.sources.length" class="sources">
-            <text class="sources-title">📚 参考来源：</text>
-            <text v-for="(s, j) in msg.sources" :key="j" class="source-item">
-              · {{ s.dataset_name || s.title || '知识库' }}
-            </text>
-          </view>
         </view>
       </view>
       <view v-if="sending" class="message-row bot">
         <view class="bubble loading">
-          <text>正在思考...</text>
+          <text>正在回复...</text>
         </view>
       </view>
       <!-- 推荐问题按钮 -->
@@ -48,11 +42,6 @@
 
     <!-- 文字输入 -->
     <view class="input-bar">
-      <!-- #ifdef MP-WEIXIN -->
-      <button class="contact-btn" open-type="contact" @error="onContactError">
-        <text>💬 在线客服</text>
-      </button>
-      <!-- #endif -->
       <input
         v-model="inputText"
         class="input-field"
@@ -75,8 +64,7 @@
 <script setup>
 import { ref, nextTick, onMounted } from 'vue';
 
-// Go 后端 AstrBot 聊天接口
-const CHAT_API = 'https://byupload.aixifs.com/api/chat';
+const CHAT_API = 'https://oc.aixifs.com/api/chat';
 
 const messages = ref([]);
 const inputText = ref('');
@@ -89,8 +77,7 @@ const suggestedQuestions = ref([]);
 const userLat = ref(0);
 const userLng = ref(0);
 
-// D1 方案：硬编码开场白（不依赖网络请求）
-const OPENING_STATEMENT = '你好！我是抖店客服助手 🛒\n\n有什么关于订单、发货、售后的问题都可以问我～';
+const OPENING_STATEMENT = '你好！有什么问题都可以问我～';
 const PRESET_SUGGESTIONS = [
   '发货要几天？',
   '怎么查物流？',
@@ -98,7 +85,6 @@ const PRESET_SUGGESTIONS = [
 ];
 
 onMounted(() => {
-  // 显示开场白
   messages.value.push({ role: 'bot', text: OPENING_STATEMENT });
   suggestedQuestions.value = PRESET_SUGGESTIONS;
   // #ifdef MP-WEIXIN
@@ -136,11 +122,6 @@ function sendSuggested(question) {
   inputText.value = question;
   suggestedQuestions.value = [];
   nextTick(() => sendMessage());
-}
-
-// 微信客服按钮错误处理
-function onContactError(e) {
-  console.error('[chat] contact error:', e.detail);
 }
 
 // 判断回复中是否包含地点信息
@@ -230,16 +211,16 @@ async function sendMessage() {
       } catch (e) {}
     }
 
-    const payload = {
-      message: text,
-    };
+    let message = text;
+    if (userCity) {
+      message = `[用户所在城市：${userCity}] ${text}`;
+    } else if (userLat.value && userLng.value) {
+      message = `[用户坐标：${userLat.value.toFixed(4)},${userLng.value.toFixed(4)}] ${text}`;
+    }
+
+    const payload = { message };
     if (sessionId.value) {
       payload.session_id = sessionId.value;
-    }
-    if (userCity) {
-      payload.message = `[用户所在城市：${userCity}] ${text}`;
-    } else if (userLat.value && userLng.value) {
-      payload.message = `[用户坐标：${userLat.value.toFixed(4)},${userLng.value.toFixed(4)}] ${text}`;
     }
 
     const res = await new Promise((resolve, reject) => {
@@ -250,6 +231,7 @@ async function sendMessage() {
           'Content-Type': 'application/json',
         },
         data: payload,
+        timeout: 120000,
         success: (r) => resolve(r),
         fail: (err) => reject(err),
       });
@@ -330,14 +312,6 @@ async function sendMessage() {
   opacity: 0.6;
 }
 
-.sources {
-  margin-top: 12rpx;
-  padding-top: 12rpx;
-  border-top: 1rpx solid #eee;
-  font-size: 22rpx;
-  color: #888;
-}
-
 .map-action {
   margin-top: 12rpx;
   padding-top: 12rpx;
@@ -351,17 +325,6 @@ async function sendMessage() {
   border-radius: 20rpx;
   font-size: 24rpx;
   color: #1976d2;
-}
-
-.sources-title {
-  display: block;
-  margin-bottom: 4rpx;
-}
-
-.source-item {
-  display: block;
-  font-size: 22rpx;
-  color: #666;
 }
 
 .input-bar {
@@ -399,26 +362,6 @@ async function sendMessage() {
 }
 
 .send-btn::after {
-  border: none;
-}
-
-/* 微信客服按钮 */
-.contact-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 72rpx;
-  padding: 0 20rpx;
-  margin-right: 12rpx;
-  background: #fff;
-  border: 1rpx solid #10b981;
-  border-radius: 36rpx;
-  font-size: 24rpx;
-  color: #059669;
-  line-height: 72rpx;
-}
-
-.contact-btn::after {
   border: none;
 }
 
