@@ -144,6 +144,13 @@
 | location | object | 坐标 `{lat, lng}` |
 | transport | string[] | 交通方式 |
 | parking_tip | string | 停车提示 |
+| open_time | string | 营业时间（如"周一至周五 9:00-17:00"） |
+| ticket_info | string | 票务信息（如"免费"、"成人50元"） |
+| phone | string | 联系电话 |
+| reservation_type | string | 预约类型：`webview` / `qrcode` / `phone` |
+| reservation | object | 预约信息 `{ url: string, label: string }` |
+| booking_url | string | 预约链接（冗余字段，同 `reservation.url`） |
+| booking_qr_code | string | 预约二维码图片 URL |
 
 ### 3.2 地点详情
 

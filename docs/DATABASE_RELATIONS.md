@@ -12,6 +12,7 @@
     - 交通停车：`transport` `transport_hint` `parking_tip`
     - 设施：`facilities.stroller_friendly` `facilities.restroom` `facilities.food` `facilities.shade` `facilities.parking` `facilities.rainy_day_ok`
     - 内容展示：`summary` `recommend_reason` `notice` `cover_image` `gallery` `tags`
+    - 营业/预约：`open_time` `ticket_info` `phone` `booking_url` `booking_qr_code` `reservation_type` `reservation`（JSON 对象 `{ url, label }`）
     - 聚合统计：`source_count` `review_count` `avg_rating`
 
 - `babyplace-article`
