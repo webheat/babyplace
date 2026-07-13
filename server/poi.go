@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math"
@@ -13,7 +14,8 @@ const poiColumns = `id, name, canonical_name, alias, city, district, address,
 	transport, transport_hint, parking_tip,
 	stroller_friendly, restroom, food, shade, parking, rainy_day_ok,
 	summary, recommend_reason, notice, cover_image, gallery, tags,
-	source_count, review_count, avg_rating, status, created_at, updated_at`
+	source_count, review_count, avg_rating, status, created_at, updated_at,
+	open_time, ticket_info, phone, booking_url, booking_qr_code, reservation_type, reservation`
 
 // POI 列表（兼容 poi 云对象：支持 city/district/includeDraft 过滤）
 func handlePoiList(params map[string]interface{}) AdminResponse {
@@ -246,6 +248,12 @@ func handlePoiCreate(params map[string]interface{}) AdminResponse {
 
 	id := generateID()
 	facilities, _ := payload["facilities"].(map[string]interface{})
+	reservation, _ := payload["reservation"].(map[string]interface{})
+	reservationJSON := "{}"
+	if reservation != nil {
+		b, _ := json.Marshal(reservation)
+		reservationJSON = string(b)
+	}
 
 	_, err := db.Exec(`INSERT INTO poi (
 		id, name, canonical_name, alias, city, district, address,
@@ -253,8 +261,9 @@ func handlePoiCreate(params map[string]interface{}) AdminResponse {
 		transport, transport_hint, parking_tip,
 		stroller_friendly, restroom, food, shade, parking, rainy_day_ok,
 		summary, recommend_reason, notice, cover_image, gallery, tags,
-		source_count, review_count, avg_rating, status, created_at, updated_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		source_count, review_count, avg_rating, status, created_at, updated_at,
+		open_time, ticket_info, phone, booking_url, booking_qr_code, reservation_type, reservation
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		id,
 		name,
 		getString(payload, "canonical_name"),
@@ -288,6 +297,13 @@ func handlePoiCreate(params map[string]interface{}) AdminResponse {
 		getFloat(payload, "avg_rating", 0),
 		getStringDefault(payload, "status", "draft"),
 		now, now,
+		getString(payload, "open_time"),
+		getString(payload, "ticket_info"),
+		getString(payload, "phone"),
+		getString(payload, "booking_url"),
+		getString(payload, "booking_qr_code"),
+		getString(payload, "reservation_type"),
+		reservationJSON,
 	)
 	if err != nil {
 		log.Printf("[poi.create] error: %v", err)
@@ -379,6 +395,35 @@ func handlePoiUpdate(params map[string]interface{}) AdminResponse {
 			boolToInt(getFacilityBool(f, "parking")),
 			boolToInt(getFacilityBool(f, "rainy_day_ok")),
 		)
+	}
+	if v, ok := payload["open_time"]; ok {
+		setClauses = append(setClauses, "open_time = ?")
+		args = append(args, v)
+	}
+	if v, ok := payload["ticket_info"]; ok {
+		setClauses = append(setClauses, "ticket_info = ?")
+		args = append(args, v)
+	}
+	if v, ok := payload["phone"]; ok {
+		setClauses = append(setClauses, "phone = ?")
+		args = append(args, v)
+	}
+	if v, ok := payload["booking_url"]; ok {
+		setClauses = append(setClauses, "booking_url = ?")
+		args = append(args, v)
+	}
+	if v, ok := payload["booking_qr_code"]; ok {
+		setClauses = append(setClauses, "booking_qr_code = ?")
+		args = append(args, v)
+	}
+	if v, ok := payload["reservation_type"]; ok {
+		setClauses = append(setClauses, "reservation_type = ?")
+		args = append(args, v)
+	}
+	if r, ok := payload["reservation"].(map[string]interface{}); ok {
+		b, _ := json.Marshal(r)
+		setClauses = append(setClauses, "reservation = ?")
+		args = append(args, string(b))
 	}
 
 	if len(setClauses) == 0 {

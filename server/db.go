@@ -21,35 +21,47 @@ var (
 
 // POI 数据结构（对应前端 poi-snapshot.json）
 type POI struct {
-	ID                 string   `json:"_id"`
-	Name               string   `json:"name"`
-	CanonicalName      string   `json:"canonical_name"`
-	Alias              []string `json:"alias"`
-	City               string   `json:"city"`
-	District           string   `json:"district"`
-	Address            string   `json:"address"`
-	Location           Location `json:"location"`
-	Category           string   `json:"category"`
-	AgeRange           []string `json:"age_range"`
-	Indoor             bool     `json:"indoor"`
-	PriceType          string   `json:"price_type"`
-	RecommendedDuration string  `json:"recommended_duration"`
-	Transport          []string `json:"transport"`
-	TransportHint      string   `json:"transport_hint"`
-	ParkingTip         string   `json:"parking_tip"`
-	Facilities         Facilities `json:"facilities"`
-	Summary            string   `json:"summary"`
-	RecommendReason    string   `json:"recommend_reason"`
-	Notice             string   `json:"notice"`
-	CoverImage         string   `json:"cover_image"`
-	Gallery            []string `json:"gallery"`
-	Tags               []string `json:"tags"`
-	SourceCount        int      `json:"source_count"`
-	ReviewCount        int      `json:"review_count"`
-	AvgRating          float64  `json:"avg_rating"`
-	Status             string   `json:"status"`
-	CreatedAt          int64    `json:"created_at"`
-	UpdatedAt          int64    `json:"updated_at"`
+	ID                  string      `json:"_id"`
+	Name                string      `json:"name"`
+	CanonicalName       string      `json:"canonical_name"`
+	Alias               []string    `json:"alias"`
+	City                string      `json:"city"`
+	District            string      `json:"district"`
+	Address             string      `json:"address"`
+	Location            Location    `json:"location"`
+	Category            string      `json:"category"`
+	AgeRange            []string    `json:"age_range"`
+	Indoor              bool        `json:"indoor"`
+	PriceType           string      `json:"price_type"`
+	RecommendedDuration string      `json:"recommended_duration"`
+	Transport           []string    `json:"transport"`
+	TransportHint       string      `json:"transport_hint"`
+	ParkingTip          string      `json:"parking_tip"`
+	Facilities          Facilities  `json:"facilities"`
+	Summary             string      `json:"summary"`
+	RecommendReason     string      `json:"recommend_reason"`
+	Notice              string      `json:"notice"`
+	CoverImage          string      `json:"cover_image"`
+	Gallery             []string    `json:"gallery"`
+	Tags                []string    `json:"tags"`
+	SourceCount         int         `json:"source_count"`
+	ReviewCount         int         `json:"review_count"`
+	AvgRating           float64     `json:"avg_rating"`
+	Status              string      `json:"status"`
+	CreatedAt           int64       `json:"created_at"`
+	UpdatedAt           int64       `json:"updated_at"`
+	OpenTime            string      `json:"open_time"`
+	TicketInfo          string      `json:"ticket_info"`
+	Phone               string      `json:"phone"`
+	BookingUrl          string      `json:"booking_url"`
+	BookingQrCode       string      `json:"booking_qr_code"`
+	ReservationType     string      `json:"reservation_type"`
+	Reservation         Reservation `json:"reservation"`
+}
+
+type Reservation struct {
+	URL   string `json:"url"`
+	Label string `json:"label"`
 }
 
 type Location struct {
@@ -292,10 +304,17 @@ func createTables() error {
 		}
 	}
 
-	// 为已有 article 表添加新列（兼容旧数据库）
+	// 为已有表添加新列（兼容旧数据库）
 	alters := []string{
 		`ALTER TABLE article ADD COLUMN local_cover_image TEXT DEFAULT ''`,
 		`ALTER TABLE article ADD COLUMN local_images TEXT DEFAULT '[]'`,
+		`ALTER TABLE poi ADD COLUMN open_time TEXT DEFAULT ''`,
+		`ALTER TABLE poi ADD COLUMN ticket_info TEXT DEFAULT ''`,
+		`ALTER TABLE poi ADD COLUMN phone TEXT DEFAULT ''`,
+		`ALTER TABLE poi ADD COLUMN booking_url TEXT DEFAULT ''`,
+		`ALTER TABLE poi ADD COLUMN booking_qr_code TEXT DEFAULT ''`,
+		`ALTER TABLE poi ADD COLUMN reservation_type TEXT DEFAULT ''`,
+		`ALTER TABLE poi ADD COLUMN reservation TEXT DEFAULT '{}'`,
 	}
 	for _, q := range alters {
 		db.Exec(q) // 忽略错误，列已存在时会报 "duplicate column"
@@ -352,8 +371,9 @@ func seedData() error {
 		transport, transport_hint, parking_tip,
 		stroller_friendly, restroom, food, shade, parking, rainy_day_ok,
 		summary, recommend_reason, notice, cover_image, gallery, tags,
-		source_count, review_count, avg_rating, status, created_at, updated_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+		source_count, review_count, avg_rating, status, created_at, updated_at,
+		open_time, ticket_info, phone, booking_url, booking_qr_code, reservation_type, reservation
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 
 	if err != nil {
 		return err
@@ -362,6 +382,10 @@ func seedData() error {
 
 	for _, p := range pois {
 		f := p.Facilities
+		reservationJSON := "{}"
+		if p.Reservation.URL != "" {
+			reservationJSON = jsonMarshal(p.Reservation)
+		}
 		_, err := stmt.Exec(
 			p.ID, p.Name, p.CanonicalName, jsonMarshal(p.Alias),
 			p.City, p.District, p.Address,
@@ -374,6 +398,8 @@ func seedData() error {
 			jsonMarshal(p.Gallery), jsonMarshal(p.Tags),
 			p.SourceCount, p.ReviewCount, p.AvgRating, p.Status,
 			p.CreatedAt, p.UpdatedAt,
+			p.OpenTime, p.TicketInfo, p.Phone,
+			p.BookingUrl, p.BookingQrCode, p.ReservationType, reservationJSON,
 		)
 		if err != nil {
 			log.Printf("[db] seed skip %s: %v", p.Name, err)
@@ -392,7 +418,7 @@ func poiFromRow(row interface {
 	Scan(dest ...interface{}) error
 }) (*POI, error) {
 	var p POI
-	var alias, ageRange, transport, gallery, tags string
+	var alias, ageRange, transport, gallery, tags, reservation string
 	var indoor, strollerFriendly, restroom, food, shade, parking, rainyDayOk int
 
 	err := row.Scan(
@@ -406,6 +432,8 @@ func poiFromRow(row interface {
 		&gallery, &tags,
 		&p.SourceCount, &p.ReviewCount, &p.AvgRating, &p.Status,
 		&p.CreatedAt, &p.UpdatedAt,
+		&p.OpenTime, &p.TicketInfo, &p.Phone,
+		&p.BookingUrl, &p.BookingQrCode, &p.ReservationType, &reservation,
 	)
 	if err != nil {
 		return nil, err
@@ -424,6 +452,9 @@ func poiFromRow(row interface {
 		Shade:            intToBool(shade),
 		Parking:          intToBool(parking),
 		RainyDayOk:       intToBool(rainyDayOk),
+	}
+	if reservation != "" {
+		json.Unmarshal([]byte(reservation), &p.Reservation)
 	}
 
 	return &p, nil

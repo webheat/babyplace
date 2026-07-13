@@ -163,6 +163,34 @@
             </el-form-item>
           </el-tab-pane>
 
+          <el-tab-pane label="预约/营业" name="reservation">
+            <el-form-item label="营业时间">
+              <el-input v-model="form.open_time" placeholder="周一至周五 9:00-17:00" />
+            </el-form-item>
+            <el-form-item label="票务信息">
+              <el-input v-model="form.ticket_info" placeholder="免费 / 成人50元" />
+            </el-form-item>
+            <el-form-item label="电话">
+              <el-input v-model="form.phone" placeholder="020-XXXXXXXX" />
+            </el-form-item>
+            <el-form-item label="预约链接">
+              <el-input v-model="form.reservation_url" placeholder="https://..." />
+            </el-form-item>
+            <el-form-item label="预约按钮文字">
+              <el-input v-model="form.reservation_label" placeholder="立即预约" />
+            </el-form-item>
+            <el-form-item label="预约类型">
+              <el-select v-model="form.reservation_type" clearable>
+                <el-option label="webview" value="webview" />
+                <el-option label="qrcode" value="qrcode" />
+                <el-option label="phone" value="phone" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="预约二维码">
+              <el-input v-model="form.booking_qr_code" placeholder="二维码图片 URL" />
+            </el-form-item>
+          </el-tab-pane>
+
           <el-tab-pane label="标签/JSON" name="json">
             <el-form-item label="别名">
               <json-editor v-model="form.alias" placeholder='["别名1","别名2"]' />
@@ -212,6 +240,9 @@ const defaultForm = () => ({
   shade: false, parking: false, rainy_day_ok: false,
   summary: '', recommend_reason: '', notice: '', cover_image: '',
   alias: [], tags: [], age_range: [], gallery: [],
+  open_time: '', ticket_info: '', phone: '',
+  booking_url: '', booking_qr_code: '', reservation_type: '',
+  reservation_url: '', reservation_label: '',
 })
 
 const form = reactive(defaultForm())
@@ -272,6 +303,14 @@ function openDialog(row) {
       tags: row.tags || [],
       age_range: row.age_range || [],
       gallery: row.gallery || [],
+      open_time: row.open_time || '',
+      ticket_info: row.ticket_info || '',
+      phone: row.phone || '',
+      booking_url: row.booking_url || '',
+      booking_qr_code: row.booking_qr_code || '',
+      reservation_type: row.reservation_type || '',
+      reservation_url: row.reservation?.url || '',
+      reservation_label: row.reservation?.label || '',
     })
   } else {
     editingId.value = null
@@ -312,6 +351,16 @@ async function handleSave() {
     tags: form.tags,
     age_range: form.age_range,
     gallery: form.gallery,
+    open_time: form.open_time,
+    ticket_info: form.ticket_info,
+    phone: form.phone,
+    booking_url: form.booking_url,
+    booking_qr_code: form.booking_qr_code,
+    reservation_type: form.reservation_type,
+    reservation: {
+      url: form.reservation_url,
+      label: form.reservation_label,
+    },
   }
 
   try {
