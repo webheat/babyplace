@@ -57,6 +57,7 @@ type POI struct {
 	BookingQrCode       string      `json:"booking_qr_code"`
 	ReservationType     string      `json:"reservation_type"`
 	Reservation         Reservation `json:"reservation"`
+	Featured            string      `json:"featured"`
 }
 
 type Reservation struct {
@@ -434,6 +435,7 @@ func poiFromRow(row interface {
 		&p.CreatedAt, &p.UpdatedAt,
 		&p.OpenTime, &p.TicketInfo, &p.Phone,
 		&p.BookingUrl, &p.BookingQrCode, &p.ReservationType, &reservation,
+		&p.Featured,
 	)
 	if err != nil {
 		return nil, err

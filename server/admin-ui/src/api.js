@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
 const manageApi = axios.create({
   baseURL: '/manage/api',
@@ -9,6 +10,35 @@ const adminApi = axios.create({
   baseURL: '/babyplace-admin',
   timeout: 30000,
 })
+
+// 响应拦截器：处理 401 会话过期
+function handle401() {
+  ElMessage.warning('会话已过期，请重新登录')
+  // 延迟跳转，让提示显示
+  setTimeout(() => {
+    window.location.href = '/manage/login'
+  }, 1000)
+}
+
+manageApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      handle401()
+    }
+    return Promise.reject(error)
+  }
+)
+
+adminApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      handle401()
+    }
+    return Promise.reject(error)
+  }
+)
 
 // --- 认证 ---
 

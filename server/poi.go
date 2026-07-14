@@ -15,7 +15,7 @@ const poiColumns = `id, name, canonical_name, alias, city, district, address,
 	stroller_friendly, restroom, food, shade, parking, rainy_day_ok,
 	summary, recommend_reason, notice, cover_image, gallery, tags,
 	source_count, review_count, avg_rating, status, created_at, updated_at,
-	open_time, ticket_info, phone, booking_url, booking_qr_code, reservation_type, reservation`
+	open_time, ticket_info, phone, booking_url, booking_qr_code, reservation_type, reservation, featured`
 
 // POI 列表（兼容 poi 云对象：支持 city/district/includeDraft 过滤）
 func handlePoiList(params map[string]interface{}) AdminResponse {
@@ -262,8 +262,8 @@ func handlePoiCreate(params map[string]interface{}) AdminResponse {
 		stroller_friendly, restroom, food, shade, parking, rainy_day_ok,
 		summary, recommend_reason, notice, cover_image, gallery, tags,
 		source_count, review_count, avg_rating, status, created_at, updated_at,
-		open_time, ticket_info, phone, booking_url, booking_qr_code, reservation_type, reservation
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		open_time, ticket_info, phone, booking_url, booking_qr_code, reservation_type, reservation, featured
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		id,
 		name,
 		getString(payload, "canonical_name"),
@@ -304,6 +304,7 @@ func handlePoiCreate(params map[string]interface{}) AdminResponse {
 		getString(payload, "booking_qr_code"),
 		getString(payload, "reservation_type"),
 		reservationJSON,
+		getString(payload, "featured"),
 	)
 	if err != nil {
 		log.Printf("[poi.create] error: %v", err)
@@ -363,6 +364,10 @@ func handlePoiUpdate(params map[string]interface{}) AdminResponse {
 	}
 	if v, ok := payload["status"]; ok {
 		setClauses = append(setClauses, "status = ?")
+		args = append(args, v)
+	}
+	if v, ok := payload["featured"]; ok {
+		setClauses = append(setClauses, "featured = ?")
 		args = append(args, v)
 	}
 	if v, ok := payload["summary"]; ok {

@@ -4,7 +4,7 @@
     <el-card class="search-card">
       <el-form :inline="true" @submit.prevent="handleSearch">
         <el-form-item label="关键词">
-          <el-input v-model="search.keyword" placeholder="名称/地址/城市" clearable @clear="handleSearch" />
+          <el-input v-model="search.keyword" placeholder="名称/地址/城市" clearable @clear="handleSearch" @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="search.includeDraft" clearable placeholder="全部" @change="handleSearch">
@@ -40,6 +40,14 @@
             <el-tag :type="row.status === 'published' ? 'success' : 'info'" size="small">
               {{ row.status }}
             </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="featured" label="推荐" width="100">
+          <template #default="{ row }">
+            <el-tag v-if="row.featured" :type="getFeaturedType(row.featured)" size="small" effect="dark">
+              {{ getFeaturedLabel(row.featured) }}
+            </el-tag>
+            <span v-else style="color: #999">-</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="160" fixed="right">
@@ -111,6 +119,14 @@
               <el-select v-model="form.status">
                 <el-option label="published" value="published" />
                 <el-option label="draft" value="draft" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="推荐标签">
+              <el-select v-model="form.featured" clearable placeholder="不推荐">
+                <el-option label="🔥 热门" value="hot" />
+                <el-option label="⭐ 精选" value="pick" />
+                <el-option label="🆕 新上" value="new" />
+                <el-option label="🌸 应季" value="season" />
               </el-select>
             </el-form-item>
           </el-tab-pane>
@@ -234,7 +250,7 @@ const pagination = reactive({ page: 1, pageSize: 20, total: 0 })
 
 const defaultForm = () => ({
   name: '', canonical_name: '', city: '', district: '', address: '',
-  category: 'mixed', price_type: 'free', status: 'published',
+  category: 'mixed', price_type: 'free', status: 'published', featured: '',
   lat: 0, lng: 0, indoor: false,
   stroller_friendly: false, restroom: false, food: false,
   shade: false, parking: false, rainy_day_ok: false,
@@ -286,6 +302,7 @@ function openDialog(row) {
       category: row.category || 'mixed',
       price_type: row.price_type || 'free',
       status: row.status || 'published',
+      featured: row.featured || '',
       lat: row.location?.lat || 0,
       lng: row.location?.lng || 0,
       indoor: row.indoor || false,
@@ -333,6 +350,7 @@ async function handleSave() {
     category: form.category,
     price_type: form.price_type,
     status: form.status,
+    featured: form.featured,
     location: { lat: form.lat, lng: form.lng },
     indoor: form.indoor,
     facilities: {
@@ -396,6 +414,16 @@ async function handleDelete(id) {
   } catch (e) {
     ElMessage.error('删除失败: ' + e.message)
   }
+}
+
+function getFeaturedLabel(featured) {
+  const map = { hot: '🔥 热门', new: '🆕 新上', pick: '⭐ 精选', season: '🌸 应季' }
+  return map[featured] || featured
+}
+
+function getFeaturedType(featured) {
+  const map = { hot: 'danger', new: 'success', pick: 'warning', season: '' }
+  return map[featured] || 'info'
 }
 
 onMounted(fetchList)
