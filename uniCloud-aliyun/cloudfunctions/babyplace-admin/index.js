@@ -56,7 +56,7 @@ const ADMIN_ENTITY_CONFIG = {
   poi: {
     collection: 'babyplace-poi',
     keywordFields: ['name', 'canonical_name', 'address', 'city', 'district'],
-    orderBy: [['updated_at', 'desc'], ['created_at', 'desc']],
+    orderBy: [['created_at', 'desc']],
     requiredFields: ['name', 'city', 'district'],
   },
   article: {

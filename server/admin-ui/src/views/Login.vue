@@ -28,6 +28,9 @@
         </el-form-item>
       </el-form>
     </el-card>
+    <div class="icp-footer">
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">粤ICP备19112086号-1</a>
+    </div>
   </div>
 </template>
 
@@ -78,5 +81,19 @@ async function handleLogin() {
   margin: 0;
   color: #303133;
   font-size: 20px;
+}
+.icp-footer {
+  position: absolute;
+  bottom: 20px;
+  text-align: center;
+  width: 100%;
+}
+.icp-footer a {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+}
+.icp-footer a:hover {
+  color: #fff;
 }
 </style>

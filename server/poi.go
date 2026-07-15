@@ -63,7 +63,7 @@ func handlePoiList(params map[string]interface{}) AdminResponse {
 
 	// 分页数据
 	offset := (page - 1) * pageSize
-	querySQL := fmt.Sprintf("SELECT %s FROM poi %s ORDER BY updated_at DESC, created_at DESC LIMIT ? OFFSET ?", poiColumns, where)
+	querySQL := fmt.Sprintf("SELECT %s FROM poi %s ORDER BY created_at DESC, updated_at DESC LIMIT ? OFFSET ?", poiColumns, where)
 	args = append(args, pageSize, offset)
 
 	rows, err := db.Query(querySQL, args...)

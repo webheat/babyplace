@@ -5,19 +5,23 @@ import (
 	"math"
 )
 
-// recommend.home 推荐引擎
+// recommend.home 推荐引擎（支持分页，featured 优先）
 func handleRecommendHome(params map[string]interface{}) AdminResponse {
 	lat := getFloat(params, "lat", math.NaN())
 	lng := getFloat(params, "lng", math.NaN())
 	radius := getInt(params, "radius", 5000)
-	if radius < 500 {
-		radius = 500
+	page := getInt(params, "page", 1)
+	limit := getInt(params, "limit", 20)
+	if page < 1 {
+		page = 1
 	}
-	if radius > 20000 {
-		radius = 20000
+	if limit < 1 || limit > 50 {
+		limit = 20
 	}
+	offset := (page - 1) * limit
 
-	rows, err := db.Query("SELECT " + poiColumns + " FROM poi WHERE status = 'published' LIMIT 200")
+	// 查询所有 published 的 POI（内存排序后分页）
+	rows, err := db.Query("SELECT " + poiColumns + " FROM poi WHERE status = 'published' LIMIT 500")
 	if err != nil {
 		log.Printf("[recommend.home] query error: %v", err)
 		return fail(500, "query failed")
@@ -33,25 +37,51 @@ func handleRecommendHome(params map[string]interface{}) AdminResponse {
 		allPOIs = append(allPOIs, *p)
 	}
 
-	// Featured: 按评分 + 评价数排序
-	featured := make([]POI, len(allPOIs))
-	copy(featured, allPOIs)
-	sortByRatingAndReviews(featured)
-	if len(featured) > 6 {
-		featured = featured[:6]
+	// 排序：featured 优先级 > 评分 > 更新时间
+	// featuredOrder: top=-1, new=0, hot=1, pick=2, season=3, 无=99
+	featuredOrder := map[string]int{"top": -1, "new": 0, "hot": 1, "pick": 2, "season": 3}
+	for i := 1; i < len(allPOIs); i++ {
+		for j := i; j > 0; j-- {
+			a, b := allPOIs[j], allPOIs[j-1]
+			aFeat := 99
+			bFeat := 99
+			if v, ok := featuredOrder[a.Featured]; ok {
+				aFeat = v
+			}
+			if v, ok := featuredOrder[b.Featured]; ok {
+				bFeat = v
+			}
+			// 优先按 featured 排序
+			if aFeat != bFeat {
+				if aFeat < bFeat {
+					allPOIs[j], allPOIs[j-1] = allPOIs[j-1], allPOIs[j]
+				}
+				continue
+			}
+			// 同 featured 内按评分+评价数排序
+			if a.AvgRating > b.AvgRating || (a.AvgRating == b.AvgRating && a.ReviewCount > b.ReviewCount) {
+				allPOIs[j], allPOIs[j-1] = allPOIs[j-1], allPOIs[j]
+			}
+		}
 	}
 
-	// Latest: 按更新时间排序
-	latest := make([]POI, len(allPOIs))
-	copy(latest, allPOIs)
-	sortByUpdatedAt(latest)
-	if len(latest) > 6 {
-		latest = latest[:6]
+	total := len(allPOIs)
+
+	// 分页截取
+	end := offset + limit
+	if end > total {
+		end = total
+	}
+	var items []POI
+	if offset < total {
+		items = allPOIs[offset:end]
+	} else {
+		items = make([]POI, 0)
 	}
 
-	// Nearby: 按距离排序（如果有坐标）
-	nearby := make([]POI, 0)
-	if !math.IsNaN(lat) && !math.IsNaN(lng) {
+	// Nearby（仅第一页返回）
+	var nearby []POI
+	if page == 1 && !math.IsNaN(lat) && !math.IsNaN(lng) {
 		type poiDist struct {
 			POI
 			dist float64
@@ -63,23 +93,26 @@ func handleRecommendHome(params map[string]interface{}) AdminResponse {
 				withDist = append(withDist, poiDist{POI: p, dist: d})
 			}
 		}
-		// 按距离排序
 		for i := 1; i < len(withDist); i++ {
 			for j := i; j > 0 && withDist[j].dist < withDist[j-1].dist; j-- {
 				withDist[j], withDist[j-1] = withDist[j-1], withDist[j]
 			}
 		}
-		for _, wd := range withDist {
+		nearby = make([]POI, 0, 6)
+		for i, wd := range withDist {
+			if i >= 6 {
+				break
+			}
 			nearby = append(nearby, wd.POI)
-		}
-		if len(nearby) > 6 {
-			nearby = nearby[:6]
 		}
 	}
 
 	return ok(map[string]interface{}{
-		"featured": featured,
-		"latest":   latest,
+		"items":    items,
+		"total":    total,
+		"page":     page,
+		"limit":    limit,
+		"hasMore":  end < total,
 		"nearby":   nearby,
 		"radius":   radius,
 	}, "ok")
