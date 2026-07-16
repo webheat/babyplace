@@ -29,7 +29,14 @@ func initManage() {
 	manageSecret = []byte(fmt.Sprintf("%s:%d", managePassword, manageStartTime))
 
 	// 静态文件服务：/manage/ → static/manage/
-	staticDir := filepath.Join("static", "manage")
+	// 优先从可执行文件所在目录解析，兼容 systemd（WorkingDirectory=/opt/babyplace）和 Docker 两种运行方式
+	exePath, _ := os.Executable()
+	exeDir := filepath.Dir(exePath)
+	staticDir := filepath.Join(exeDir, "static", "manage")
+	if _, err := os.Stat(filepath.Join(staticDir, "index.html")); err != nil {
+		// fallback: 从工作目录解析（旧版兼容）
+		staticDir = filepath.Join("static", "manage")
+	}
 	if _, err := os.Stat(filepath.Join(staticDir, "index.html")); err == nil {
 		log.Printf("[manage] serving static files from %s", staticDir)
 	} else {
