@@ -29,8 +29,30 @@ func initMptext() {
 	if mptextAuthKey == "" {
 		log.Println("[warn] down_mptext_top_key/websit_key not set, mptext auth APIs disabled")
 	} else {
-		log.Printf("[mptext] auth key loaded (%s...)", mptextAuthKey[:8])
+		keyPrefix := mptextAuthKey
+		if len(keyPrefix) > 8 {
+			keyPrefix = keyPrefix[:8]
+		}
+		log.Printf("[mptext] auth key loaded (%s...)", keyPrefix)
 	}
+}
+
+func readMptextResponse(resp *http.Response) ([]byte, error) {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read body failed: %w", err)
+	}
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		message := strings.TrimSpace(string(body))
+		if len(message) > 512 {
+			message = message[:512] + "..."
+		}
+		if message == "" {
+			return nil, fmt.Errorf("mptext API returned HTTP %d", resp.StatusCode)
+		}
+		return nil, fmt.Errorf("mptext API returned HTTP %d: %s", resp.StatusCode, message)
+	}
+	return body, nil
 }
 
 // --- API 调用 ---
@@ -46,9 +68,9 @@ func mptextFetchArticle(articleURL, format string) (map[string]interface{}, erro
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readMptextResponse(resp)
 	if err != nil {
-		return nil, fmt.Errorf("read body failed: %w", err)
+		return nil, err
 	}
 
 	if format == "json" {
@@ -84,9 +106,9 @@ func mptextGetArticleList(fakeid string, begin, size int) (map[string]interface{
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readMptextResponse(resp)
 	if err != nil {
-		return nil, fmt.Errorf("read body failed: %w", err)
+		return nil, err
 	}
 
 	var result map[string]interface{}
@@ -111,9 +133,9 @@ func mptextGetAuthorInfo(fakeid string) (map[string]interface{}, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readMptextResponse(resp)
 	if err != nil {
-		return nil, fmt.Errorf("read body failed: %w", err)
+		return nil, err
 	}
 
 	var result map[string]interface{}
@@ -141,9 +163,9 @@ func mptextSearchAccount(keyword string, begin, size int) (map[string]interface{
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readMptextResponse(resp)
 	if err != nil {
-		return nil, fmt.Errorf("read body failed: %w", err)
+		return nil, err
 	}
 
 	var result map[string]interface{}
@@ -170,9 +192,9 @@ func mptextGetAccountByURL(articleURL string) (map[string]interface{}, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readMptextResponse(resp)
 	if err != nil {
-		return nil, fmt.Errorf("read body failed: %w", err)
+		return nil, err
 	}
 
 	var result map[string]interface{}
@@ -339,6 +361,10 @@ func handleMptextFetch(params map[string]interface{}) AdminResponse {
 	if err != nil {
 		log.Printf("[mptext.fetch] save error: %v", err)
 		return fail(500, "save article failed: "+err.Error())
+	}
+	if _, err := exportArticleToObsidian(id, article); err != nil {
+		log.Printf("[mptext.fetch] Obsidian export error: %v", err)
+		return fail(500, "export article to Obsidian failed: "+err.Error())
 	}
 
 	return ok(map[string]interface{}{

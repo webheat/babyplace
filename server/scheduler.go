@@ -13,17 +13,17 @@ import (
 // 每 12 小时自动抓取一次最新文章
 
 const (
-	crawlInterval        = 12 * time.Hour // 抓取间隔
-	crawlBatchSize       = 10             // 每个公众号每次抓取篇数
+	crawlInterval        = 12 * time.Hour  // 抓取间隔
+	crawlBatchSize       = 10              // 每个公众号每次抓取篇数
 	crawlDelayPerArticle = 2 * time.Second // 每篇文章间隔，避免限流
-	failThreshold        = 3              // 连续失败 N 次后发送通知
+	failThreshold        = 3               // 连续失败 N 次后发送通知
 )
 
 // 抓取失败跟踪
 var (
-	crawlFailCount   = map[string]int{}  // fakeid → 连续失败次数
-	crawlNotified    = map[string]bool{} // fakeid → 是否已通知（避免重复发送）
-	crawlFailLock    = make(chan struct{}, 1)
+	crawlFailCount = map[string]int{}  // fakeid → 连续失败次数
+	crawlNotified  = map[string]bool{} // fakeid → 是否已通知（避免重复发送）
+	crawlFailLock  = make(chan struct{}, 1)
 )
 
 func startArticleCrawler() {
@@ -72,6 +72,7 @@ func runCrawl(fakeids []string) {
 		}
 
 		count, err := crawlOneAccount(fakeid)
+		totalNew += count
 		if err != nil {
 			log.Printf("[scheduler] account %s error: %v", fakeid, err)
 			totalErrors++
@@ -80,7 +81,6 @@ func runCrawl(fakeids []string) {
 		}
 		// 成功：重置失败计数和通知标记
 		onCrawlSuccess(fakeid)
-		totalNew += count
 	}
 
 	log.Printf("[scheduler] === 抓取完成: 新增 %d 篇, 错误 %d 个 ===", totalNew, totalErrors)
@@ -153,7 +153,7 @@ func crawlOneAccount(fakeid string) (int, error) {
 	}
 	if !ok {
 		log.Printf("[scheduler] unexpected response format for %s", fakeid)
-		return 0, nil
+		return 0, fmt.Errorf("unexpected article-list response format")
 	}
 	if !ok || len(articlesList) == 0 {
 		log.Printf("[scheduler] no articles for %s", fakeid)
@@ -161,6 +161,7 @@ func crawlOneAccount(fakeid string) (int, error) {
 	}
 
 	saved := 0
+	failed := 0
 	for _, item := range articlesList {
 		articleMap, ok := item.(map[string]interface{})
 		if !ok {
@@ -174,6 +175,7 @@ func crawlOneAccount(fakeid string) (int, error) {
 		// 3. 抓取并保存
 		if err := fetchAndSaveArticle(link); err != nil {
 			log.Printf("[scheduler] ✗ %s: %v", link, err)
+			failed++
 			continue
 		}
 
@@ -188,6 +190,9 @@ func crawlOneAccount(fakeid string) (int, error) {
 	}
 
 	log.Printf("[scheduler] 公众号 %s: 抓取 %d 篇", fakeid, saved)
+	if failed > 0 {
+		return saved, fmt.Errorf("%d article(s) failed to fetch or save", failed)
+	}
 	return saved, nil
 }
 
@@ -202,7 +207,7 @@ func fetchAndSaveArticle(articleURL string) error {
 	// 检查 API 返回
 	if baseResp, ok := data["base_resp"].(map[string]interface{}); ok {
 		if ret, ok := baseResp["ret"].(float64); ok && ret != 0 {
-			return nil // 静默跳过错误文章
+			return fmt.Errorf("mptext API error: ret=%v", ret)
 		}
 	}
 
@@ -227,6 +232,9 @@ func fetchAndSaveArticle(articleURL string) error {
 			db.Exec(`UPDATE article SET local_cover_image = ?, local_images = ? WHERE id = ?`,
 				localCover, jsonMarshal(localImages), articleID)
 		}
+	}
+	if _, err := exportArticleToObsidian(articleID, article); err != nil {
+		return err
 	}
 
 	return nil
