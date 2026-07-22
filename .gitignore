@@ -31,3 +31,6 @@ test-images/
 
 # SQLite database
 data/
+
+pic/
+.claude/
