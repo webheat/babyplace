@@ -34,3 +34,22 @@ data/
 
 pic/
 .claude/
+
+# Seed / test data
+seed/
+scripts/babyplace_testdata_pack/
+scripts/babyplace_testdata_pack.zip
+
+# External data sources (large JSON/MD)
+docs/网络数据源/
+docs/base-poi.json
+
+# Design reports (screenshots)
+docs/design-reports/
+
+# Go build artifacts
+server/babyplace-server
+server/babyplace-chat-server
+
+# Test assets
+test-images/
