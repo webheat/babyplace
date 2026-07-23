@@ -6,14 +6,12 @@ import html
 import json
 import os
 import re
-import sqlite3
+import subprocess
 import sys
 import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
-
-from amap_enrich_poi import get_poi, query_amap_rich, upsert_poi
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = Path(r'C:\Users\Admin\a-weekend-kids\.env')
@@ -92,72 +90,43 @@ def extract_pois(config, title, content):
     return bool(parsed.get('is_relevant')), names, float(parsed.get('confidence') or 0), str(parsed.get('evidence') or '')
 
 
-def ensure_schema(conn):
-    poi_columns = {row[1] for row in conn.execute('PRAGMA table_info(poi)')}
-    if 'sort_order' not in poi_columns:
-        conn.execute('ALTER TABLE poi ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0')
-    conn.execute('CREATE INDEX IF NOT EXISTS idx_poi_sort_order ON poi(sort_order DESC, created_at DESC)')
-
-    article_columns = {row[1] for row in conn.execute('PRAGMA table_info(article)')}
-    article_migrations = {
-        'local_cover_image': "ALTER TABLE article ADD COLUMN local_cover_image TEXT DEFAULT ''",
-        'local_images': "ALTER TABLE article ADD COLUMN local_images TEXT DEFAULT '[]'",
-        'extracted_poi_names': "ALTER TABLE article ADD COLUMN extracted_poi_names TEXT DEFAULT '[]'",
-        'parse_result': "ALTER TABLE article ADD COLUMN parse_result TEXT DEFAULT '{}'",
-        'parse_confidence': 'ALTER TABLE article ADD COLUMN parse_confidence REAL DEFAULT 0',
-    }
-    for name, statement in article_migrations.items():
-        if name not in article_columns:
-            conn.execute(statement)
-    conn.commit()
+def load_sync_state(vault):
+    path = vault / '.wechat-sync-state.json'
+    if not path.exists():
+        return path, {}
+    return path, json.loads(path.read_text(encoding='utf-8'))
 
 
-def save_article(conn, article, content, names, confidence):
-    now = int(time.time() * 1000)
-    url = article['link']
-    row = conn.execute('SELECT id FROM article WHERE url = ?', (url,)).fetchone()
-    if row:
-        article_id = row[0]
-        conn.execute('UPDATE article SET content_text=?, content_html=?, extracted_poi_names=?, parse_confidence=?, status=?, updated_at=? WHERE id=?',
-                     (strip_html(content), content, json.dumps(names, ensure_ascii=False), confidence, 'parsed', now, article_id))
-        return article_id
-    article_id = f'{now:x}{abs(hash(url)) & 0xffffffff:08x}'
-    conn.execute('INSERT INTO article (id,title,source_account_id,publish_time,url,cover_image,content_text,content_html,images,local_images,extracted_poi_names,parse_result,status,parse_confidence,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                 (article_id, article.get('title', ''), article.get('fakeid', ''), int(article.get('create_time') or 0) * 1000, url,
-                  article.get('cover', ''), strip_html(content), content, '[]', '[]', json.dumps(names, ensure_ascii=False), '{}', 'parsed', confidence, now, now))
-    return article_id
-
-
-def export_markdown(vault, article, content, names):
+def export_markdown(vault, article, content, names, confidence, relevant, evidence):
     vault.mkdir(parents=True, exist_ok=True)
     date = dt.datetime.fromtimestamp(int(article.get('create_time') or time.time())).strftime('%Y-%m-%d')
     safe_title = re.sub(r'[\\/:*?"<>|]', '_', article.get('title', 'untitled'))[:120]
-    frontmatter = {'title': article.get('title', ''), 'source_url': article.get('link', ''), 'poi_names': names}
-    (vault / f'{date} {safe_title}.md').write_text('---\n' + json.dumps(frontmatter, ensure_ascii=False, indent=2) + '\n---\n\n# ' + article.get('title', '') + '\n\n' + content + '\n', encoding='utf-8')
+    frontmatter = {
+        'title': article.get('title', ''), 'source_url': article.get('link', ''),
+        'poi_names': names, 'poi_confidence': confidence, 'is_kid_friendly': relevant,
+        'poi_evidence': evidence,
+    }
+    filename = f'{date} {safe_title}.md'
+    (vault / filename).write_text('---\n' + json.dumps(frontmatter, ensure_ascii=False, indent=2) + '\n---\n\n# ' + article.get('title', '') + '\n\n' + content + '\n', encoding='utf-8')
+    return filename
 
 
-def enrich_pois(conn, names, article_id, confidence, evidence, dry_run):
+def enrich_pois(config, names, dry_run):
     for name in names:
-        amap, error = query_amap_rich(name, '广州')
-        if error:
-            print(f'  skip {name}: {error}')
-            continue
-        existing = get_poi(conn.cursor(), name, '广州')
-        action, _, poi_id = upsert_poi(conn.cursor(), conn, amap, existing, dry_run)
-        if action == 'created' and not dry_run:
-            next_order = conn.execute('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM poi').fetchone()[0]
-            conn.execute('UPDATE poi SET status=?, sort_order=? WHERE id=?', ('published', next_order, poi_id))
-        if poi_id and not dry_run:
-            now = int(time.time() * 1000)
-            conn.execute('INSERT OR IGNORE INTO content_source (id,poi_id,article_id,source_type,quoted_text,support_fields,confidence_score,is_primary,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-                         (f'{now:x}{abs(hash((poi_id, article_id))) & 0xffffffff:08x}', poi_id, article_id, 'article', evidence, '["name"]', confidence, 0, 'pending', now, now))
-            conn.commit()
+        command = [sys.executable, str(PROJECT_ROOT / 'scripts' / 'amap_enrich_poi.py'), name, '--city', '广州']
+        if dry_run:
+            command.append('--dry-run')
+        child_env = os.environ.copy()
+        child_env['DB_PATH'] = config.get('BABYPLACE_DB_PATH', str(DEFAULT_DB))
+        child_env['AMAP_KEY'] = config['AMAP_KEY']
+        result = subprocess.run(command, env=child_env, text=True, capture_output=True)
+        if result.returncode:
+            print(f'  POI failed {name}: {result.stderr.strip() or result.stdout.strip()}')
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=Path, default=DEFAULT_CONFIG)
-    parser.add_argument('--db', type=Path, default=DEFAULT_DB)
     parser.add_argument('--limit', type=int, default=20)
     parser.add_argument('--max-articles', type=int, default=0, help='0 means no limit')
     parser.add_argument('--dry-run', action='store_true')
@@ -165,13 +134,14 @@ def main():
     config = read_env(args.config)
     for name in ('LLM_BASE_URL', 'LLM_API_KEY'):
         if not config.get(name): raise RuntimeError(f'{name} is required')
-    db_path = Path(config.get('BABYPLACE_DB_PATH', str(args.db)))
-    conn = sqlite3.connect(db_path)
-    ensure_schema(conn)
+    if not config.get('AMAP_KEY'):
+        raise RuntimeError('AMAP_KEY is required')
+    vault = Path(config.get('OBSIDIAN_OUTPUT_DIR', str(DEFAULT_VAULT)))
+    state_path, state = load_sync_state(vault)
     seen = set()
     processed = 0
     for fakeid, article in fetch_articles(config, args.limit):
-        if article['link'] in seen: continue
+        if article['link'] in seen or article['link'] in state: continue
         if args.max_articles and processed >= args.max_articles: break
         seen.add(article['link']); article['fakeid'] = fakeid
         detail = fetch_article_content(config, article['link'])
@@ -180,11 +150,11 @@ def main():
         print(f"{article.get('title', '')}: {'relevant' if relevant else 'ignored'}, {len(names)} POIs")
         processed += 1
         if args.dry_run: continue
-        article_id = save_article(conn, article, content, names, confidence)
-        export_markdown(Path(config.get('OBSIDIAN_OUTPUT_DIR', str(DEFAULT_VAULT))), article, content, names)
+        filename = export_markdown(vault, article, content, names, confidence, relevant, evidence)
+        state[article['link']] = {'file': filename, 'synced_at': dt.datetime.now(dt.timezone.utc).isoformat()}
+        state_path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         if relevant and confidence >= 0.85:
-            enrich_pois(conn, names, article_id, confidence, evidence, False)
-        conn.commit()
+            enrich_pois(config, names, False)
 
 
 if __name__ == '__main__':

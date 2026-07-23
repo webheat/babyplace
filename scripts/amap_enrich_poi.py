@@ -34,7 +34,7 @@ POI_COLUMNS = [
     "stroller_friendly", "restroom", "food", "shade", "parking", "rainy_day_ok",
     "summary", "recommend_reason", "notice", "cover_image", "gallery", "tags",
     "source_count", "review_count", "avg_rating", "status", "created_at", "updated_at",
-    "open_time", "ticket_info", "phone", "booking_url", "booking_qr_code", "reservation_type", "reservation", "featured",
+    "open_time", "ticket_info", "phone", "booking_url", "booking_qr_code", "reservation_type", "reservation", "featured", "sort_order",
 ]
 POI_PLACEHOLDERS = ",".join("?" for _ in POI_COLUMNS)
 
@@ -369,6 +369,7 @@ def upsert_poi(cursor, conn, amap_data, existing_poi, dry_run):
         # ── 新建 ──
         now_ms = int(time.time() * 1000)
         poi_id = generate_id()
+        next_sort_order = cursor.execute("SELECT COALESCE(MAX(sort_order), 0) + 1 FROM poi").fetchone()[0]
 
         # 构建完整行数据（Go 后端 INSERT 43 列一致）
         row = {
@@ -415,6 +416,7 @@ def upsert_poi(cursor, conn, amap_data, existing_poi, dry_run):
             "reservation_type": "",
             "reservation": "{}",
             "featured": "",
+            "sort_order": next_sort_order,
         }
 
         values = [row[col] for col in POI_COLUMNS]
