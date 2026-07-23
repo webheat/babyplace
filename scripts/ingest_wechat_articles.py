@@ -14,6 +14,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from bs4 import BeautifulSoup
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = Path(r'C:\Users\Admin\a-weekend-kids\.env')
 DEFAULT_DB = PROJECT_ROOT / 'server' / 'data' / 'babyplace.db'
@@ -58,10 +60,40 @@ def request_text(url, headers=None, body=None, retries=3):
     raise last_error
 
 
-def strip_html(value):
-    value = re.sub(r'<(script|style)[^>]*>.*?</\1>', '', value or '', flags=re.I | re.S)
-    value = re.sub(r'<[^>]+>', ' ', value)
-    return re.sub(r'\s+', ' ', html.unescape(value)).strip()
+def parse_wechat_html(value):
+    """Extract a cleaned WeChat article fragment and LLM-ready plain text.
+
+    The Worker deliberately returns raw HTML on the free plan to avoid spending
+    its 10ms CPU budget on DOM parsing. BeautifulSoup performs that work here,
+    where the batch job has normal Python CPU time available.
+    """
+    soup = BeautifulSoup(value or '', 'html.parser')
+    article = soup.select_one('#js_article') or soup.select_one('#js_content') or soup.body or soup
+
+    for selector in (
+        '#js_top_ad_area', '#js_tags_preview_toast', '#content_bottom_area',
+        '#js_pc_qr_code', '#wx_stream_article_slide_tip',
+    ):
+        for node in article.select(selector):
+            node.decompose()
+
+    for node in article.select('script, style, noscript'):
+        node.decompose()
+
+    content = article.select_one('#js_content')
+    if content:
+        content.attrs.pop('style', None)
+
+    for image in article.select('img'):
+        source = image.get('data-src') or image.get('src')
+        if source:
+            image['src'] = source
+
+    for line_break in article.select('br'):
+        line_break.replace_with('\n')
+    text = article.get_text('\n', strip=True)
+    text = re.sub(r'\n[ \t]*\n+', '\n\n', html.unescape(text)).strip()
+    return str(article), text
 
 
 def fetch_articles(config, page_size):
@@ -169,11 +201,12 @@ def main():
             failed += 1
             print(f"{article.get('title', '')}: download failed ({error}), will retry next run")
             continue
-        relevant, names, confidence, evidence = extract_pois(config, article.get('title', ''), strip_html(content))
+        cleaned_html, article_text = parse_wechat_html(content)
+        relevant, names, confidence, evidence = extract_pois(config, article.get('title', ''), article_text)
         print(f"{article.get('title', '')}: {'relevant' if relevant else 'ignored'}, {len(names)} POIs")
         processed += 1
         if args.dry_run: continue
-        filename = export_markdown(vault, article, content, names, confidence, relevant, evidence)
+        filename = export_markdown(vault, article, cleaned_html, names, confidence, relevant, evidence)
         state[article['link']] = {'file': filename, 'synced_at': dt.datetime.now(dt.timezone.utc).isoformat()}
         state_path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         if relevant and confidence >= 0.85:
