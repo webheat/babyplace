@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const mptextBaseURL = "https://down.mptext.top/api/public"
+const mptextBaseURL = "https://down.dwqjk.top/api/public"
 
 var (
 	mptextAuthKey string

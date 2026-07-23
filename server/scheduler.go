@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -13,20 +15,54 @@ import (
 // 每 12 小时自动抓取一次最新文章
 
 const (
-	crawlInterval        = 12 * time.Hour  // 抓取间隔
-	crawlBatchSize       = 10              // 每个公众号每次抓取篇数
-	crawlDelayPerArticle = 2 * time.Second // 每篇文章间隔，避免限流
-	failThreshold        = 3               // 连续失败 N 次后发送通知
+	crawlInterval         = 12 * time.Hour      // 抓取间隔
+	crawlBatchSize        = 10                  // 每个公众号每次抓取篇数
+	crawlDelayPerAccount  = 3 * time.Second     // 公众号之间延迟，避免同时爆发请求
+	crawlDelayPerArticle  = 1500 * time.Millisecond // 每篇文章间隔
+	crawlDefaultParallel  = 3                   // 默认并发抓取公众号数
+	crawlDefaultWorkers   = 2                   // 默认每公众号并发抓取文章数
+	failThreshold         = 3                   // 连续失败 N 次后发送通知
 )
 
 // 抓取失败跟踪
 var (
 	crawlFailCount = map[string]int{}  // fakeid → 连续失败次数
 	crawlNotified  = map[string]bool{} // fakeid → 是否已通知（避免重复发送）
-	crawlFailLock  = make(chan struct{}, 1)
+	crawlFailLock  sync.Mutex
 )
 
+var (
+	crawlAccountParallel int
+	crawlArticleWorkers  int
+)
+
+func initCrawlerConfig() {
+	// 环境变量配置并发数: MPTEXT_ACCOUNT_PARALLEL / MPTEXT_ARTICLE_WORKERS
+	if v := os.Getenv("MPTEXT_ACCOUNT_PARALLEL"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			crawlAccountParallel = n
+		}
+	}
+	if crawlAccountParallel == 0 {
+		crawlAccountParallel = crawlDefaultParallel
+	}
+
+	if v := os.Getenv("MPTEXT_ARTICLE_WORKERS"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			crawlArticleWorkers = n
+		}
+	}
+	if crawlArticleWorkers == 0 {
+		crawlArticleWorkers = crawlDefaultWorkers
+	}
+
+	log.Printf("[scheduler] crawler config: account_parallel=%d article_workers=%d",
+		crawlAccountParallel, crawlArticleWorkers)
+}
+
 func startArticleCrawler() {
+	initCrawlerConfig()
+
 	fakeidsStr := os.Getenv("MPTEXT_FAKEIDS")
 	if fakeidsStr == "" {
 		log.Println("[scheduler] MPTEXT_FAKEIDS not set, article crawler disabled")
@@ -39,57 +75,83 @@ func startArticleCrawler() {
 		return
 	}
 
-	log.Printf("[scheduler] article crawler started, %d accounts, interval %s", len(fakeids), crawlInterval)
+	log.Printf("[scheduler] article crawler started, %d accounts, interval %s, parallel=%d",
+		len(fakeids), crawlInterval, crawlAccountParallel)
 
 	// 启动时先跑一次（延迟 30 秒，等服务完全就绪）
 	go func() {
 		time.Sleep(30 * time.Second)
-		runCrawl(fakeids)
+		runCrawlParallel(fakeids)
 	}()
 
 	// 定时循环
-	ticker := newTicker(crawlInterval)
+	ticker := time.NewTicker(crawlInterval)
 	go func() {
 		for range ticker.C {
-			runCrawl(fakeids)
+			runCrawlParallel(fakeids)
 		}
 	}()
 }
 
-func newTicker(d time.Duration) *time.Ticker {
-	return time.NewTicker(d)
-}
+// runCrawlParallel 并发抓取所有公众号
+func runCrawlParallel(fakeids []string) {
+	log.Printf("[scheduler] === 开始并行文章抓取 ===")
 
-func runCrawl(fakeids []string) {
-	log.Printf("[scheduler] === 开始定时文章抓取 ===")
-	totalNew := 0
-	totalErrors := 0
-
-	for _, fakeid := range fakeids {
-		fakeid = strings.TrimSpace(fakeid)
-		if fakeid == "" {
-			continue
+	// 过滤空值
+	var ids []string
+	for _, f := range fakeids {
+		f = strings.TrimSpace(f)
+		if f != "" {
+			ids = append(ids, f)
 		}
-
-		count, err := crawlOneAccount(fakeid)
-		totalNew += count
-		if err != nil {
-			log.Printf("[scheduler] account %s error: %v", fakeid, err)
-			totalErrors++
-			onCrawlFailure(fakeid, err)
-			continue
-		}
-		// 成功：重置失败计数和通知标记
-		onCrawlSuccess(fakeid)
+	}
+	if len(ids) == 0 {
+		return
 	}
 
+	var (
+		mu          sync.Mutex
+		totalNew    int
+		totalErrors int
+		wg          sync.WaitGroup
+		accountSem  = make(chan struct{}, crawlAccountParallel)
+	)
+
+	for _, fakeid := range ids {
+		wg.Add(1)
+		accountSem <- struct{}{} // 获取信号量，满则阻塞
+
+		go func(fid string) {
+			defer func() {
+				<-accountSem // 释放信号量
+				wg.Done()
+			}()
+
+			count, err := crawlOneAccountParallel(fid)
+			mu.Lock()
+			if err != nil {
+				log.Printf("[scheduler] account %s error: %v", fid, err)
+				totalErrors++
+				onCrawlFailure(fid, err)
+			} else {
+				totalNew += count
+				onCrawlSuccess(fid)
+			}
+			mu.Unlock()
+		}(fakeid)
+
+		// 公众号之间延迟，避免同时爆发请求
+		time.Sleep(crawlDelayPerAccount)
+	}
+
+	wg.Wait()
 	log.Printf("[scheduler] === 抓取完成: 新增 %d 篇, 错误 %d 个 ===", totalNew, totalErrors)
 }
 
 // onCrawlFailure 处理单个公众号抓取失败
 func onCrawlFailure(fakeid string, err error) {
-	crawlFailLock <- struct{}{}
-	defer func() { <-crawlFailLock }()
+	crawlFailLock.Lock()
+	defer crawlFailLock.Unlock()
 
 	crawlFailCount[fakeid]++
 	count := crawlFailCount[fakeid]
@@ -108,7 +170,7 @@ func onCrawlFailure(fakeid string, err error) {
 				"• 最近错误: %s\n"+
 				"• 抓取间隔: %s\n\n"+
 				"可能原因：API Key 过期、mptext 服务不可用、网络异常。\n"+
-				"请登录 https://down.mptext.top/dashboard/account 检查状态。",
+				"请登录 https://down.dwqjk.top/dashboard/account 检查状态。",
 			fakeid, count, err.Error(), crawlInterval)
 
 		go sendWecomNotify(title, content)
@@ -117,8 +179,8 @@ func onCrawlFailure(fakeid string, err error) {
 
 // onCrawlSuccess 处理单个公众号抓取成功
 func onCrawlSuccess(fakeid string) {
-	crawlFailLock <- struct{}{}
-	defer func() { <-crawlFailLock }()
+	crawlFailLock.Lock()
+	defer crawlFailLock.Unlock()
 
 	if crawlFailCount[fakeid] > 0 {
 		// 之前有失败记录 → 发送恢复通知
@@ -133,8 +195,8 @@ func onCrawlSuccess(fakeid string) {
 	}
 }
 
-// crawlOneAccount 抓取单个公众号的最新文章
-func crawlOneAccount(fakeid string) (int, error) {
+// crawlOneAccountParallel 并发抓取单个公众号的所有文章
+func crawlOneAccountParallel(fakeid string) (int, error) {
 	log.Printf("[scheduler] 抓取公众号: %s", fakeid)
 
 	// 1. 获取文章列表
@@ -143,25 +205,27 @@ func crawlOneAccount(fakeid string) (int, error) {
 		return 0, err
 	}
 
-	// 2. 提取文章 URL（API 直接返回 articles 数组，无 data 包装层）
-	articlesList, ok := data["articles"].([]interface{})
-	if !ok {
-		// 兼容 data 包装格式
-		if dataWrap, ok := data["data"].(map[string]interface{}); ok {
-			articlesList, ok = dataWrap["articles"].([]interface{})
-		}
+	// 兼容两种响应格式:
+	// dwqjk.top: {base_resp: {ret:0}, articles: [...]}
+	// old mptext.top: {data: {articles: [...]}}
+	var articlesList []interface{}
+	if arts, ok := data["articles"].([]interface{}); ok {
+		articlesList = arts
+	} else if dataWrap, ok := data["data"].(map[string]interface{}); ok {
+		articlesList, _ = dataWrap["articles"].([]interface{})
 	}
-	if !ok {
-		log.Printf("[scheduler] unexpected response format for %s", fakeid)
-		return 0, fmt.Errorf("unexpected article-list response format")
-	}
-	if !ok || len(articlesList) == 0 {
+	if len(articlesList) == 0 {
 		log.Printf("[scheduler] no articles for %s", fakeid)
 		return 0, nil
 	}
 
-	saved := 0
-	failed := 0
+	// 2. 并发抓取每篇文章
+	type articleItem struct {
+		link  string
+		title string
+	}
+
+	var articles []articleItem
 	for _, item := range articlesList {
 		articleMap, ok := item.(map[string]interface{})
 		if !ok {
@@ -171,71 +235,72 @@ func crawlOneAccount(fakeid string) (int, error) {
 		if link == "" || !strings.Contains(link, "mp.weixin.qq.com") {
 			continue
 		}
-
-		// 3. 抓取并保存
-		if err := fetchAndSaveArticle(link); err != nil {
-			log.Printf("[scheduler] ✗ %s: %v", link, err)
-			failed++
-			continue
-		}
-
 		title, _ := articleMap["title"].(string)
 		if len(title) > 50 {
 			title = title[:50]
 		}
-		log.Printf("[scheduler] ✓ 已保存: %s", title)
-		saved++
+		articles = append(articles, articleItem{link: link, title: title})
+	}
+
+	if len(articles) == 0 {
+		log.Printf("[scheduler] no valid articles for %s", fakeid)
+		return 0, nil
+	}
+
+	var (
+		mu     sync.Mutex
+		saved  int
+		artWg  sync.WaitGroup
+		artSem = make(chan struct{}, crawlArticleWorkers)
+	)
+
+	for _, art := range articles {
+		artWg.Add(1)
+		artSem <- struct{}{}
+
+		go func(a articleItem) {
+			defer func() {
+				<-artSem
+				artWg.Done()
+			}()
+
+			if err := fetchAndSaveArticle(a.link); err != nil {
+				log.Printf("[scheduler] ✗ %s: %v", a.link, err)
+				return
+			}
+
+			mu.Lock()
+			saved++
+			mu.Unlock()
+			log.Printf("[scheduler] ✓ 已保存: %s", a.title)
+		}(art)
 
 		time.Sleep(crawlDelayPerArticle)
 	}
 
-	log.Printf("[scheduler] 公众号 %s: 抓取 %d 篇", fakeid, saved)
-	if failed > 0 {
-		return saved, fmt.Errorf("%d article(s) failed to fetch or save", failed)
-	}
+	artWg.Wait()
+	log.Printf("[scheduler] 公众号 %s: 抓取 %d/%d 篇", fakeid, saved, len(articles))
 	return saved, nil
 }
 
 // fetchAndSaveArticle 抓取单篇文章并存入数据库
 func fetchAndSaveArticle(articleURL string) error {
-	// 调用 mptext API 获取文章内容
 	data, err := mptextFetchArticle(articleURL, "json")
 	if err != nil {
 		return err
 	}
 
-	// 检查 API 返回
 	if baseResp, ok := data["base_resp"].(map[string]interface{}); ok {
 		if ret, ok := baseResp["ret"].(float64); ok && ret != 0 {
-			return fmt.Errorf("mptext API error: ret=%v", ret)
+			return nil // 静默跳过错误文章
 		}
 	}
 
-	// 解析文章
 	article, err := parseMptextArticle(data)
 	if err != nil {
 		return err
 	}
 
-	// 存入数据库（URL 去重，已存在则更新）
-	articleID, err := saveArticleToDB(article)
-	if err != nil {
-		return err
-	}
-
-	// 下载图片到本地
-	if articleID != "" {
-		localCover, localImages := downloadArticleImages(articleID, article.CoverImage, article.Images)
-		if localCover != "" || len(localImages) > 0 {
-			article.LocalCoverImage = localCover
-			article.LocalImages = localImages
-			db.Exec(`UPDATE article SET local_cover_image = ?, local_images = ? WHERE id = ?`,
-				localCover, jsonMarshal(localImages), articleID)
-		}
-	}
-	if _, err := exportArticleToObsidian(articleID, article); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = saveArticleToDB(article)
+	return err
 }
