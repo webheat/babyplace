@@ -31,6 +31,10 @@ def read_env(path):
 
 
 def request_json(url, headers=None, body=None, retries=3):
+    return json.loads(request_text(url, headers, body, retries))
+
+
+def request_text(url, headers=None, body=None, retries=3):
     request_headers = {
         'Accept': 'application/json',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/138 Safari/537.36',
@@ -41,7 +45,7 @@ def request_json(url, headers=None, body=None, retries=3):
     for attempt in range(retries + 1):
         try:
             with urllib.request.urlopen(request, timeout=60) as response:
-                return json.loads(response.read().decode('utf-8'))
+                return response.read().decode('utf-8')
         except urllib.error.HTTPError as error:
             last_error = error
             if error.code not in (429, 500, 502, 503, 504) or attempt == retries:
@@ -83,8 +87,8 @@ def fetch_articles(config, page_size):
 
 def fetch_article_content(config, article_url):
     base = config.get('WECHAT_API_BASE', 'https://down.dwqjk.top').rstrip('/')
-    query = urllib.parse.urlencode({'url': article_url, 'format': 'json'})
-    return request_json(f'{base}/api/public/v1/download?{query}')
+    query = urllib.parse.urlencode({'url': article_url, 'format': 'html'})
+    return request_text(f'{base}/api/public/v1/download?{query}')
 
 
 def extract_pois(config, title, content):
@@ -160,12 +164,11 @@ def main():
         if args.max_articles and processed >= args.max_articles: break
         seen.add(article['link']); article['fakeid'] = fakeid
         try:
-            detail = fetch_article_content(config, article['link'])
+            content = fetch_article_content(config, article['link'])
         except (urllib.error.HTTPError, urllib.error.URLError) as error:
             failed += 1
             print(f"{article.get('title', '')}: download failed ({error}), will retry next run")
             continue
-        content = detail.get('content_noencode') or detail.get('content') or ''
         relevant, names, confidence, evidence = extract_pois(config, article.get('title', ''), strip_html(content))
         print(f"{article.get('title', '')}: {'relevant' if relevant else 'ignored'}, {len(names)} POIs")
         processed += 1
