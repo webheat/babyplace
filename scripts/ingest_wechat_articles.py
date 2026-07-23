@@ -93,10 +93,23 @@ def extract_pois(config, title, content):
 
 
 def ensure_schema(conn):
-    columns = {row[1] for row in conn.execute('PRAGMA table_info(poi)')}
-    if 'sort_order' not in columns:
+    poi_columns = {row[1] for row in conn.execute('PRAGMA table_info(poi)')}
+    if 'sort_order' not in poi_columns:
         conn.execute('ALTER TABLE poi ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_poi_sort_order ON poi(sort_order DESC, created_at DESC)')
+
+    article_columns = {row[1] for row in conn.execute('PRAGMA table_info(article)')}
+    article_migrations = {
+        'local_cover_image': "ALTER TABLE article ADD COLUMN local_cover_image TEXT DEFAULT ''",
+        'local_images': "ALTER TABLE article ADD COLUMN local_images TEXT DEFAULT '[]'",
+        'extracted_poi_names': "ALTER TABLE article ADD COLUMN extracted_poi_names TEXT DEFAULT '[]'",
+        'parse_result': "ALTER TABLE article ADD COLUMN parse_result TEXT DEFAULT '{}'",
+        'parse_confidence': 'ALTER TABLE article ADD COLUMN parse_confidence REAL DEFAULT 0',
+    }
+    for name, statement in article_migrations.items():
+        if name not in article_columns:
+            conn.execute(statement)
+    conn.commit()
 
 
 def save_article(conn, article, content, names, confidence):
