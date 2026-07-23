@@ -23,6 +23,7 @@
     <el-card style="margin-top: 16px">
       <el-table :data="list" v-loading="loading" stripe border style="width: 100%">
         <el-table-column prop="name" label="名称" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="sort_order" label="排序" width="70" />
         <el-table-column prop="city" label="城市" width="80" />
         <el-table-column prop="district" label="区域" width="80" />
         <el-table-column prop="category" label="分类" width="80" />
@@ -128,6 +129,9 @@
                 <el-option label="🆕 新上" value="new" />
                 <el-option label="🌸 应季" value="season" />
               </el-select>
+            </el-form-item>
+            <el-form-item label="排序值">
+              <el-input-number v-model="form.sort_order" :min="0" />
             </el-form-item>
           </el-tab-pane>
 
@@ -250,7 +254,7 @@ const pagination = reactive({ page: 1, pageSize: 20, total: 0 })
 
 const defaultForm = () => ({
   name: '', canonical_name: '', city: '', district: '', address: '',
-  category: 'mixed', price_type: 'free', status: 'published', featured: '',
+  category: 'mixed', price_type: 'free', status: 'published', featured: '', sort_order: 0,
   lat: 0, lng: 0, indoor: false,
   stroller_friendly: false, restroom: false, food: false,
   shade: false, parking: false, rainy_day_ok: false,
@@ -303,6 +307,7 @@ function openDialog(row) {
       price_type: row.price_type || 'free',
       status: row.status || 'published',
       featured: row.featured || '',
+      sort_order: row.sort_order || 0,
       lat: row.location?.lat || 0,
       lng: row.location?.lng || 0,
       indoor: row.indoor || false,
@@ -351,6 +356,7 @@ async function handleSave() {
     price_type: form.price_type,
     status: form.status,
     featured: form.featured,
+    sort_order: form.sort_order,
     location: { lat: form.lat, lng: form.lng },
     indoor: form.indoor,
     facilities: {

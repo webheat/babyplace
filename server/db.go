@@ -58,6 +58,7 @@ type POI struct {
 	ReservationType     string      `json:"reservation_type"`
 	Reservation         Reservation `json:"reservation"`
 	Featured            string      `json:"featured"`
+	SortOrder           int         `json:"sort_order"`
 }
 
 type Reservation struct {
@@ -316,9 +317,13 @@ func createTables() error {
 		`ALTER TABLE poi ADD COLUMN booking_qr_code TEXT DEFAULT ''`,
 		`ALTER TABLE poi ADD COLUMN reservation_type TEXT DEFAULT ''`,
 		`ALTER TABLE poi ADD COLUMN reservation TEXT DEFAULT '{}'`,
+		`ALTER TABLE poi ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0`,
 	}
 	for _, q := range alters {
 		db.Exec(q) // 忽略错误，列已存在时会报 "duplicate column"
+	}
+	if _, err := db.Exec(`CREATE INDEX IF NOT EXISTS idx_poi_sort_order ON poi(sort_order DESC, created_at DESC)`); err != nil {
+		return fmt.Errorf("create poi sort index: %w", err)
 	}
 
 	return nil
@@ -436,6 +441,7 @@ func poiFromRow(row interface {
 		&p.OpenTime, &p.TicketInfo, &p.Phone,
 		&p.BookingUrl, &p.BookingQrCode, &p.ReservationType, &reservation,
 		&p.Featured,
+		&p.SortOrder,
 	)
 	if err != nil {
 		return nil, err

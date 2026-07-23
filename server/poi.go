@@ -15,7 +15,7 @@ const poiColumns = `id, name, canonical_name, alias, city, district, address,
 	stroller_friendly, restroom, food, shade, parking, rainy_day_ok,
 	summary, recommend_reason, notice, cover_image, gallery, tags,
 	source_count, review_count, avg_rating, status, created_at, updated_at,
-	open_time, ticket_info, phone, booking_url, booking_qr_code, reservation_type, reservation, featured`
+	open_time, ticket_info, phone, booking_url, booking_qr_code, reservation_type, reservation, featured, sort_order`
 
 // POI 列表（兼容 poi 云对象：支持 city/district/includeDraft 过滤）
 func handlePoiList(params map[string]interface{}) AdminResponse {
@@ -63,7 +63,7 @@ func handlePoiList(params map[string]interface{}) AdminResponse {
 
 	// 分页数据
 	offset := (page - 1) * pageSize
-	querySQL := fmt.Sprintf("SELECT %s FROM poi %s ORDER BY created_at DESC, updated_at DESC LIMIT ? OFFSET ?", poiColumns, where)
+	querySQL := fmt.Sprintf("SELECT %s FROM poi %s ORDER BY sort_order DESC, created_at DESC, updated_at DESC LIMIT ? OFFSET ?", poiColumns, where)
 	args = append(args, pageSize, offset)
 
 	rows, err := db.Query(querySQL, args...)
@@ -369,6 +369,10 @@ func handlePoiUpdate(params map[string]interface{}) AdminResponse {
 	if v, ok := payload["featured"]; ok {
 		setClauses = append(setClauses, "featured = ?")
 		args = append(args, v)
+	}
+	if v, ok := payload["sort_order"]; ok {
+		setClauses = append(setClauses, "sort_order = ?")
+		args = append(args, getInt(map[string]interface{}{"value": v}, "value", 0))
 	}
 	if v, ok := payload["summary"]; ok {
 		setClauses = append(setClauses, "summary = ?")
