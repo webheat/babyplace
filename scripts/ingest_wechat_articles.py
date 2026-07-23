@@ -10,6 +10,7 @@ import subprocess
 import sys
 import time
 import urllib.parse
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -29,15 +30,28 @@ def read_env(path):
     return result
 
 
-def request_json(url, headers=None, body=None):
+def request_json(url, headers=None, body=None, retries=3):
     request_headers = {
         'Accept': 'application/json',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/138 Safari/537.36',
     }
     request_headers.update(headers or {})
     request = urllib.request.Request(url, data=body, headers=request_headers)
-    with urllib.request.urlopen(request, timeout=60) as response:
-        return json.loads(response.read().decode('utf-8'))
+    last_error = None
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                return json.loads(response.read().decode('utf-8'))
+        except urllib.error.HTTPError as error:
+            last_error = error
+            if error.code not in (429, 500, 502, 503, 504) or attempt == retries:
+                raise
+        except urllib.error.URLError as error:
+            last_error = error
+            if attempt == retries:
+                raise
+        time.sleep(min(2 ** attempt, 8))
+    raise last_error
 
 
 def strip_html(value):
@@ -140,11 +154,17 @@ def main():
     state_path, state = load_sync_state(vault)
     seen = set()
     processed = 0
+    failed = 0
     for fakeid, article in fetch_articles(config, args.limit):
         if article['link'] in seen or article['link'] in state: continue
         if args.max_articles and processed >= args.max_articles: break
         seen.add(article['link']); article['fakeid'] = fakeid
-        detail = fetch_article_content(config, article['link'])
+        try:
+            detail = fetch_article_content(config, article['link'])
+        except (urllib.error.HTTPError, urllib.error.URLError) as error:
+            failed += 1
+            print(f"{article.get('title', '')}: download failed ({error}), will retry next run")
+            continue
         content = detail.get('content_noencode') or detail.get('content') or ''
         relevant, names, confidence, evidence = extract_pois(config, article.get('title', ''), strip_html(content))
         print(f"{article.get('title', '')}: {'relevant' if relevant else 'ignored'}, {len(names)} POIs")
@@ -155,6 +175,9 @@ def main():
         state_path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         if relevant and confidence >= 0.85:
             enrich_pois(config, names, False)
+
+    if failed:
+        print(f'Finished with {failed} download failures; failed URLs were not marked as synced.')
 
 
 if __name__ == '__main__':
