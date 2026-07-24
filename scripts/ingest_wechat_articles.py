@@ -17,9 +17,9 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CONFIG = Path(r'C:\Users\Admin\a-weekend-kids\.env')
+DEFAULT_CONFIG = PROJECT_ROOT / '.env'
 DEFAULT_DB = PROJECT_ROOT / 'server' / 'data' / 'babyplace.db'
-DEFAULT_VAULT = Path(r'C:\Users\Admin\Documents\MyVault\22.workbuddy专栏\周末遛娃派')
+DEFAULT_VAULT = PROJECT_ROOT.parent / 'ob-vault' / '22.workbuddy专栏' / '周末遛娃派'
 
 
 def read_env(path):
@@ -163,7 +163,7 @@ def export_markdown(vault, article, content, names, confidence, relevant, eviden
 
 def enrich_pois(config, names, dry_run):
     for name in names:
-        command = [sys.executable, str(PROJECT_ROOT / 'scripts' / 'amap_enrich_poi.py'), name, '--city', '广州']
+        command = [sys.executable, str(PROJECT_ROOT / 'scripts' / 'amap_enrich_poi.py'), name]
         if dry_run:
             command.append('--dry-run')
         child_env = os.environ.copy()

@@ -215,7 +215,8 @@ def query_amap_rich(name, city):
         return None, f"API 请求异常: {e}"
 
     if data.get("status") != "1":
-        return None, f"高德 API status={data.get('status')}"
+        info = data.get("info", "")
+        return None, f"高德 API status={data.get('status')}, info={info}"
 
     pois = data.get("pois", [])
     if not pois:
