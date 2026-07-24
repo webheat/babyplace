@@ -123,6 +123,27 @@ def fetch_article_content(config, article_url):
     return request_text(f'{base}/api/public/v1/download?{query}')
 
 
+def _extract_llm_text(data):
+    """Pull text from an Anthropic-compatible content array.
+
+    Prefers ``type: text`` blocks.  Falls back to ``type: thinking`` blocks
+    (some DeepSeek deployments return the final answer inside a thinking
+    block when the model routes through a reasoning-only path).
+    """
+    text_blocks = [item.get('text', '') for item in data.get('content', []) if item.get('type') == 'text']
+    if text_blocks:
+        return ''.join(text_blocks).strip()
+    thinking_blocks = [item.get('thinking', '') for item in data.get('content', []) if item.get('type') == 'thinking']
+    return ''.join(thinking_blocks).strip()
+
+
+def _safe_float(value, default=0.0):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def extract_pois(config, title, content):
     prompt = ('判断文章是否推荐亲子游玩、遛娃或家庭出行场所。招聘、政策、学校招生、房产、纯新闻一律不是。'
               '若相关，提取可被高德地图定位的具体场所名称，排除泛称、城市和非地点。'
@@ -131,13 +152,24 @@ def extract_pois(config, title, content):
     endpoint = config['LLM_BASE_URL'].rstrip('/') + '/v1/messages'
     payload = json.dumps({'model': config.get('LLM_MODEL', 'deepseek-v4-flash'), 'max_tokens': 800,
                           'temperature': 0, 'messages': [{'role': 'user', 'content': prompt}]}).encode()
-    data = request_json(endpoint, {'x-api-key': config['LLM_API_KEY'], 'anthropic-version': '2023-06-01',
-                                   'content-type': 'application/json'}, payload)
-    raw = ''.join(item.get('text', '') for item in data.get('content', []) if item.get('type') == 'text').strip()
+    try:
+        data = request_json(endpoint, {'x-api-key': config['LLM_API_KEY'], 'anthropic-version': '2023-06-01',
+                                       'content-type': 'application/json'}, payload)
+    except Exception as exc:
+        print(f'  LLM request failed: {exc}')
+        return False, [], 0.0, ''
+    raw = _extract_llm_text(data)
+    if not raw:
+        print(f'  LLM returned no text/thinking block — treating as ignored')
+        return False, [], 0.0, ''
     raw = re.sub(r'^```(?:json)?\s*|\s*```$', '', raw, flags=re.I)
-    parsed = json.loads(raw)
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        print(f'  LLM JSON parse failed: {exc} — raw: {raw[:200]}')
+        return False, [], 0.0, ''
     names = list(dict.fromkeys(name.strip() for name in parsed.get('poi_names', []) if isinstance(name, str) and name.strip()))
-    return bool(parsed.get('is_relevant')), names, float(parsed.get('confidence') or 0), str(parsed.get('evidence') or '')
+    return bool(parsed.get('is_relevant')), names, _safe_float(parsed.get('confidence'), 0.0), str(parsed.get('evidence') or '')
 
 
 def load_sync_state(vault):
