@@ -57,5 +57,5 @@
 </script>
 
 <style scoped lang="scss">
-	@import 'GoodsServe.scss';
+	@import 'goods-serve.scss';
 </style>

@@ -1,3 +1,5 @@
+import config from '@/config/config';
+
 export default {
   activeProvider: 'official-account',
   officialAccount: {
@@ -6,7 +8,7 @@ export default {
   },
   enterpriseWeChat: {
     enabled: false,
-    corpId: 'wwf387d1b1d38bcae2',
-    extInfo: 'https://work.weixin.qq.com/kfid/kfc0e40fdb0d45b6f84',
+    corpId: config.wecomCorpId,
+    extInfo: config.wecomExtInfo,
   },
 };

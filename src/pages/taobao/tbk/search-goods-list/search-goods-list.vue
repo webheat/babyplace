@@ -8,7 +8,7 @@
     <view v-else-if="!list.length" class="state">暂无结果</view>
     <view v-else class="list">
       <view v-for="item in list" :key="item.itemId" class="item" @click="openDetail(item)">
-        <image class="item-image" :src="item.pictUrl || '/static/logo.png'" mode="aspectFill" />
+        <image lazy-load class="item-image" :src="item.pictUrl || '/static/logo.png'" mode="aspectFill" />
         <view class="item-body">
           <text class="item-title">{{ item.title }}</text>
           <text class="item-desc">{{ item.itemDescription || '暂无描述' }}</text>
@@ -38,7 +38,7 @@ function formatPrice(value) {
 
 function openDetail(item) {
   if (!item?.itemId) return;
-  uni.navigateTo({ url: `/pages/taobao/tbk/goodsDetails/goodsDetails?id=${item.itemId}` });
+  uni.navigateTo({ url: `/pages/taobao/tbk/goods-details/goods-details?id=${item.itemId}` });
 }
 
 async function loadList(keyword = '') {

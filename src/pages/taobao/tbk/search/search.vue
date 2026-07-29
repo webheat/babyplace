@@ -33,7 +33,7 @@ function useKeyword(value) {
 }
 
 function submitSearch() {
-  uni.navigateTo({ url: `/pages/taobao/tbk/searchGoodsList/searchGoodsList?keyword=${encodeURIComponent(keyword.value.trim())}` });
+  uni.navigateTo({ url: `/pages/taobao/tbk/search-goods-list/search-goods-list?keyword=${encodeURIComponent(keyword.value.trim())}` });
 }
 </script>
 

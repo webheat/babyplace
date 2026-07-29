@@ -1,7 +1,7 @@
 import { callAdminAction } from '@/api/admin';
+import config from '@/config/config';
 
-const AMAP_DRIVE_URL = 'https://restapi.amap.com/v3/direction/driving';
-const AMAP_WEB_KEY = 'abcef158da87a62e42e1fb968ed33dd4';
+const { amapDriveUrl, amapWebKey } = config;
 
 function sanitizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
@@ -89,9 +89,9 @@ function normalizeAmapResult(raw = {}, params = {}) {
 }
 
 function requestAmapDrive(params = {}) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     uni.request({
-      url: AMAP_DRIVE_URL,
+      url: amapDriveUrl,
       method: 'GET',
       timeout: 30000,
       data: {
@@ -100,24 +100,20 @@ function requestAmapDrive(params = {}) {
         strategy: sanitizeString(params.style || '0') || '0',
         extensions: 'all',
         output: 'json',
-        key: AMAP_WEB_KEY,
+        key: amapWebKey,
       },
       success: ({ statusCode, data }) => {
         if (statusCode >= 200 && statusCode < 300 && String(data?.status || '') === '1') {
           resolve(normalizeAmapResult(data, params));
           return;
         }
-        resolve({
-          code: statusCode || 500,
-          message: sanitizeString(data?.info) || 'amap route failed',
-          data,
-        });
+        reject(new Error(sanitizeString(data?.info) || 'amap route failed'));
       },
       fail: (error) => {
         const message = String(error?.errMsg || '').toLowerCase().includes('timeout')
-          ? 'timeout'
-          : 'network error';
-        resolve({ code: -1, message });
+          ? '请求超时，请重试'
+          : '网络异常，请检查连接';
+        reject(new Error(message));
       },
     });
   });

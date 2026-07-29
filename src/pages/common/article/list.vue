@@ -19,10 +19,10 @@
               </view>
             </view>
           </view>
-          <image class="cover square" :src="item.image" mode="aspectFill" />
+          <image lazy-load class="cover square" :src="item.image" mode="aspectFill" />
         </view>
         <view v-else-if="item.cover_type === 2" class="rect-cover">
-          <image class="cover full" :src="item.image" mode="aspectFill" />
+          <image lazy-load class="cover full" :src="item.image" mode="aspectFill" />
           <text class="card-title two-line">{{ item.title }}</text>
         </view>
         <view v-else class="no-cover">

@@ -41,7 +41,7 @@
         </view>
         <view v-else-if="poi.reservation_type === 'qrcode' && poi.booking_qr_code">
           <text class="paragraph">扫描下方二维码进行预约</text>
-          <image :src="poi.booking_qr_code" mode="widthFix" class="qr-image" />
+          <image lazy-load :src="poi.booking_qr_code" mode="widthFix" class="qr-image" />
         </view>
         <view v-else-if="poi.reservation_type === 'phone' && poi.reservation?.url">
           <text class="paragraph">拨打电话进行预约</text>
@@ -93,7 +93,7 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { onLoad, onShareAppMessage, onShareTimeline } from '@dcloudio/uni-app';
-import RoutePlannerCard from '@/components/RoutePlannerCard.vue';
+import RoutePlannerCard from '@/components/route-planner-card.vue';
 import RatingStars from '@/components/rating-stars.vue';
 import TagList from '@/components/tag-list.vue';
 import { detailPoi } from '@/api/poi';

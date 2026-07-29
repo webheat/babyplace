@@ -1,10 +1,9 @@
-/**
- * places-card - 地点推荐卡片组件
- * 展示 AI 推荐的遛娃地点，支持导航、预约、美食搜索
- */
+import config from '@/config/config';
+
+const MEITUAN_APP_ID = config.meituanAppId;
+
 Component({
   properties: {
-    // 接口返回的 structuredContent
     data: {
       type: Object,
       value: {},
@@ -19,7 +18,6 @@ Component({
   methods: {
     onDataChange(newVal) {
       if (newVal && newVal.places) {
-        // 为每个地点计算距离文本
         const places = newVal.places.map(item => {
           const distance = item.distance
           let distanceText = ''
@@ -34,14 +32,10 @@ Component({
       }
     },
 
-    /**
-     * 一键导航 - 跳转到 POI 详情页（含路线规划）
-     */
     onNavigate(e) {
       const poi = e.currentTarget.dataset.poi
       if (!poi) return
 
-      // 方案A: 跳转到 POI 详情页（已有 RoutePlannerCard 组件）
       if (poi._id) {
         uni.navigateTo({
           url: `/pages/life/shop/shop?id=${poi._id}`
@@ -49,7 +43,6 @@ Component({
         return
       }
 
-      // 方案B: 直接打开原生地图导航
       if (poi.location && poi.location.lat && poi.location.lng) {
         uni.openLocation({
           latitude: poi.location.lat,
@@ -63,9 +56,6 @@ Component({
       }
     },
 
-    /**
-     * 一键预约
-     */
     onBooking(e) {
       const url = e.currentTarget.dataset.url
       if (!url) {
@@ -73,11 +63,9 @@ Component({
         return
       }
 
-      // 跳转到 WebView 页面打开预约链接
       uni.navigateTo({
         url: `/pages/webview/webview/webview?url=${encodeURIComponent(url)}`,
         fail: () => {
-          // 如果 webview 页面不存在，尝试直接打开
           // #ifdef H5
           window.open(url, '_blank')
           // #endif
@@ -93,18 +81,13 @@ Component({
       })
     },
 
-    /**
-     * 附近美食搜索
-     */
     onSearchFood(e) {
       const poi = e.currentTarget.dataset.poi
       if (!poi) return
 
-      // 获取用户位置后搜索附近美食
       uni.getLocation({
         type: 'gcj02',
         success: (res) => {
-          // 触发搜索美食事件，由父组件处理
           this.triggerEvent('searchFood', {
             lat: res.latitude,
             lng: res.longitude,
@@ -113,7 +96,6 @@ Component({
           })
         },
         fail: () => {
-          // 无位置信息时使用 POI 坐标
           if (poi.location) {
             this.triggerEvent('searchFood', {
               lat: poi.location.lat,
@@ -128,9 +110,6 @@ Component({
       })
     },
 
-    /**
-     * 文章链接点击
-     */
     onArticleTap(e) {
       const url = e.currentTarget.dataset.url
       if (!url) return
@@ -150,16 +129,13 @@ Component({
       })
     },
 
-    /**
-     * 跳转美团小程序下单
-     */
     onJumpMeituan(e) {
       const poi = e.currentTarget.dataset.poi
       const keyword = poi ? poi.name : '美食'
 
       // #ifdef MP-WEIXIN
-      wx.navigateToMiniProgram({
-        appId: 'wxde8ac0a21135c07d',
+      uni.navigateToMiniProgram({
+        appId: MEITUAN_APP_ID,
         path: `/pages/index/index?keyword=${encodeURIComponent(keyword)}`,
         envVersion: 'release',
         fail: () => {
@@ -169,7 +145,7 @@ Component({
       // #endif
 
       // #ifdef H5
-      window.open(`https://h5.waimai.meituan.com/waimai/mindex/home?keyword=${encodeURIComponent(keyword)}`, '_blank')
+      window.open(`${config.meituanH5Url}?keyword=${encodeURIComponent(keyword)}`, '_blank')
       // #endif
 
       // #ifndef MP-WEIXIN || H5
@@ -177,16 +153,13 @@ Component({
       // #endif
     },
 
-    /**
-     * 查看更多美食（跳转美团搜索）
-     */
     onMoreFood(e) {
       const poi = e.currentTarget.dataset.poi
       const keyword = poi ? poi.name : '美食'
 
       // #ifdef MP-WEIXIN
-      wx.navigateToMiniProgram({
-        appId: 'wxde8ac0a21135c07d',
+      uni.navigateToMiniProgram({
+        appId: MEITUAN_APP_ID,
         path: `/pages/index/index?keyword=${encodeURIComponent(keyword)}`,
         envVersion: 'release',
         fail: () => {
@@ -196,7 +169,7 @@ Component({
       // #endif
 
       // #ifdef H5
-      window.open(`https://h5.waimai.meituan.com/waimai/mindex/home?keyword=${encodeURIComponent(keyword)}`, '_blank')
+      window.open(`${config.meituanH5Url}?keyword=${encodeURIComponent(keyword)}`, '_blank')
       // #endif
     },
   }

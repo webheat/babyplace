@@ -147,6 +147,8 @@ def _safe_float(value, default=0.0):
 def extract_pois(config, title, content):
     prompt = ('判断文章是否推荐亲子游玩、遛娃或家庭出行场所。招聘、政策、学校招生、房产、纯新闻一律不是。'
               '若相关，提取可被高德地图定位的具体场所名称，排除泛称、城市和非地点。'
+              '仅提取大湾区的场所：广州、深圳、佛山、东莞、惠州、珠海、中山、江门、肇庆。'
+              '外省或上述城市以外的场所一律排除，不要提取。'
               '仅返回 JSON：{"is_relevant":true,"poi_names":[...],"confidence":0-1,"evidence":"原文短句"}。\n\n'
               f'标题：{title}\n内容：{content[:6000]}')
     endpoint = config['LLM_BASE_URL'].rstrip('/') + '/v1/messages'

@@ -25,7 +25,7 @@
       <view v-else-if="!featuredGoods.length" class="state">暂无商品</view>
       <view v-else class="goods-grid">
         <view v-for="item in featuredGoods" :key="item._id" class="featured-card" @click="openDetail(item)">
-          <image class="featured-image" :src="item.cover || item.image || '/static/logo.png'" mode="aspectFill" />
+          <image lazy-load class="featured-image" :src="item.cover || item.image || '/static/logo.png'" mode="aspectFill" />
           <view class="featured-body">
             <text class="featured-name">{{ item.name }}</text>
             <text class="featured-desc">{{ item.summary || item.address || '适合亲子场景的推荐好物' }}</text>
@@ -45,7 +45,7 @@
       <view v-if="!recommendGoods.length && !loading" class="state">暂无内容</view>
       <view v-else class="goods-list">
         <view v-for="item in recommendGoods" :key="item._id" class="goods-card" @click="openDetail(item)">
-          <image class="goods-image" :src="item.cover || item.image || '/static/logo.png'" mode="aspectFill" />
+          <image lazy-load class="goods-image" :src="item.cover || item.image || '/static/logo.png'" mode="aspectFill" />
           <view class="goods-content">
             <text class="goods-name">{{ item.name }}</text>
             <text class="goods-summary">{{ item.summary || item.address || '暂无描述' }}</text>
@@ -78,12 +78,12 @@ function goSearch() {
 }
 
 function goList() {
-  uni.navigateTo({ url: '/pages/taobao/tbk/searchGoodsList/searchGoodsList' });
+  uni.navigateTo({ url: '/pages/taobao/tbk/search-goods-list/search-goods-list' });
 }
 
 function openDetail(item) {
   if (!item?._id) return;
-  uni.navigateTo({ url: `/pages/taobao/tbk/goodsDetails/goodsDetails?id=${item._id}` });
+  uni.navigateTo({ url: `/pages/taobao/tbk/goods-details/goods-details?id=${item._id}` });
 }
 
 function formatPrice(value) {

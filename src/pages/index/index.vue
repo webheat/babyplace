@@ -223,22 +223,26 @@ const allScenarioList = computed(() => {
     .concat(homeData.latest || [])
     .concat(homeData.nearby || []);
   const map = new Map();
+  let sunnyPick = {};
+  let rainyPick = {};
   merged.forEach((item) => {
     if (item?._id && !map.has(item._id)) {
       map.set(item._id, item);
+      if (!sunnyPick._id && isSunnyFriendly(item)) sunnyPick = item;
+      if (!rainyPick._id && isRainyFriendly(item)) rainyPick = item;
     }
   });
-  return Array.from(map.values());
+  return { list: Array.from(map.values()), sunnyPick, rainyPick };
 });
 
 const ageFilteredList = computed(() => {
-  return allScenarioList.value
+  return allScenarioList.value.list
     .filter((item) => includesAge(item, selectedAge.value))
     .slice(0, 6);
 });
 
 const weatherFilteredList = computed(() => {
-  return allScenarioList.value
+  return allScenarioList.value.list
     .filter((item) => {
       if (weatherMode.value === 'rainy') return isRainyFriendly(item);
       if (weatherMode.value === 'sunny') return isSunnyFriendly(item);
@@ -247,9 +251,9 @@ const weatherFilteredList = computed(() => {
     .slice(0, 6);
 });
 
-const todayPick = computed(() => weatherFilteredList.value[0] || ageFilteredList.value[0] || allScenarioList.value[0] || {});
-const sunnyPick = computed(() => allScenarioList.value.find((item) => isSunnyFriendly(item)) || {});
-const rainyPick = computed(() => allScenarioList.value.find((item) => isRainyFriendly(item)) || {});
+const todayPick = computed(() => weatherFilteredList.value[0] || ageFilteredList.value[0] || allScenarioList.value.list[0] || {});
+const sunnyPick = computed(() => allScenarioList.value.sunnyPick);
+const rainyPick = computed(() => allScenarioList.value.rainyPick);
 const currentWeatherLabel = computed(() => {
   if (weatherMode.value === 'rainy') return '雨天模式';
   if (weatherMode.value === 'sunny') return '晴天模式';

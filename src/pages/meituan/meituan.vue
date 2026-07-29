@@ -60,6 +60,7 @@
       <view v-else class="list">
         <poi-card v-for="item in familyFriendlyList" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
       </view>
+      <view class="view-more" @click="goPoiList">查看更多地点</view>
     </view>
   </view>
 </template>
@@ -99,7 +100,7 @@ function goCoupon(item) {
 async function loadPage() {
   loading.value = true;
   try {
-    const result = await listPoi({ page: 1, pageSize: 50 });
+    const result = await listPoi({ page: 1, pageSize: 20 });
     if (result.code !== 0) throw new Error(result.message || '加载失败');
     list.value = result.data?.list || [];
   } catch (error) {
@@ -108,6 +109,10 @@ async function loadPage() {
   } finally {
     loading.value = false;
   }
+}
+
+function goPoiList() {
+  uni.navigateTo({ url: '/pages/poi/list' });
 }
 
 async function loadCoupons() {
@@ -280,5 +285,12 @@ onMounted(() => {
   font-size: 36rpx;
   font-weight: 700;
   color: #d96a00;
+}
+
+.view-more {
+  text-align: center;
+  padding: 24rpx;
+  color: #2563eb;
+  font-size: 28rpx;
 }
 </style>

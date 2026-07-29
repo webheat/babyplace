@@ -1,27 +1,41 @@
 // ============ 服务地址配置 ============
 
-// babyplace 后端云函数
-const BASE_URL = 'https://byupload.aixifs.com/babyplace-admin';
+// 从环境变量读取，不再硬编码
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://byupload.aixifs.com/babyplace-admin';
+const GO_SERVER = import.meta.env.VITE_GO_SERVER || 'https://oc.aixifs.com';
+const CHAT_API_URL = import.meta.env.VITE_CHAT_API_URL || `${BASE_URL}/api/chat`;
 
-// Dify AI 知识库 & 客服Bot
-const DIFY_API_URL = 'http://lanes.ymxt.top:3000';
+// Dify AI
+const DIFY_API_URL = import.meta.env.VITE_DIFY_API_URL || 'http://lanes.ymxt.top:3000';
 const DIFY_CHAT_API = `${DIFY_API_URL}/v1/chat-messages`;
-const DIFY_CHAT_KEY = 'app-aMB5cKJpDqNxR3tV7yW8eU2hL4fG9bZ1';
-const DIFY_DATASET_ID = 'b5c6d7e8-f901-2345-defa-345678901234';
-const DIFY_APP_ID = 'c9d8e7f6-aaaa-4444-9999-000000000001';
-const DIFY_ADMIN_KEY = 'app-admin-Zx9Km2VpL8nQw3RtYuI5oP7aSdF4gH6j';
-const DIFY_WORKSPACE_ID = '6dcf0717-8cdc-49b7-a437-e8efe88f175f';
+const DIFY_CHAT_KEY = import.meta.env.VITE_DIFY_CHAT_KEY || '';
+const DIFY_DATASET_ID = import.meta.env.VITE_DIFY_DATASET_ID || '';
+const DIFY_APP_ID = import.meta.env.VITE_DIFY_APP_ID || '';
+const DIFY_ADMIN_KEY = import.meta.env.VITE_DIFY_ADMIN_KEY || '';
+const DIFY_WORKSPACE_ID = import.meta.env.VITE_DIFY_WORKSPACE_ID || '';
 
 // 高德地图
-const AMAP_DRIVE_URL = 'https://restapi.amap.com/v3/direction/driving';
+const AMAP_DRIVE_URL = import.meta.env.VITE_AMAP_DRIVE_URL || 'https://restapi.amap.com/v3/direction/driving';
+const AMAP_WEB_KEY = import.meta.env.VITE_AMAP_WEB_KEY || '';
 
-// 美团外卖
-const MEITUAN_H5_URL = 'https://h5.waimai.meituan.com/waimai/mindex/home';
+// 微信 AppID
+const WECHAT_APPID_H5 = import.meta.env.VITE_WECHAT_APPID_H5 || '';
+const WECHAT_APPID_WEB = import.meta.env.VITE_WECHAT_APPID_WEB || '';
+
+// 企业微信
+const WECOM_CORP_ID = import.meta.env.VITE_WECOM_CORP_ID || '';
+const WECOM_EXT_INFO = import.meta.env.VITE_WECOM_EXT_INFO || '';
+
+// 美团
+const MEITUAN_APP_ID = import.meta.env.VITE_MEITUAN_APP_ID || '';
+const MEITUAN_H5_URL = import.meta.env.VITE_MEITUAN_H5_URL || 'https://h5.waimai.meituan.com/waimai/mindex/home';
 
 export default {
   // 后端
   baseUrl: BASE_URL,
   hostUrl: BASE_URL,
+  goServer: GO_SERVER,
+  chatApiUrl: CHAT_API_URL,
 
   // Dify AI
   difyApiUrl: DIFY_API_URL,
@@ -34,9 +48,25 @@ export default {
 
   // 高德地图
   amapDriveUrl: AMAP_DRIVE_URL,
+  amapWebKey: AMAP_WEB_KEY,
+
+  // 微信
+  wechatAppId: {
+    h5: WECHAT_APPID_H5,
+    web: WECHAT_APPID_WEB,
+  },
+
+  // 企业微信
+  wecomCorpId: WECOM_CORP_ID,
+  wecomExtInfo: WECOM_EXT_INFO,
 
   // 美团
+  meituanAppId: MEITUAN_APP_ID,
   meituanH5Url: MEITUAN_H5_URL,
+
+  // 微信 H5 登录重定向
+  wechatRedirectOrigin: 'https://ds.aixifs.com',
+  loginSessionDurationMs: 24 * 60 * 60 * 1000,
 
   debug: true,
 };

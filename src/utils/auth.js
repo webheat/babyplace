@@ -1,21 +1,13 @@
-const config = {
-  appid: {
-    weixin: {
-      h5: 'wxde10b66d0c930b78',
-      web: 'wx0ebd7da2e72e6be2',
-    },
-  },
-};
+import config from '@/config/config';
 
-const WECHAT_REDIRECT_ORIGIN = 'https://ds.aixifs.com';
-const LOGIN_SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
+const { wechatAppId } = config;
 
 export const ADMIN_PAGE_ROUTE = '/pages/admin/index';
 
 function buildAbsoluteUrl(path = '/') {
   // #ifdef H5
   const normalizedPath = String(path || '/').startsWith('/') ? String(path || '/') : `/${String(path || '')}`;
-  return `${WECHAT_REDIRECT_ORIGIN}/?target=${encodeURIComponent(normalizedPath)}`;
+  return `${config.wechatRedirectOrigin}/?target=${encodeURIComponent(normalizedPath)}`;
   // #endif
   return '';
 }
@@ -28,7 +20,7 @@ function isWeixinBrowser() {
 }
 
 function getH5WechatAppId() {
-  return isWeixinBrowser() ? config?.appid?.weixin?.h5 : config?.appid?.weixin?.web;
+  return isWeixinBrowser() ? wechatAppId?.h5 : wechatAppId?.web;
 }
 
 export function getUniIdToken() {
@@ -70,7 +62,7 @@ export function hasValidUniIdToken() {
   }
 
   const loginTime = getLoginTime();
-  if (loginTime > 0 && Date.now() - loginTime > LOGIN_SESSION_DURATION_MS) {
+  if (loginTime > 0 && Date.now() - loginTime > config.loginSessionDurationMs) {
     return false;
   }
 
@@ -92,8 +84,8 @@ export function formatTokenExpired() {
 }
 
 export function getWechatLoginConfigStatus() {
-  const h5AppId = config?.appid?.weixin?.h5;
-  const webAppId = config?.appid?.weixin?.web;
+  const h5AppId = wechatAppId?.h5;
+  const webAppId = wechatAppId?.web;
 
   return {
     h5AppId,

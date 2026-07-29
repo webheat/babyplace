@@ -1,4 +1,4 @@
-import crypto from '@/common/CryptoJS.js';
+import crypto from '@/common/crypto-js.js';
 
 var key = crypto.CryptoJS.enc.Utf8.parse("8888888888888888");
 //十六位十六进制数作为秘钥偏移量

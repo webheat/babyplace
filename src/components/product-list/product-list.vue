@@ -4,10 +4,10 @@
       class="list-item"
       @click="navTo(item)"
       v-for="item,index in list"
-      :key="index"
+      :key="item.dealBaseInfo?.dealId || item._id || index"
     >
       <view class="image-wrapper">
-        <image :src="item.dealBaseInfo.defaultPic" mode="aspectFill"></image>
+        <image lazy-load :src="item.dealBaseInfo.defaultPic" mode="aspectFill"></image>
       </view>
       <view class="right column b-b">
         <text class="title clamp">{{ baseUrl? item.shopInfo.shopName : item.dealBaseInfo.dealTitle }}</text>

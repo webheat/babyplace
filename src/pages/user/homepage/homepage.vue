@@ -21,7 +21,7 @@
 					</view>
 				</view>
 				<view class="nickname">{{userInfo.nickname}}</view>
-				<view v-for="(shop, index) in shops" :key="index" class="shop-name" @click="goShopPage(shop.shop_id)">
+				<view v-for="(shop, index) in shops" :key="shop.shop_id" class="shop-name" @click="goShopPage(shop.shop_id)">
 					{{shop.name}}
 				</view>
 				<view class="description">{{userInfo.description || ""}}</view>
@@ -86,7 +86,7 @@
 
 						<view  v-if="contact.wechat_pic" class="weui-form-preview__hd">
 								<view class="weui-form-preview__label" style="float: none; text-align: left; text-align-last:left">微信二维码</view>
-								<image :src="contact.wechat_pic" mode="aspectFit"></image>
+								<image lazy-load :src="contact.wechat_pic" mode="aspectFit"></image>
 						</view>
 
 

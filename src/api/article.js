@@ -26,48 +26,58 @@ function normalizeArticle(item = {}) {
   };
 }
 
-function ok(data = {}, message = 'ok') {
-  return { code: 0, message, data };
-}
-
 export default {
   getArticleCats() {
-    return ok([
-      { id: 'all', name: '全部' },
-      { id: 'indoor', name: '室内' },
-      { id: 'park', name: '公园' },
-      { id: 'play', name: '乐园' },
-    ]);
+    return {
+      code: 0,
+      message: 'ok',
+      data: [
+        { id: 'all', name: '全部' },
+        { id: 'indoor', name: '室内' },
+        { id: 'park', name: '公园' },
+        { id: 'play', name: '乐园' },
+      ],
+    };
   },
 
   async getArticleList(catId = '', _status = 0, _pageType = 1, page = 1) {
-    const result = await callAdminAction('article.list', { page: Number(page || 1), pageSize: 20 });
-    if (result?.code === 0) {
-      const list = (result.data?.list || []).map(normalizeArticle);
-      const filtered = catId && catId !== 1 && catId !== 'all'
-        ? list.filter((item) => item.cat_name === catId)
-        : list;
-      return ok(filtered);
+    try {
+      const result = await callAdminAction('article.list', { page: Number(page || 1), pageSize: 20 });
+      if (result?.code === 0) {
+        const list = (result.data?.list || []).map(normalizeArticle);
+        const filtered = catId && catId !== 1 && catId !== 'all'
+          ? list.filter((item) => item.cat_name === catId)
+          : list;
+        return { code: 0, message: 'ok', data: filtered };
+      }
+      return { code: 0, message: 'ok', data: [] };
+    } catch (error) {
+      uni.showToast({ title: error?.message || '加载文章列表失败', icon: 'none' });
+      return { code: 0, message: 'ok', data: [] };
     }
-    return ok([]);
   },
 
   async getArticleDetail(articleId) {
-    const result = await callAdminAction('article.detail', { id: articleId });
-    if (result?.code === 0 && result.data) {
-      const article = normalizeArticle(result.data);
-      article.reviews = [];
-      article.sources = [];
-      return ok(article);
+    try {
+      const result = await callAdminAction('article.detail', { id: articleId });
+      if (result?.code === 0 && result.data) {
+        const article = normalizeArticle(result.data);
+        article.reviews = [];
+        article.sources = [];
+        return { code: 0, message: 'ok', data: article };
+      }
+      return { code: 404, message: result?.message || 'not found', data: null };
+    } catch (error) {
+      uni.showToast({ title: error?.message || '加载文章详情失败', icon: 'none' });
+      return { code: 404, message: 'not found', data: null };
     }
-    return { code: 404, message: result?.message || 'not found', data: null };
   },
 
   articleCollect() {
-    return ok(true);
+    return { code: 0, message: 'ok', data: true };
   },
 
   incShareNum() {
-    return ok(true);
+    return { code: 0, message: 'ok', data: true };
   },
 };
