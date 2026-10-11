@@ -26,9 +26,6 @@ scripts/.venv/
 *.sln
 *.sw?" " 
 .gstack/
-server/babyplace-chat-server
-server/babyplace-server
-test-images/
 
 # SQLite database
 data/
@@ -48,9 +45,9 @@ docs/base-poi.json
 # Design reports (screenshots)
 docs/design-reports/
 
-# Go build artifacts
-server/babyplace-server
-server/babyplace-chat-server
+# Go build artifacts (any dir, incl. repo root)
+babyplace-server
+babyplace-chat-server
 
 # Test assets
 test-images/
