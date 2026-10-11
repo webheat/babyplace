@@ -101,5 +101,5 @@
 </script>
 
 <style scoped lang="scss">
-	@import 'GoodsCoupon.scss';
+	@import 'goods-coupon.scss';
 </style>

@@ -1,9 +1,5 @@
 import { listPoi } from './poi';
 
-function ok(data = {}, message = 'ok') {
-  return Promise.resolve({ code: 200, message, data });
-}
-
 function buildCouponItem(item = {}, index = 0, type = 'meituan') {
   const color = type === 'ele' ? '#11c296' : '#ff6100';
   return {
@@ -37,10 +33,12 @@ async function loadCouponList(type) {
 
 export default {
   async eleCoupon() {
-    return ok(await loadCouponList('ele'));
+    const list = await loadCouponList('ele');
+    return { code: 200, message: 'ok', data: list };
   },
 
   async meituanCoupon() {
-    return ok(await loadCouponList('meituan'));
+    const list = await loadCouponList('meituan');
+    return { code: 200, message: 'ok', data: list };
   },
 };

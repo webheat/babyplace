@@ -3,7 +3,7 @@
 	  <view class="cu-dialog">
 			<view class="goods-data">
 				<view class="thumb">
-					<image src="https://axhub.im/pro/bb1f7bd347952764/images/%E9%A6%96%E9%A1%B5/u640-0.png" mode=""></image>
+					<image :src="image" mode="aspectFill"></image>
 				</view>
 				<view class="item">
 					<view class="title">
@@ -20,14 +20,14 @@
 				</view>
 			</view>
 			<view class="attr-size">
-				<view class="attr-list" v-for="(item,index) in AttrSizeList" :key="index">
+				<view class="attr-list" v-for="item in flatAttrList" :key="item.flatKey">
 					<view class="title">
 						<text>{{item.attr}}</text>
 					</view>
 					<view class="size-list">
-						<div class="list" v-for="(value,idx) in item.SizeList" 
-						:class="{'action':AttrSizeList[index].index === idx}"
-						@click.stop="onAttrSize(item,value,index,idx)" :key="idx">
+						<div class="list" v-for="value in item.SizeList"
+						:class="{'action': value.selected}"
+						@click.stop="onAttrSize(item, value)" :key="value.size">
 							<text>{{value.size}}</text>
 						</div>
 					</view>
@@ -52,6 +52,12 @@
 
 <script>
 	export default {
+		props: {
+			image: {
+				type: String,
+				default: '/static/logo.png',
+			}
+		},
 		data() {
 			return {
 				isShow: false,
@@ -59,52 +65,35 @@
 				SizeIndex: 0,
 				AttrSizeList:[
 					{
-						index: 0,
 						attr: '颜色',
 						SizeList: [
-							{
-								index: 0,
-								size: '白色'
-							},{
-								index: 1,
-								size: '黑色'
-							},{
-								index: 2,
-								size: '粉丝'
-							},{
-								index: 3,
-								size: '灰色'
-							},
+							{ size: '白色', selected: false },
+							{ size: '黑色', selected: false },
+							{ size: '粉丝', selected: false },
+							{ size: '灰色', selected: false },
 						],
 					},{
-						index: 0,
 						attr: '尺码',
 						SizeList: [
-							{
-								index: 0,
-								size: 'M尺码'
-							},{
-								index: 1,
-								size: 'L尺码'
-							},{
-								index: 2,
-								size: 'XL尺码'
-							},{
-								index: 3,
-								size: 'XXL尺码'
-							},
+							{ size: 'M尺码', selected: false },
+							{ size: 'L尺码', selected: false },
+							{ size: 'XL尺码', selected: false },
+							{ size: 'XXL尺码', selected: false },
 						],
 					}
 				],
-				// 购买类型
 				BuyType: 0,
 			};
 		},
+		computed: {
+			flatAttrList() {
+				return this.AttrSizeList.map((attrGroup, groupIndex) => ({
+					...attrGroup,
+					flatKey: `attr-${groupIndex}`,
+				}));
+			}
+		},
 		methods:{
-			/**
-			 * 显示 
-			 * @param {Number} type 1 点击选择 2 加入购物 3 立即购买
-			 */
 			show(type){
 				this.BuyType = type;
 				this.isShow = true;
@@ -113,19 +102,15 @@
 				this.isShow = false;
 			},
 			onStop(){
-				
+
 			},
-			/**
-			 * 属性选择点击
-			 */
-			onAttrSize(item,value,index,idx){
-				this.AttrSizeList[index].index = idx;
-				this.AttrIndex = item.index;
-				this.SizeIndex = value.index;
+			onAttrSize(attrGroup, value){
+				// 同组内取消其他选中
+				attrGroup.SizeList.forEach(s => s.selected = false);
+				value.selected = true;
+				this.AttrIndex = this.AttrSizeList.indexOf(attrGroup);
+				this.SizeIndex = attrGroup.SizeList.indexOf(value);
 			},
-			/**
-			 * 确认点击
-			 */
 			onConfirm(type){
 				uni.navigateTo({
 					url: '/pages/ConfirmOrder/ConfirmOrder'
@@ -136,5 +121,5 @@
 </script>
 
 <style scoped lang="scss">
-	@import 'GoodsAttr.scss';
+	@import 'goods-attr.scss';
 </style>

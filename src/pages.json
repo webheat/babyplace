@@ -61,14 +61,14 @@
       "root": "pages/user/setting",
       "pages": [
         {
-          "path": "modifyPassword",
+          "path": "modify-password",
           "style": {
             "navigationBarTitleText": "修改密码",
             "enablePullDownRefresh": false
           }
         },
         {
-          "path": "forgetPassword",
+          "path": "forget-password",
           "style": {
             "navigationBarTitleText": "忘记密码",
             "enablePullDownRefresh": false
@@ -166,14 +166,14 @@
           }
         },
         {
-          "path": "tbk/searchGoodsList/searchGoodsList",
+          "path": "tbk/search-goods-list/search-goods-list",
           "style": {
             "navigationBarTitleText": "",
             "enablePullDownRefresh": false
           }
         },
         {
-          "path": "tbk/goodsDetails/goodsDetails",
+          "path": "tbk/goods-details/goods-details",
           "style": {
             "navigationBarTitleText": "",
             "enablePullDownRefresh": false

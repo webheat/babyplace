@@ -1,14 +1,12 @@
-/**
- * AI 客服 API — 通过 Go 后端 HTTP 接口调用
- */
+import config from '@/config/config';
 
-import { callAdminAction } from '@/api/admin';
+const CHAT_API_URL = config.chatApiUrl;
 
 export async function sendChatMessage(message, sessionId) {
   try {
     const res = await new Promise((resolve, reject) => {
       uni.request({
-        url: 'https://byupload.aixifs.com/api/chat',
+        url: CHAT_API_URL,
         method: 'POST',
         header: { 'Content-Type': 'application/json' },
         data: { message, session_id: sessionId },
@@ -19,6 +17,7 @@ export async function sendChatMessage(message, sessionId) {
     });
     return res.data;
   } catch (error) {
+    uni.showToast({ title: error?.errMsg || error?.message || '网络请求失败', icon: 'none' });
     return { code: -1, message: error?.errMsg || error?.message || '网络请求失败' };
   }
 }

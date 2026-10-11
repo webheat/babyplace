@@ -53,7 +53,7 @@ function goHome() {
 }
 
 function goForgetPassword() {
-  uni.navigateTo({ url: '/pages/user/setting/forgetPassword' });
+  uni.navigateTo({ url: '/pages/user/setting/forget-password' });
 }
 
 async function handlePhoneLogin() {

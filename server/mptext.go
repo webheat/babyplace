@@ -20,10 +20,13 @@ var (
 )
 
 func initMptext() {
-	// 优先使用 down_mptext_top_key，回退到 websit_key
+	// 优先从环境变量读取（godotenv 加载），回退到直接读 .env 文件
 	mptextAuthKey = os.Getenv("down_mptext_top_key")
 	if mptextAuthKey == "" {
 		mptextAuthKey = os.Getenv("websit_key")
+	}
+	if mptextAuthKey == "" {
+		mptextAuthKey = readEnvFromFile(".env", "down_mptext_top_key", "websit_key")
 	}
 	mptextClient = &http.Client{Timeout: 30 * time.Second}
 	if mptextAuthKey == "" {
@@ -35,6 +38,27 @@ func initMptext() {
 		}
 		log.Printf("[mptext] auth key loaded (%s...)", keyPrefix)
 	}
+}
+
+// readEnvFromFile 直接从 .env 文件读取指定 key 作为兜底
+func readEnvFromFile(filePath string, keys ...string) string {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		for _, key := range keys {
+			prefix := key + "="
+			if strings.HasPrefix(line, prefix) {
+				return strings.TrimSpace(line[len(prefix):])
+			}
+		}
+	}
+	return ""
 }
 
 func readMptextResponse(resp *http.Response) ([]byte, error) {

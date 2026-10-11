@@ -149,7 +149,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
 import { onLoad, onShareAppMessage, onShareTimeline } from '@dcloudio/uni-app';
-import RoutePlannerCard from '@/components/RoutePlannerCard.vue';
+import RoutePlannerCard from '@/components/route-planner-card.vue';
 import RatingStars from '@/components/rating-stars.vue';
 import TagList from '@/components/tag-list.vue';
 import { detailPoi } from '@/api/poi';

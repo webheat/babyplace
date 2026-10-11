@@ -26,6 +26,12 @@ import urllib.request
 AMAP_KEY = os.environ.get("AMAP_KEY", "abcef158da87a62e42e1fb968ed33dd4")
 DB_PATH = os.environ.get("DB_PATH", "/opt/babyplace/data/babyplace.db")
 
+# 大湾区城市白名单（高德返回的 cityname 匹配任一即允许入库）
+ALLOWED_CITIES = {
+    "广州市", "深圳市", "佛山市", "东莞市", "惠州市",
+    "珠海市", "中山市", "江门市", "肇庆市",
+}
+
 # POI 表完整列名（对应 Go server/poi.go poiColumns + INSERT 列清单）
 POI_COLUMNS = [
     "id", "name", "canonical_name", "alias", "city", "district", "address",
@@ -51,6 +57,7 @@ def parse_args():
     poi_name = None
     city = ""
     dry_run = False
+    skip_city_check = False
 
     i = 0
     while i < len(args):
@@ -59,6 +66,9 @@ def parse_args():
             i += 2
         elif args[i] == "--dry-run":
             dry_run = True
+            i += 1
+        elif args[i] == "--skip-city-check":
+            skip_city_check = True
             i += 1
         elif args[i].startswith("-"):
             print(f"未知参数: {args[i]}")
@@ -72,7 +82,7 @@ def parse_args():
         print(__doc__)
         sys.exit(1)
 
-    return poi_name.strip(), city.strip(), dry_run
+    return poi_name.strip(), city.strip(), dry_run, skip_city_check
 
 
 # ─── 工具函数 ─────────────────────────────────────
@@ -434,7 +444,7 @@ def upsert_poi(cursor, conn, amap_data, existing_poi, dry_run):
 
 
 def main():
-    poi_name, city, dry_run = parse_args()
+    poi_name, city, dry_run, skip_city_check = parse_args()
 
     print(f"🔍 搜索:   {poi_name}")
     print(f"  城市:   {city or '(不限)'}")
@@ -450,6 +460,12 @@ def main():
         print(f"✗ {err}")
         sys.exit(1)
     print("✓")
+
+    # 1.5) 城市白名单校验
+    amap_city = (amap_data.get("cityname") or "").strip()
+    if not skip_city_check and amap_city and amap_city not in ALLOWED_CITIES:
+        print(f"⛔ 跳过（非大湾区城市: {amap_city}）")
+        sys.exit(0)
 
     print(f"\n📋 高德匹配结果:")
     print(f"  名称:     {amap_data['amap_name']}")

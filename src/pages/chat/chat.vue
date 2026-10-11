@@ -8,7 +8,7 @@
     >
       <view
         v-for="(msg, i) in messages"
-        :key="i"
+        :key="`msg-${msg.role}-${i}`"
         :id="'msg-' + i"
         :class="['message-row', msg.role]"
       >
@@ -30,7 +30,7 @@
       <view v-if="suggestedQuestions.length && !sending" class="suggested-questions">
         <view
           v-for="(q, i) in suggestedQuestions"
-          :key="i"
+          :key="`sq-${q}`"
           class="suggest-btn"
           @tap="sendSuggested(q)"
         >
