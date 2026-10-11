@@ -412,7 +412,7 @@ onShareTimeline(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* ========================================
    Field Journal — 遛娃宝地 Home Page
    Warm paper, serif headlines, category color bars
