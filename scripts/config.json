@@ -1,0 +1,32 @@
+{
+  "wechat_mp": {
+    "app_id": "<公众号AppID>",
+    "app_secret": "<公众号AppSecret>"
+  },
+  "dify": {
+    "api_url": "https://oc.aixifs.com",
+    "dataset_api_key": "<Dify知识库管理API Key>",
+    "dataset_id": "<知识库ID>"
+  },
+  "llm": {
+    "provider": "openai_compatible",
+    "api_key": "t7npV6raGbd2f4HOMR4RRi0gsK2MbvPWk5TMs4i8Q9eJ80cG",
+    "base_url": "https://aikey.aixifs.com/v1",
+    "model": "glm-4-flash"
+  },
+  "ai_services": {
+    "openai_compatible": {
+      "base_url": "https://aikey.aixifs.com/v1",
+      "api_key": "t7npV6raGbd2f4HOMR4RRi0gsK2MbvPWk5TMs4i8Q9eJ80cG"
+    }
+  },
+  "remotion": {
+    "server_url": "http://lanes.ymxt.top:3010",
+    "template_id": "BabyplacePoi"
+  },
+  "amap": {
+    "web_key": "<高德Web服务Key>"
+  },
+  "babyplace_admin_url": "https://byupload.aixifs.com/babyplace-admin",
+  "babyplace_seed_secret": "babyplace2026"
+}

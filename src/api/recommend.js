@@ -1,8 +1,6 @@
 import { callAdminAction } from '@/api/admin';
 import poiSnapshot from '@/data/poi-snapshot.json';
 
-const recommendObject = uniCloud.importObject('recommend');
-
 function buildSnapshotHome(params = {}) {
   const radius = Number(params.radius || 5000);
   const source = Array.isArray(poiSnapshot) ? poiSnapshot.slice() : [];
@@ -24,12 +22,6 @@ function buildSnapshotHome(params = {}) {
 }
 
 export async function recommendHome(params = {}) {
-  try {
-    const result = await recommendObject.home(params);
-    if (result?.code === 0) return result;
-  } catch (error) {
-    console.error('recommend.home importObject failed, fallback to admin action', error);
-  }
   const result = await callAdminAction('recommend.home', params);
   return result?.code === 0 ? result : buildSnapshotHome(params);
 }

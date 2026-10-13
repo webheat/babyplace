@@ -1,9 +1,5 @@
 import { listPoi } from './poi';
 
-function ok(data = {}, message = 'ok') {
-  return Promise.resolve({ code: 200, message, data });
-}
-
 function buildBanner(item = {}, index = 0) {
   return {
     id: item._id || String(index + 1),
@@ -18,6 +14,6 @@ export default {
   async getBanner() {
     const result = await listPoi({ page: 1, pageSize: 5 });
     const list = (result.data?.list || []).map(buildBanner);
-    return ok(list);
+    return { code: 200, message: 'ok', data: list };
   },
 };

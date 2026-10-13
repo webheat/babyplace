@@ -1,0 +1,382 @@
+.places-card {
+  padding: 20rpx;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #e5e7eb;
+  margin-bottom: 20rpx;
+}
+
+.card-icon {
+  font-size: 32rpx;
+  margin-right: 10rpx;
+}
+
+.card-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+/* 地点列表 */
+.places-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.place-item {
+  background: #f9fafb;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  border: 1rpx solid #e5e7eb;
+}
+
+.place-main {
+  margin-bottom: 16rpx;
+}
+
+.place-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.place-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #111827;
+  flex: 1;
+}
+
+.place-rating {
+  display: flex;
+  align-items: center;
+  background: #fef3c7;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.rating-icon {
+  font-size: 24rpx;
+  margin-right: 4rpx;
+}
+
+.rating-text {
+  font-size: 24rpx;
+  color: #d97706;
+  font-weight: bold;
+}
+
+/* 标签行 */
+.place-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-bottom: 12rpx;
+}
+
+.tag {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  color: #6b7280;
+  background: #f3f4f6;
+}
+
+.tag.category {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.tag.indoor {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+.tag.outdoor {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.tag.price {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.tag.distance {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+/* 地址 */
+.place-address {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10rpx;
+}
+
+.address-icon {
+  font-size: 24rpx;
+  margin-right: 6rpx;
+  margin-top: 4rpx;
+}
+
+.address-text {
+  font-size: 26rpx;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* 摘要 */
+.place-summary {
+  margin-bottom: 12rpx;
+  padding: 16rpx;
+  background: #fff;
+  border-radius: 8rpx;
+  border-left: 4rpx solid #2563eb;
+}
+
+.summary-text {
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.6;
+}
+
+/* 相关文章 */
+.place-articles {
+  margin-top: 12rpx;
+}
+
+.articles-label {
+  font-size: 24rpx;
+  color: #6b7280;
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.article-item {
+  padding: 10rpx 16rpx;
+  background: #fff;
+  border-radius: 8rpx;
+  border: 1rpx solid #e5e7eb;
+}
+
+.article-title {
+  font-size: 24rpx;
+  color: #2563eb;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+/* 行动按钮区 */
+.place-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #e5e7eb;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+}
+
+.action-btn.primary {
+  background: #2563eb;
+  color: #fff;
+  flex: 1;
+  min-width: 200rpx;
+}
+
+.action-btn.secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1rpx solid #d1d5db;
+}
+
+.action-btn:active {
+  opacity: 0.8;
+}
+
+.btn-icon {
+  font-size: 28rpx;
+  margin-right: 6rpx;
+}
+
+.btn-text {
+  font-size: 26rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 0;
+}
+
+.empty-icon {
+  font-size: 64rpx;
+  margin-bottom: 16rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #9ca3af;
+}
+
+/* 美团美食模块 */
+.food-section {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background: #fffbeb;
+  border-radius: 12rpx;
+  border: 1rpx solid #fde68a;
+}
+
+.food-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.food-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.food-icon {
+  font-size: 28rpx;
+  margin-right: 8rpx;
+}
+
+.food-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #92400e;
+}
+
+.food-more {
+  font-size: 24rpx;
+  color: #d97706;
+}
+
+.food-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.food-item {
+  display: flex;
+  align-items: center;
+  padding: 12rpx;
+  background: #fff;
+  border-radius: 10rpx;
+  border: 1rpx solid #fde68a;
+}
+
+.food-img-wrap {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 10rpx;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-right: 12rpx;
+}
+
+.food-img {
+  width: 100%;
+  height: 100%;
+}
+
+.food-img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef3c7;
+  font-size: 32rpx;
+}
+
+.food-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.food-name {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #1f2937;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.food-meta {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 4rpx;
+}
+
+.food-rating {
+  font-size: 22rpx;
+  color: #d97706;
+}
+
+.food-price {
+  font-size: 22rpx;
+  color: #ef4444;
+}
+
+.food-distance {
+  font-size: 22rpx;
+  color: #6b7280;
+}
+
+.food-order-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16rpx;
+  padding: 14rpx 0;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 999rpx;
+  color: #fff;
+}
+
+.order-icon {
+  font-size: 26rpx;
+  margin-right: 8rpx;
+}
+
+.order-text {
+  font-size: 26rpx;
+  font-weight: bold;
+}
+
+.food-order-btn:active {
+  opacity: 0.8;
+}

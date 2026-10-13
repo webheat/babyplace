@@ -41,7 +41,7 @@ export function drawSquarePic(ctx, x, y, w, h, r, url) {
   // 绘制图片
   return new Promise((resolve, reject) => {
     if (url) {
-      wx.getImageInfo({
+      uni.getImageInfo({
         src: url,
         success(res) {
           ctx.drawImage(res.path, x, y, w, h)

@@ -6,16 +6,23 @@
         class="search"
         confirm-type="search"
         placeholder="搜索地点名称/地址"
-        @confirm="loadList"
+        @confirm="onSearch"
       />
-      <button class="button" size="mini" @click="loadList">搜索</button>
+      <button class="button" size="mini" @click="onSearch">搜索</button>
     </view>
-    <view v-if="loading" class="state">加载中...</view>
-    <view v-else-if="errorMessage" class="state error">{{ errorMessage }}</view>
-    <view v-else-if="!list.length" class="state">暂无数据</view>
-    <view v-else class="list">
-      <poi-card v-for="item in list" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
-    </view>
+<mescroll-uni
+      ref="mescroll"
+      :down="downOption"
+      :up="upOption"
+      @down="downCallback"
+      @up="upCallback"
+    >
+      <view v-if="list.length" class="list">
+        <poi-card v-for="item in list" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
+      </view>
+      <view v-else class="state">暂无数据</view>
+    </mescroll-uni>
+
     <contact-fab
       send-message-title="商品列表-购物咨询"
       bubble-title="需要帮助？"
@@ -36,10 +43,30 @@ import ContactFab from '@/components/contact-fab.vue';
 import { listPoi } from '@/api/poi';
 import { openPoiMap } from '@/utils/poi';
 
-const loading = ref(false);
-const errorMessage = ref('');
 const keyword = ref('');
 const list = ref([]);
+const page = ref(1);
+const hasMore = ref(true);
+const mescroll = ref(null);
+
+const downOption = {
+  use: true,
+  auto: true,
+};
+
+const upOption = {
+  use: true,
+  auto: true,
+  page: {
+    num: 0,
+    size: 20,
+  },
+  noMoreSize: 4,
+  empty: {
+    use: true,
+    tip: '~ 暂无地点 ~',
+  },
+};
 
 function goDetail(item) {
   if (!item?._id) return;
@@ -50,27 +77,60 @@ function openMap(item) {
   openPoiMap(item);
 }
 
-async function loadList() {
-  loading.value = true;
-  errorMessage.value = '';
+async function doSearch(reset = true) {
+  if (reset) {
+    page.value = 1;
+    hasMore.value = true;
+    list.value = [];
+  }
+
   try {
     const result = await listPoi({
       keyword: keyword.value,
-      page: 1,
+      page: page.value,
       pageSize: 20,
     });
-    if (result.code !== 0) throw new Error(result.message || '加载失败');
-    list.value = result.data?.list || [];
+    if (result.code !== 0) {
+      uni.showToast({ title: result.message || '加载失败', icon: 'none' });
+      return;
+    }
+    const items = result.data?.list || [];
+    if (reset) {
+      list.value = items;
+    } else {
+      list.value.push(...items);
+    }
+    hasMore.value = items.length >= 20;
+    if (reset && items.length === 0) {
+      // empty handled by mescroll
+    }
   } catch (error) {
-    list.value = [];
-    errorMessage.value = error.message || '加载失败';
-  } finally {
-    loading.value = false;
+    uni.showToast({ title: error?.message || '加载失败', icon: 'none' });
   }
 }
 
+function onSearch() {
+  doSearch(true);
+}
+
+function downCallback(mescrollInstance) {
+  page.value = 1;
+  hasMore.value = true;
+  doSearch(true).then(() => {
+    mescrollInstance.endSuccess(0, hasMore.value);
+  });
+}
+
+function upCallback(mescrollInstance) {
+  page.value = mescrollInstance.num;
+  doSearch(false).then(() => {
+    const size = list.value.length;
+    mescrollInstance.endSuccess(size, hasMore.value);
+  });
+}
+
 onMounted(() => {
-  loadList();
+  // Auto load via mescroll upOption.auto: true
 });
 </script>
 
@@ -101,18 +161,6 @@ onMounted(() => {
   border-radius: 12rpx;
   background: #2563eb;
   color: #fff;
-}
-
-.state {
-  text-align: center;
-  padding: 30rpx;
-  border-radius: 16rpx;
-  background: #fff;
-  color: #64748b;
-}
-
-.state.error {
-  color: #dc2626;
 }
 
 .list {

@@ -16,6 +16,45 @@
         <text class="paragraph">{{ poi.recommend_reason || poi.summary || '暂无' }}</text>
       </view>
 
+      <view v-if="poi.open_time" class="section">
+        <text class="section-title">营业时间</text>
+        <text class="paragraph">{{ poi.open_time }}</text>
+      </view>
+
+      <view v-if="poi.ticket_info" class="section">
+        <text class="section-title">门票信息</text>
+        <text class="paragraph">{{ poi.ticket_info }}</text>
+      </view>
+
+      <view v-if="poi.phone" class="section">
+        <text class="section-title">联系电话</text>
+        <text class="paragraph link-text" @click="handleCallPhone">{{ poi.phone }}</text>
+      </view>
+
+      <view v-if="poi.reservation_type" class="section">
+        <text class="section-title">预约/预订</text>
+        <view v-if="poi.reservation_type === 'webview' && poi.reservation?.url">
+          <text class="paragraph">点击下方按钮进行预约</text>
+          <button class="button button-reserve" size="mini" @click="handleOpenReservation">
+            {{ poi.reservation?.label || '前往预约' }}
+          </button>
+        </view>
+        <view v-else-if="poi.reservation_type === 'qrcode' && poi.booking_qr_code">
+          <text class="paragraph">扫描下方二维码进行预约</text>
+          <image lazy-load :src="poi.booking_qr_code" mode="widthFix" class="qr-image" />
+        </view>
+        <view v-else-if="poi.reservation_type === 'phone' && poi.reservation?.url">
+          <text class="paragraph">拨打电话进行预约</text>
+          <text class="paragraph link-text" @click="handleCallReservation">{{ poi.reservation.url }}</text>
+        </view>
+        <view v-else-if="poi.booking_url">
+          <text class="paragraph">点击下方按钮进行预约</text>
+          <button class="button button-reserve" size="mini" @click="handleOpenReservationUrl">
+            前往预约
+          </button>
+        </view>
+      </view>
+
       <route-planner-card
         :name="poi.name || ''"
         :city="poi.city || ''"
@@ -54,7 +93,7 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { onLoad, onShareAppMessage, onShareTimeline } from '@dcloudio/uni-app';
-import RoutePlannerCard from '@/components/RoutePlannerCard.vue';
+import RoutePlannerCard from '@/components/route-planner-card.vue';
 import RatingStars from '@/components/rating-stars.vue';
 import TagList from '@/components/tag-list.vue';
 import { detailPoi } from '@/api/poi';
@@ -119,6 +158,55 @@ async function handleSubmitReview() {
   } finally {
     submitting.value = false;
   }
+}
+
+function handleCallPhone() {
+  if (!poi.value?.phone) return;
+  // #ifdef MP-WEIXIN || APP-PLUS
+  uni.makePhoneCall({ phoneNumber: poi.value.phone });
+  // #endif
+  // #ifdef H5
+  window.location.href = `tel:${poi.value.phone}`;
+  // #endif
+}
+
+function handleOpenReservation() {
+  const url = poi.value?.reservation?.url;
+  if (!url) return;
+  // #ifdef MP-WEIXIN
+  uni.navigateTo({ url: `/pages/webview/index?url=${encodeURIComponent(url)}` });
+  // #endif
+  // #ifdef H5
+  window.open(url, '_blank');
+  // #endif
+  // #ifdef APP-PLUS
+  plus.runtime.openURL(url);
+  // #endif
+}
+
+function handleOpenReservationUrl() {
+  const url = poi.value?.booking_url;
+  if (!url) return;
+  // #ifdef MP-WEIXIN
+  uni.navigateTo({ url: `/pages/webview/index?url=${encodeURIComponent(url)}` });
+  // #endif
+  // #ifdef H5
+  window.open(url, '_blank');
+  // #endif
+  // #ifdef APP-PLUS
+  plus.runtime.openURL(url);
+  // #endif
+}
+
+function handleCallReservation() {
+  const phone = poi.value?.reservation?.url;
+  if (!phone) return;
+  // #ifdef MP-WEIXIN || APP-PLUS
+  uni.makePhoneCall({ phoneNumber: phone });
+  // #endif
+  // #ifdef H5
+  window.location.href = `tel:${phone}`;
+  // #endif
 }
 
 onLoad((options) => {
@@ -257,5 +345,20 @@ onShareTimeline(() => ({
   font-size: 24rpx;
   color: #475569;
   line-height: 1.5;
+}
+
+.link-text {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.qr-image {
+  width: 320rpx;
+  margin-top: 16rpx;
+  border-radius: 12rpx;
+}
+
+.button-reserve {
+  margin-top: 16rpx;
 }
 </style>

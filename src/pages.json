@@ -40,8 +40,11 @@
       }
     },
     {
+      "path": "pages/user/mine/mine",
+      "style": {}
+    },
+    {
       "path": "pages/life/shop/shop",
-      "onReachBottomDistance": 300,
       "style": {
         "enablePullDownRefresh": true,
         "enableShareAppMessage": true,
@@ -51,121 +54,6 @@
     {
       "path": "pages/index/debug",
       "onReachBottomDistance": 300
-    },
-    {
-      "path": "pages/user/mine/mine",
-      "style": {}
-    },
-    {
-      "path": "pages/message/message/message",
-      "style": {
-        "navigationBarTitleText": "消息",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/message/sysmessage/sysmessage",
-      "style": {
-        "navigationBarTitleText": "消息",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/webview/webview/webview",
-      "style": {}
-    },
-    {
-      "path": "pages/user/login/login",
-      "style": {
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/common/poster/poster",
-      "style": {
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/taobao/taobao",
-      "style": {
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/taobao/tbk/tbk",
-      "style": {
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/taobao/tbk/search/search",
-      "style": {
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/taobao/tbk/searchGoodsList/searchGoodsList",
-      "style": {
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/taobao/tbk/goodsDetails/goodsDetails",
-      "style": {
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/poi/list",
-      "aliasPath": "/poi/list",
-      "style": {
-        "navigationBarTitleText": "地点列表"
-      }
-    },
-    {
-      "path": "pages/poi/detail",
-      "aliasPath": "/poi/detail",
-      "style": {
-        "navigationBarTitleText": "地点详情",
-        "enableShareAppMessage": true,
-        "enableShareTimeline": true
-      }
-    },
-    {
-      "path": "pages/admin/index",
-      "aliasPath": "/admin",
-      "style": {
-        "navigationBarTitleText": "后台管理"
-      }
-    },
-    {
-      "path": "pages/admin/events",
-      "aliasPath": "/admin/events",
-      "style": {
-        "navigationBarTitleText": "联盟埋点"
-      }
-    },
-    {
-      "path": "pages/auth/index",
-      "aliasPath": "/auth",
-      "style": {
-        "navigationBarTitleText": "登录接入中心"
-      }
-    },
-    {
-      "path": "pages/auth/wechat-h5",
-      "aliasPath": "/wechat-login",
-      "style": {
-        "navigationBarTitleText": "微信扫码登录"
-      }
     }
   ],
   "subPackages": [
@@ -173,14 +61,14 @@
       "root": "pages/user/setting",
       "pages": [
         {
-          "path": "modifyPassword",
+          "path": "modify-password",
           "style": {
             "navigationBarTitleText": "修改密码",
             "enablePullDownRefresh": false
           }
         },
         {
-          "path": "forgetPassword",
+          "path": "forget-password",
           "style": {
             "navigationBarTitleText": "忘记密码",
             "enablePullDownRefresh": false
@@ -249,6 +137,215 @@
           "style": {
             "navigationBarTitleText": "个人信息",
             "enablePullDownRefresh": false
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/taobao",
+      "pages": [
+        {
+          "path": "taobao",
+          "style": {
+            "navigationBarTitleText": "",
+            "enablePullDownRefresh": false
+          }
+        },
+        {
+          "path": "tbk/tbk",
+          "style": {
+            "navigationBarTitleText": "",
+            "enablePullDownRefresh": false
+          }
+        },
+        {
+          "path": "tbk/search/search",
+          "style": {
+            "navigationBarTitleText": "",
+            "enablePullDownRefresh": false
+          }
+        },
+        {
+          "path": "tbk/search-goods-list/search-goods-list",
+          "style": {
+            "navigationBarTitleText": "",
+            "enablePullDownRefresh": false
+          }
+        },
+        {
+          "path": "tbk/goods-details/goods-details",
+          "style": {
+            "navigationBarTitleText": "",
+            "enablePullDownRefresh": false
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/poi",
+      "pages": [
+        {
+          "path": "list",
+          "aliasPath": "/poi/list",
+          "style": {
+            "navigationBarTitleText": "地点列表"
+          }
+        },
+        {
+          "path": "detail",
+          "aliasPath": "/poi/detail",
+          "style": {
+            "navigationBarTitleText": "地点详情",
+            "enableShareAppMessage": true,
+            "enableShareTimeline": true
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/video",
+      "pages": [
+        {
+          "path": "capture",
+          "style": {
+            "navigationBarTitleText": "生成遛娃视频"
+          }
+        },
+        {
+          "path": "preview",
+          "style": {
+            "navigationBarTitleText": "视频预览",
+            "navigationStyle": "custom"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/chat",
+      "pages": [
+        {
+          "path": "chat",
+          "style": {
+            "navigationBarTitleText": "在线客服",
+            "enablePullDownRefresh": false
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/admin",
+      "pages": [
+        {
+          "path": "index",
+          "aliasPath": "/admin",
+          "style": {
+            "navigationBarTitleText": "后台管理"
+          }
+        },
+        {
+          "path": "events",
+          "aliasPath": "/admin/events",
+          "style": {
+            "navigationBarTitleText": "联盟埋点"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/message",
+      "pages": [
+        {
+          "path": "message/message",
+          "style": {
+            "navigationBarTitleText": "消息",
+            "enablePullDownRefresh": false
+          }
+        },
+        {
+          "path": "sysmessage/sysmessage",
+          "style": {
+            "navigationBarTitleText": "消息",
+            "enablePullDownRefresh": false
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/common/poster",
+      "pages": [
+        {
+          "path": "poster",
+          "style": {
+            "navigationBarTitleText": "",
+            "enablePullDownRefresh": false
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/user/login",
+      "pages": [
+        {
+          "path": "login",
+          "style": {
+            "navigationBarTitleText": "",
+            "enablePullDownRefresh": false
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/user/homepage",
+      "pages": [
+        {
+          "path": "homepage",
+          "style": {}
+        }
+      ]
+    },
+    {
+      "root": "pages/auth",
+      "pages": [
+        {
+          "path": "index",
+          "aliasPath": "/auth",
+          "style": {
+            "navigationBarTitleText": "登录接入中心"
+          }
+        },
+        {
+          "path": "wechat-h5",
+          "aliasPath": "/wechat-login",
+          "style": {
+            "navigationBarTitleText": "微信扫码登录"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/webview/webview",
+      "pages": [
+        {
+          "path": "webview",
+          "style": {}
+        }
+      ]
+    },
+    {
+      "root": "pages/geo",
+      "pages": [
+        {
+          "path": "cesium/index",
+          "aliasPath": "/geo/cesium",
+          "style": {
+            "navigationBarTitleText": "Cesium 3D 地球"
+          }
+        },
+        {
+          "path": "maplibre/index",
+          "aliasPath": "/geo/maplibre",
+          "style": {
+            "navigationBarTitleText": "MapLibre 地图"
           }
         }
       ]

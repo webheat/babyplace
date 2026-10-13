@@ -31,7 +31,7 @@ function goSearch() {
 
 function openDetail(item) {
   if (!item?._id) return;
-  uni.navigateTo({ url: `/pages/taobao/tbk/goodsDetails/goodsDetails?id=${item._id}` });
+  uni.navigateTo({ url: `/pages/taobao/tbk/goods-details/goods-details?id=${item._id}` });
 }
 
 async function loadList() {

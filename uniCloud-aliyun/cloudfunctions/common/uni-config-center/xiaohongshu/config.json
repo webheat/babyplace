@@ -1,0 +1,6 @@
+{
+  "app_id": "<小红书开放平台 AppID>",
+  "app_secret": "<小红书开放平台 AppSecret>",
+  "redirect_uri": "https://your-domain.com/callback",
+  "scopes": ["video_upload", "note_publish"]
+}

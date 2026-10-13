@@ -1,0 +1,89 @@
+{
+	"passwordSecret": "passwordSecret-demo",
+	"tokenSecret": "tokenSecret-demo",
+	"tokenExpiresIn": 604800,
+	"tokenExpiresThreshold": 3600,
+	"passwordErrorLimit": 6,
+	"bindTokenToDevice": false,
+	"passwordErrorRetryTime": 3600,
+	"autoSetInviteCode": true,
+	"forceInviteCode": false,
+	"app": {
+		"oauth": {
+			"weixin": {
+				"appid": "wx0097f2621a6cb4b1",
+				"appsecret": "1faa26c6bb68da2142b4169bf4d56654"
+			}
+		}
+	},
+	"mp-weixin": {
+		"oauth": {
+			"weixin": {
+				"appid": "wx0097f2621a6cb4b1",
+				"appsecret": "1faa26c6bb68da2142b4169bf4d56654"
+			}
+		}
+	},	
+	"web": {
+		"oauth": {
+			"weixin-h5": {
+				"appid": "wxde10b66d0c930b78",
+				"appsecret": "895247d1f5b8c97dbfb005174827595d"
+			},
+			"weixin-web": {
+				"appid": "wx0ebd7da2e72e6be2",
+				"appsecret": "0b235799f4fa2dbd53b5411292c2e258"
+			}
+		}
+	},
+	"mp-alipay": {
+		"oauth": {
+			"alipay": {
+				"appid": "",
+				"privateKey": ""
+			}
+		}
+	},
+	"mp-qq": {
+		"oauth": {
+			"qq": {
+				"appid": "",
+				"appsecret": ""
+			}
+		}
+	},
+	"service": {
+		"sms": {
+			"name": "重要",
+			"codeExpiresIn": 180,
+			"smsKey": "",
+			"smsSecret": "",
+			"templateId": ""
+		},
+		"univerify": {
+			"appid": "",
+			"apiKey": "",
+			"apiSecret": ""
+		}
+	},
+	"mp-toutiao": {
+		"oauth": {
+			"toutiao": {
+				"appid": "tt8b20fd9d1412896d01",
+				"appsecret": "18acba0f015f3167d52f5a1a3b35d395a69821f3"
+			},
+			"h5": {
+				"appid": "",
+				"appsecret": ""
+			},
+			"web": {
+				"appid": "",
+				"appsecret": ""
+			},
+			"app": {
+				"appid": "",
+				"appsecret": ""
+			}
+		}
+	}	
+}

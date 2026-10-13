@@ -40,7 +40,7 @@
       <view v-else-if="!rainyList.length" class="state">暂无符合条件的数据</view>
       <view v-else class="featured-list">
         <view v-for="item in rainyList" :key="item._id" class="featured-card" @click="goDetail(item)">
-          <image class="featured-cover" :src="item.cover_image || '/static/logo.png'" mode="aspectFill" />
+          <image lazy-load class="featured-cover" :src="item.cover_image || '/static/logo.png'" mode="aspectFill" />
           <view class="featured-body">
             <text class="featured-name">{{ item.name }}</text>
             <text class="featured-meta">{{ item.city }} {{ item.district }}</text>
@@ -62,6 +62,7 @@
       <view v-else class="list">
         <poi-card v-for="item in topRatedList" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
       </view>
+      <view class="view-more" @click="goPoiList">查看更多地点</view>
     </view>
   </view>
 </template>
@@ -104,7 +105,7 @@ function goCoupon(item) {
 async function loadPage() {
   loading.value = true;
   try {
-    const result = await listPoi({ page: 1, pageSize: 50 });
+    const result = await listPoi({ page: 1, pageSize: 20 });
     if (result.code !== 0) throw new Error(result.message || '加载失败');
     list.value = result.data?.list || [];
   } catch (error) {
@@ -113,6 +114,10 @@ async function loadPage() {
   } finally {
     loading.value = false;
   }
+}
+
+function goPoiList() {
+  uni.navigateTo({ url: '/pages/poi/list' });
 }
 
 async function loadCoupons() {
@@ -294,5 +299,12 @@ onMounted(() => {
   background: #e6f7fb;
   font-size: 22rpx;
   color: #0e7490;
+}
+
+.view-more {
+  text-align: center;
+  padding: 24rpx;
+  color: #2563eb;
+  font-size: 28rpx;
 }
 </style>

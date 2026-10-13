@@ -1,0 +1,668 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "id": "nvwa",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     113.613,
+     36.566
+    ]
+   },
+   "properties": {
+    "name": "女娲补天",
+    "category": "神话",
+    "province": "河北",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "pangu",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     113.429,
+     32.383
+    ]
+   },
+   "properties": {
+    "name": "盘古开天",
+    "category": "神话",
+    "province": "河南",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "jingwei",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     112.869,
+     36.116
+    ]
+   },
+   "properties": {
+    "name": "精卫填海",
+    "category": "神话",
+    "province": "山西",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "yugong",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     112.197,
+     35.168
+    ]
+   },
+   "properties": {
+    "name": "愚公移山",
+    "category": "神话",
+    "province": "河南",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "dayu",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.583,
+     30.01
+    ]
+   },
+   "properties": {
+    "name": "大禹治水",
+    "category": "神话",
+    "province": "浙江",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "baxian",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.751,
+     37.807
+    ]
+   },
+   "properties": {
+    "name": "八仙过海",
+    "category": "神话",
+    "province": "山东",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "cangjie",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     109.594,
+     35.18
+    ]
+   },
+   "properties": {
+    "name": "仓颉造字",
+    "category": "神话",
+    "province": "陕西",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "houyi",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.255,
+     33.768
+    ]
+   },
+   "properties": {
+    "name": "后羿射日",
+    "category": "神话",
+    "province": "江苏",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "baishe",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.149,
+     30.259
+    ]
+   },
+   "properties": {
+    "name": "白蛇传",
+    "category": "传说",
+    "province": "浙江",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "liangzhu",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.165,
+     30.225
+    ]
+   },
+   "properties": {
+    "name": "梁山伯与祝英台",
+    "category": "传说",
+    "province": "浙江",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "niulang",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     112.528,
+     32.994
+    ]
+   },
+   "properties": {
+    "name": "牛郎织女",
+    "category": "传说",
+    "province": "河南",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "mengjiang",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     119.764,
+     39.99
+    ]
+   },
+   "properties": {
+    "name": "孟姜女",
+    "category": "传说",
+    "province": "河北",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "mazu",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     119.131,
+     25.074
+    ]
+   },
+   "properties": {
+    "name": "妈祖",
+    "category": "传说",
+    "province": "福建",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "liusanjie",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     109.427,
+     24.326
+    ]
+   },
+   "properties": {
+    "name": "刘三姐",
+    "category": "传说",
+    "province": "广西",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "ashima",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     103.268,
+     24.778
+    ]
+   },
+   "properties": {
+    "name": "阿诗玛",
+    "category": "传说",
+    "province": "云南",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "jigong",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.099,
+     30.241
+    ]
+   },
+   "properties": {
+    "name": "济公",
+    "category": "传说",
+    "province": "浙江",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "dongyong",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     113.919,
+     30.924
+    ]
+   },
+   "properties": {
+    "name": "董永与七仙女",
+    "category": "民间故事",
+    "province": "湖北",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "hua-mu-lan",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     115.872,
+     34.391
+    ]
+   },
+   "properties": {
+    "name": "花木兰",
+    "category": "民间故事",
+    "province": "河南",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "xishi",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.233,
+     29.713
+    ]
+   },
+   "properties": {
+    "name": "西施",
+    "category": "民间故事",
+    "province": "浙江",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "suxiaoxiao",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.145,
+     30.25
+    ]
+   },
+   "properties": {
+    "name": "苏小小",
+    "category": "民间故事",
+    "province": "浙江",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "afanti",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     75.99,
+     39.47
+    ]
+   },
+   "properties": {
+    "name": "阿凡提",
+    "category": "民间故事",
+    "province": "新疆",
+    "origin": "upstream"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "zhongkui",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     108.94,
+     34.34
+    ]
+   },
+   "properties": {
+    "name": "钟馗",
+    "category": "传说",
+    "province": "陕西",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "tieshuai-li",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     112.14,
+     32.04
+    ]
+   },
+   "properties": {
+    "name": "铁拐李",
+    "category": "神话",
+    "province": "湖北",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "han-zhongli",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     124.35,
+     40.12
+    ]
+   },
+   "properties": {
+    "name": "汉钟离",
+    "category": "神话",
+    "province": "辽宁",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "zhangguolao",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     112.84,
+     34.17
+    ]
+   },
+   "properties": {
+    "name": "张果老",
+    "category": "神话",
+    "province": "河南",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "lv-dongbin",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     110.69,
+     34.69
+    ]
+   },
+   "properties": {
+    "name": "吕洞宾",
+    "category": "神话",
+    "province": "山西",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "he-xiangu",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     112.57,
+     26.89
+    ]
+   },
+   "properties": {
+    "name": "何仙姑",
+    "category": "神话",
+    "province": "湖南",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "lan-caihe",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     104.07,
+     30.57
+    ]
+   },
+   "properties": {
+    "name": "蓝采和",
+    "category": "神话",
+    "province": "四川",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "han-xiangzi",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     108.94,
+     34.34
+    ]
+   },
+   "properties": {
+    "name": "韩湘子",
+    "category": "神话",
+    "province": "陕西",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "caoguojiu",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     121.39,
+     37.52
+    ]
+   },
+   "properties": {
+    "name": "曹国舅",
+    "category": "神话",
+    "province": "山东",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "tianluo-guniang",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     119.3,
+     26.08
+    ]
+   },
+   "properties": {
+    "name": "田螺姑娘",
+    "category": "民间故事",
+    "province": "福建",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "langwaipo",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     118.76,
+     30.95
+    ]
+   },
+   "properties": {
+    "name": "狼外婆",
+    "category": "民间故事",
+    "province": "安徽",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "chenshang-jiumu",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     108.94,
+     34.34
+    ]
+   },
+   "properties": {
+    "name": "沉香救母",
+    "category": "传说",
+    "province": "陕西",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "mengpo",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     107.73,
+     29.86
+    ]
+   },
+   "properties": {
+    "name": "孟婆",
+    "category": "传说",
+    "province": "重庆",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "ge-sa-er",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     91.11,
+     29.65
+    ]
+   },
+   "properties": {
+    "name": "格萨尔王传",
+    "category": "史诗",
+    "province": "西藏",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "jiangge-er",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     86.4,
+     42.32
+    ]
+   },
+   "properties": {
+    "name": "江格尔",
+    "category": "史诗",
+    "province": "新疆",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "manasi",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.94,
+     41.04
+    ]
+   },
+   "properties": {
+    "name": "玛纳斯",
+    "category": "史诗",
+    "province": "新疆",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "hudie-mama",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     107.98,
+     26.58
+    ]
+   },
+   "properties": {
+    "name": "蝴蝶妈妈",
+    "category": "史诗",
+    "province": "贵州",
+    "origin": "extended"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "ailifu-sainaiemu",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     75.99,
+     39.47
+    ]
+   },
+   "properties": {
+    "name": "艾里甫与赛乃姆",
+    "category": "史诗",
+    "province": "新疆",
+    "origin": "extended"
+   }
+  }
+ ]
+}

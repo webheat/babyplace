@@ -1,0 +1,17 @@
+{
+  "collection": "babyplace-article",
+  "enableCache": false,
+  "orderBy": "publish_time desc",
+  "fieldRules": [
+    { "label": "标题", "name": "title", "required": true },
+    { "label": "公众号名称", "name": "source_account", "required": true },
+    { "label": "公众号ID", "name": "source_account_id" },
+    { "label": "发布时间", "name": "publish_time", "required": true },
+    { "label": "原文链接", "name": "url" },
+    { "label": "提取地点", "name": "extracted_poi_names" },
+    { "label": "处理状态", "name": "status", "required": true },
+    { "label": "置信度", "name": "parse_confidence" },
+    { "label": "创建时间", "name": "created_at" },
+    { "label": "更新时间", "name": "updated_at" }
+  ]
+}

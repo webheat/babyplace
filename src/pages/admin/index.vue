@@ -4,8 +4,6 @@ import { onLoad } from '@dcloudio/uni-app'
 import { createAdminItem, listAdminItems, removeAdminItem, updateAdminItem } from '../../api/admin'
 import { clearLoginState, getWechatLoginConfigStatus, hasValidUniIdToken, setLoginTime, startH5WeixinLogin } from '../../utils/auth'
 
-const uniIdCo = uniCloud.importObject('uni-id-co', { customUI: true })
-
 const MODULE_OPTIONS = [
   { key: 'poi', label: '地点' },
   { key: 'article', label: '文章' },
@@ -347,10 +345,23 @@ async function consumeWechatCode(code) {
   wechatLoggingIn.value = true
   uni.showLoading({ title: '微信登录中', mask: true })
   try {
-    const result = await uniIdCo.loginByWeixin({ code })
-    if (result.token) { uni.setStorageSync('uni_id_token', result.token); setLoginTime() }
-    if (typeof result.tokenExpired !== 'undefined') uni.setStorageSync('uni_id_token_expired', result.tokenExpired || 0)
-    if (result.refreshToken) uni.setStorageSync('uni_id_refresh_token', result.refreshToken)
+    // 通过 Go 后端 wx-login 获取 openid
+    const res = await new Promise((resolve, reject) => {
+      uni.request({
+        url: 'https://byupload.aixifs.com/api/wx-login',
+        method: 'POST',
+        header: { 'Content-Type': 'application/json' },
+        data: { code },
+        timeout: 15000,
+        success: (response) => resolve(response),
+        fail: (error) => reject(error),
+      });
+    });
+    if (res.data?.status !== 'ok') throw new Error(res.data?.message || '登录失败')
+
+    // 存储登录态
+    uni.setStorageSync('uni_id_token', res.data.data?.openid || code)
+    setLoginTime()
     syncLoginState()
     uni.showToast({ title: '登录成功', icon: 'success' })
     await loadItems()
@@ -361,7 +372,7 @@ async function consumeWechatCode(code) {
     uni.reLaunch({ url: '/pages/admin/index' })
     // #endif
   } catch (error) {
-    uni.showModal({ title: '微信登录失败', content: error.message || '请检查微信配置', showCancel: false })
+    uni.showModal({ title: '微信登录失败', content: error.message || '请检查配置', showCancel: false })
   } finally {
     wechatLoggingIn.value = false
     uni.hideLoading()

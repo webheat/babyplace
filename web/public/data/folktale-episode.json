@@ -1,0 +1,770 @@
+{
+  "episode_id": "folktale-map",
+  "mode": "folktale-map",
+  "title": "中国民间故事地图",
+  "age_band": "4-6",
+  "credit": "© OpenFreeMap © OpenStreetMap contributors",
+  "crs": "wgs84",
+  "duration_s": 0,
+  "points": [
+    {
+      "id": "nvwa",
+      "name": "女娲补天",
+      "category": "神话",
+      "site": "涉县娲皇宫",
+      "summary": "女娲炼五色石补天、断鳌足立四极，抟黄土造人。",
+      "source": "《淮南子·天文训》《列子·汤问》",
+      "color": "#f59e0b",
+      "wgs84": [
+        113.613,
+        36.566
+      ],
+      "province": "河北",
+      "kid_line": "很久很久以前，天上破了一个大洞，雨水一直往下倒。女娲妈妈找到五种颜色的石头，用火把它们烧得很烫很烫。她把那个洞补好了。",
+      "ask_kid": "你觉得，天上的洞是用什么补上的呀？",
+      "want_to_see": "五种颜色的石头",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "pangu",
+      "name": "盘古开天",
+      "category": "神话",
+      "site": "桐柏山",
+      "summary": "盘古生于混沌，开天辟地，气血化为山川江河。",
+      "source": "《三五历纪》《述异记》",
+      "color": "#f59e0b",
+      "wgs84": [
+        113.429,
+        32.383
+      ],
+      "province": "河南",
+      "kid_line": "最开始的时候，什么都没有，只有一个大鸡蛋。盘古爷爷睡在里面。有一天他醒了，睁开眼睛，喊了一声。天和地就分开了。",
+      "ask_kid": "一个睡在大鸡蛋里的人，醒来以后会做什么呀？",
+      "want_to_see": "一个大鸡蛋",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "jingwei",
+      "name": "精卫填海",
+      "category": "神话",
+      "site": "长子发鸠山",
+      "summary": "炎帝之女溺于东海，化鸟衔石木以填沧海。",
+      "source": "《山海经·北山经》",
+      "color": "#f59e0b",
+      "wgs84": [
+        112.869,
+        36.116
+      ],
+      "province": "山西",
+      "kid_line": "有个小女孩掉进了大海里。她变成了一只小鸟，叫精卫。这只小鸟每天从山上叼来小石子和树枝，一趟一趟丢进大海里。想把大海填平。",
+      "ask_kid": "一只那么小的鸟，带来的石子能填平大海吗？",
+      "want_to_see": "一只小鸟和很多小石子",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "yugong",
+      "name": "愚公移山",
+      "category": "神话",
+      "site": "济源王屋山",
+      "summary": "北山愚公率子孙叩石垦壤，誓移太行、王屋二山。",
+      "source": "《列子·汤问》",
+      "color": "#f59e0b",
+      "wgs84": [
+        112.197,
+        35.168
+      ],
+      "province": "河南",
+      "kid_line": "愚公爷爷家门口有两座大山，出门要绕很远很远。他开始挖山，把挖下来的土装进筐。运到很远的海边倒掉。他的儿子孙子都来帮忙。",
+      "ask_kid": "你觉得，一座大山要多少人才能挖走呀？",
+      "want_to_see": "两座大山和一个筐",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "dayu",
+      "name": "大禹治水",
+      "category": "神话",
+      "site": "绍兴会稽山",
+      "summary": "禹疏九河、三过家门而不入，会诸侯于会稽。",
+      "source": "《尚书·禹贡》《史记·夏本纪》",
+      "color": "#f59e0b",
+      "wgs84": [
+        120.583,
+        30.01
+      ],
+      "province": "浙江",
+      "kid_line": "很久以前，发大水淹了田地和房子。大禹爸爸想了个办法。他不是把水堵住，而是挖出河道，让水自己流到大海去。他挖了很多年。有三次路过自己家门口，他都没有进去。",
+      "ask_kid": "水来了，是把它挡住好，还是给它挖条路让它走好呀？",
+      "want_to_see": "一条挖出来的河",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "baxian",
+      "name": "八仙过海",
+      "category": "神话",
+      "site": "蓬莱阁",
+      "summary": "铁拐李等八仙各显神通，渡东海而不用舟楫。",
+      "source": "《东游记》",
+      "color": "#f59e0b",
+      "wgs84": [
+        120.751,
+        37.807
+      ],
+      "province": "山东",
+      "kid_line": "有八位神仙要过海去蓬莱岛。他们每人都有自己的法宝：有人骑着葫芦，有人拿着扇子。还有人倒着骑着一只海豚。",
+      "ask_kid": "你会用什么办法过海呀？",
+      "want_to_see": "八个人和八样不一样的宝贝",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "cangjie",
+      "name": "仓颉造字",
+      "category": "神话",
+      "site": "白水县",
+      "summary": "黄帝史官仓颉观鸟兽蹄迒之迹，初造书契。",
+      "source": "《说文解字·叙》",
+      "color": "#f59e0b",
+      "wgs84": [
+        109.594,
+        35.18
+      ],
+      "province": "陕西",
+      "kid_line": "很久以前没有字，写事情全靠画。仓颉有一天看见鸟的脚印，看见马的花纹。他忽然明白：光画出来，别人可能会看错。他想出了用记号来表示的办法。",
+      "ask_kid": "如果给「山」字画个记号，你会怎么画呀？",
+      "want_to_see": "鸟脚印和不同的记号",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "houyi",
+      "name": "后羿射日",
+      "category": "神话",
+      "site": "射阳（传说地）",
+      "summary": "羿引弓落九日，诛凿齿、杀九婴，拯民于焦枯。",
+      "source": "《淮南子·本经训》",
+      "color": "#f59e0b",
+      "wgs84": [
+        120.255,
+        33.768
+      ],
+      "province": "江苏",
+      "kid_line": "天上本来有十个太阳，一起出来会把地上晒得干裂。后羿背上弓，一箭一个，射掉了九个，只留下一个。",
+      "ask_kid": "十个太阳一起出来，地上会变成什么样呀？",
+      "want_to_see": "十个太阳和一张弓",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "baishe",
+      "name": "白蛇传",
+      "category": "传说",
+      "site": "杭州西湖断桥",
+      "summary": "白素贞与许仙断桥相遇，水漫金山，镇于雷峰塔下。",
+      "source": "冯梦龙《警世通言·白娘子永镇雷峰塔》",
+      "color": "#22d3ee",
+      "wgs84": [
+        120.149,
+        30.259
+      ],
+      "province": "浙江",
+      "kid_line": "西湖边有一条白蛇，变成一个姑娘。她和一个小伙子在断桥上认识，一起过日子。后来来了一个不喜欢他们的和尚，蛇和和尚打起来。水把金山寺都淹了。",
+      "ask_kid": "如果你是那条小蛇，你会住在哪里呀？",
+      "want_to_see": "西湖边的一座石桥",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "liangzhu",
+      "name": "梁山伯与祝英台",
+      "category": "传说",
+      "site": "杭州万松书院",
+      "summary": "祝英台女扮男装求学，与梁山伯同窗三载，化蝶双飞。",
+      "source": "民间传说／越剧《梁祝》",
+      "color": "#22d3ee",
+      "wgs84": [
+        120.165,
+        30.225
+      ],
+      "province": "浙江",
+      "kid_line": "梁山伯和祝英台一起读书，一起玩了三年。他们是最最好的朋友。后来他们没办法再见面了。故事的最后，他们变成两只蝴蝶，在花丛里飞来飞去。",
+      "ask_kid": "如果变成一只蝴蝶，你想飞去哪里呀？",
+      "want_to_see": "两只蝴蝶和一所书院",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "niulang",
+      "name": "牛郎织女",
+      "category": "传说",
+      "site": "南阳（传说地）",
+      "summary": "牛郎织女隔银河相望，七夕鹊桥一渡。",
+      "source": "《古诗十九首·迢迢牵牛星》",
+      "color": "#22d3ee",
+      "wgs84": [
+        112.528,
+        32.994
+      ],
+      "province": "河南",
+      "kid_line": "牛郎和织女住在天上的两边。中间隔着一条很宽很宽的银河。他们一年只能见一次面。见面的时候，鸟鹊会搭起一座桥。让他们从桥上走过去。",
+      "ask_kid": "一年只能见一次面，你会想他做什么呀？",
+      "want_to_see": "一条河和一座鸟搭的桥",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "mengjiang",
+      "name": "孟姜女",
+      "category": "传说",
+      "site": "山海关",
+      "summary": "孟姜女千里寻夫，哭倒长城八百里。",
+      "source": "民间传说／《孟姜女变文》",
+      "color": "#22d3ee",
+      "wgs84": [
+        119.764,
+        39.99
+      ],
+      "province": "河北",
+      "kid_line": "孟姜女的丈夫去修长城，很久没有回来。她一个人走了很远的很远的路，去找他。她在长城前哭了很久很久，长城的墙都被她哭塌了。",
+      "ask_kid": "一个人走了那么远的路去找家人，你觉得她厉不厉害？",
+      "want_to_see": "一段很长的城墙",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "mazu",
+      "name": "妈祖",
+      "category": "传说",
+      "site": "莆田湄洲岛",
+      "summary": "林默娘海上救难，被尊为天后、海峡护航女神。",
+      "source": "《天妃显圣录》",
+      "color": "#22d3ee",
+      "wgs84": [
+        119.131,
+        25.074
+      ],
+      "province": "福建",
+      "kid_line": "湄洲岛上有一个小姑娘，从小就住在大海边。她长大以后，专门帮助在海上遇到麻烦的人。她死后，人们给她盖了一座庙，记住她。",
+      "ask_kid": "你在海边玩的时候，海上有什么好玩的东西呀？",
+      "want_to_see": "大海和一座小庙",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "liusanjie",
+      "name": "刘三姐",
+      "category": "传说",
+      "site": "柳州",
+      "summary": "壮族歌仙刘三姐以山歌智斗财主，歌传千年。",
+      "source": "广西壮族民间传说",
+      "color": "#22d3ee",
+      "wgs84": [
+        109.427,
+        24.326
+      ],
+      "province": "广西",
+      "kid_line": "刘三姐是壮族的小姑娘，她唱歌特别好听。有人来跟她对歌，想赢她。她一首一首唱下去，谁都没赢过。",
+      "ask_kid": "你想唱一首什么样的歌给刘三姐听呀？",
+      "want_to_see": "一座山和一张嘴",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "ashima",
+      "name": "阿诗玛",
+      "category": "传说",
+      "site": "石林",
+      "summary": "彝族撒尼姑娘阿诗玛坚贞不屈，化为石峰长立。",
+      "source": "彝族撒尼叙事长诗《阿诗玛》",
+      "color": "#22d3ee",
+      "wgs84": [
+        103.268,
+        24.778
+      ],
+      "province": "云南",
+      "kid_line": "在云南的石林里，有一块石头长得像一个姑娘。她叫阿诗玛。她和自己的哥哥一起，在山上唱歌、干活。过得很开心。",
+      "ask_kid": "你觉得那块石头，像不像一个站着的人？",
+      "want_to_see": "很多石头和一块像人的石头",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "jigong",
+      "name": "济公",
+      "category": "传说",
+      "site": "杭州灵隐寺",
+      "summary": "李修缘鞋破帽破，扶危济困，戏惩豪强。",
+      "source": "《济公全传》",
+      "color": "#22d3ee",
+      "wgs84": [
+        120.099,
+        30.241
+      ],
+      "province": "浙江",
+      "kid_line": "杭州灵隐寺里住着一个和尚。他的衣服总是穿得歪歪扭扭的，走路也摇摇晃晃。可是他看人很准，谁有困难他都知道。",
+      "ask_kid": "一个穿得乱七八糟的人，会是个厉害的人吗？",
+      "want_to_see": "一座大寺庙和一双旧布鞋",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "dongyong",
+      "name": "董永与七仙女",
+      "category": "民间故事",
+      "site": "孝感",
+      "summary": "董永卖身葬父，七仙女下凡织锦赎身，槐荫为媒。",
+      "source": "《搜神记·董永》",
+      "color": "#a78bfa",
+      "wgs84": [
+        113.919,
+        30.924
+      ],
+      "province": "湖北",
+      "kid_line": "董永家里很穷，爸爸去世了，他没有钱办葬礼。他就把自己卖了，去给别人干活。别人说这样太孝顺，老天爷都被感动了。",
+      "ask_kid": "如果你要帮爸爸妈妈，你会用什么办法呀？",
+      "want_to_see": "一间破旧的屋子",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "hua-mu-lan",
+      "name": "花木兰",
+      "category": "民间故事",
+      "site": "虞城（传说地）",
+      "summary": "木兰替父从军，十二载建功，归来不受封赏。",
+      "source": "《乐府诗集·木兰诗》",
+      "color": "#a78bfa",
+      "wgs84": [
+        115.872,
+        34.391
+      ],
+      "province": "河南",
+      "kid_line": "打仗要很多人，家里要出一个。花木兰是女孩子。她怕爸爸年纪大了受不了，就女扮男装去当兵。她在军队里待了好多年，谁也没发现。",
+      "ask_kid": "如果你要帮爸爸，你会想什么办法呀？",
+      "want_to_see": "一套士兵的衣服和一顶头盔",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "xishi",
+      "name": "西施",
+      "category": "民间故事",
+      "site": "诸暨苎萝村",
+      "summary": "苎萝浣纱女西施入吴，忍辱救国，功成泛五湖。",
+      "source": "《吴越春秋》",
+      "color": "#a78bfa",
+      "wgs84": [
+        120.233,
+        29.713
+      ],
+      "province": "浙江",
+      "kid_line": "西施是浙江诸暨的姑娘。她每天在溪边洗衣服。一边洗一边把纱布洗得很白很亮。她长得好看，又会唱歌。很多人从很远的地方来看她。",
+      "ask_kid": "你觉得，洗衣服的时候还会做别的事吗？",
+      "want_to_see": "一条小溪和一块白纱布",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "suxiaoxiao",
+      "name": "苏小小",
+      "category": "民间故事",
+      "site": "杭州西泠桥",
+      "summary": "南齐歌伎苏小小才情绝世，埋骨西泠，湖山留韵。",
+      "source": "《玉台新咏》／西湖传说",
+      "color": "#a78bfa",
+      "wgs84": [
+        120.145,
+        30.25
+      ],
+      "province": "浙江",
+      "kid_line": "苏小小是杭州人。她每天在西泠桥上唱歌。桥上的人都会停下来听她唱。她在桥边盖了一间小楼。说是要等一个远行的人回来。",
+      "ask_kid": "你唱歌的时候，会想到谁在听呀？",
+      "want_to_see": "一座小石桥",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "afanti",
+      "name": "阿凡提",
+      "category": "民间故事",
+      "site": "喀什（传说地）",
+      "summary": "骑驴的阿凡提以机智戏弄巴依与官吏，幽默醒世。",
+      "source": "维吾尔族民间故事",
+      "color": "#a78bfa",
+      "wgs84": [
+        75.99,
+        39.47
+      ],
+      "province": "新疆",
+      "kid_line": "新疆有个叫阿凡提的人，他很聪明，也很爱帮忙。村里有个贪财的巴依。阿凡提常常用一个小办法，就让他没办法欺负人。",
+      "ask_kid": "如果有人欺负小朋友，你会怎么帮小朋友呀？",
+      "want_to_see": "一匹小毛驴",
+      "origin": "upstream",
+      "source_verified": true
+    },
+    {
+      "id": "zhongkui",
+      "name": "钟馗",
+      "category": "传说",
+      "color": "#22d3ee",
+      "wgs84": [
+        108.94,
+        34.34
+      ],
+      "site": "西安",
+      "province": "陕西",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "钟馗进士及第，殿试对策不第，触阶而亡，帝封为捉鬼之神。",
+      "kid_line": "有个人叫钟馗。他去考试，考了第一名。回来的路上，他太生气了，摔了一跤，就再也没有起来。皇上可怜他，让他专门去抓鬼。",
+      "ask_kid": "如果让你去抓鬼，你会带什么呀？",
+      "source": "《旧唐书·柳崇传》记钟馗进士殁事；《敦煌变文·钟馗变文》为讲唱本",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "tieshuai-li",
+      "name": "铁拐李",
+      "category": "神话",
+      "color": "#f59e0b",
+      "wgs84": [
+        112.14,
+        32.04
+      ],
+      "site": "襄阳",
+      "province": "湖北",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "铁拐李本名李凝阳，赴仙途中病残，乞食度命，以铁杖代足，位列八仙。",
+      "kid_line": "八仙里有一个老爷爷。他的腿是瘸的，走路要拄一根铁拐。他用这根拐杖，帮很多人敲开过挡路的石头。",
+      "ask_kid": "一根拐杖能帮上什么忙呀？",
+      "source": "《东游记》（元·吴元泰）",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "han-zhongli",
+      "name": "汉钟离",
+      "category": "神话",
+      "color": "#f59e0b",
+      "wgs84": [
+        124.35,
+        40.12
+      ],
+      "site": "辽东",
+      "province": "辽宁",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "汉钟离曾任辽东武官，弃官随吕洞宾入山修道。",
+      "kid_line": "汉钟离原来是个做官的，后来不想做了。他遇到一个老朋友，就一起去山上学本领。",
+      "ask_kid": "如果有一天不想上去了，你会想做什么呀？",
+      "source": "《东游记》（元·吴元泰）",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "zhangguolao",
+      "name": "张果老",
+      "category": "神话",
+      "color": "#f59e0b",
+      "wgs84": [
+        112.84,
+        34.17
+      ],
+      "site": "汝州",
+      "province": "河南",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "张果老隐居恒州，常倒骑驴骑；唐玄宗遣使问安，赐号「通玄先生」。",
+      "kid_line": "张果老总爱倒着骑驴。别人都笑他，他也不解释。谁知道他其实是个很厉害的人呢。",
+      "ask_kid": "倒着走的时候，你能看清前面的路吗？",
+      "source": "《新唐书·张果传》；《东游记》（元·吴元泰）",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "lv-dongbin",
+      "name": "吕洞宾",
+      "category": "神话",
+      "color": "#f59e0b",
+      "wgs84": [
+        110.69,
+        34.69
+      ],
+      "site": "芮城",
+      "province": "山西",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "吕洞宾为八仙之首，屡次化身度人，以剑术与酒楼饮戏流传。",
+      "kid_line": "吕洞宾是八仙里最有名的。他有时候变成一个卖饼的小贩，有时候坐在酒馆里。谁也不知道他是谁。",
+      "ask_kid": "如果一个卖饼的叔叔其实是神仙，你看得出来吗？",
+      "source": "《全唐文·吕洞宾传》；《东游记》（元·吴元泰）",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "he-xiangu",
+      "name": "何仙姑",
+      "category": "神话",
+      "color": "#f59e0b",
+      "wgs84": [
+        112.57,
+        26.89
+      ],
+      "site": "衡阳",
+      "province": "湖南",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "何仙姑为八仙中唯一女仙，传说手持荷花，出没衡州南岳。",
+      "kid_line": "八仙里只有一位是女的，叫何仙姑。她总是手里拿着一朵荷花，走到哪里花就开到哪里。",
+      "ask_kid": "如果手里一直拿着一朵花，你会怎么走路呀？",
+      "source": "《东游记》（元·吴元泰）；《历代神仙通鉴》",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "lan-caihe",
+      "name": "蓝采和",
+      "category": "神话",
+      "color": "#f59e0b",
+      "wgs84": [
+        104.07,
+        30.57
+      ],
+      "site": "成都",
+      "province": "四川",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "蓝采和赤足踏歌而行，拋下一枚钱，转身不见；常携花篮行医卖药。",
+      "kid_line": "蓝采和从来不穿鞋，光着脚走路，一边走一边唱歌。看见病人没钱看病，他就留下一枚钱，然后就走。",
+      "ask_kid": "你光着脚走路，会怕疼吗？",
+      "source": "《东游记》（元·吴元泰）",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "han-xiangzi",
+      "name": "韩湘子",
+      "category": "神话",
+      "color": "#f59e0b",
+      "wgs84": [
+        108.94,
+        34.34
+      ],
+      "site": "西安",
+      "province": "陕西",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "韩湘子为吕洞宾之侄，出家华山修道，吹笛驱虎。",
+      "kid_line": "韩湘子是吕洞宾的侄子。他后来去山上修道，最喜欢吹笛子。听说他吹起笛子，老虎都会跑过来听。",
+      "ask_kid": "你会吹什么乐器呀？吹给谁听？",
+      "source": "《东游记》（元·吴元泰）；《韩湘子全传》",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "caoguojiu",
+      "name": "曹国舅",
+      "category": "神话",
+      "color": "#f59e0b",
+      "wgs84": [
+        121.39,
+        37.52
+      ],
+      "site": "烟台",
+      "province": "山东",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "曹国舅持玉板，落后于七仙，以玉板掷化为双鸾；常被画作持板露脸。",
+      "kid_line": "曹国舅是八仙里最小的一个。他手里拿着一块白玉板，走得慢，总落在后面。",
+      "ask_kid": "走在最后面的小朋友，会想什么呀？",
+      "source": "《东游记》（元·吴元泰）",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "tianluo-guniang",
+      "name": "田螺姑娘",
+      "category": "民间故事",
+      "color": "#a78bfa",
+      "wgs84": [
+        119.3,
+        26.08
+      ],
+      "site": "福州",
+      "province": "福建",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "贫农青年田中获大螺，置水缸中，螺化女为其操持家务、备饭；每晨返壳中。",
+      "kid_line": "一个穷小伙在田里捡到一个大田螺。他把田螺放进水缸里。奇怪的是，从那天起，家里的饭每天都会自己做好。",
+      "ask_kid": "如果饭每天都会自己做好，你会做什么呀？",
+      "source": "民间传说，闽台地区广泛流传；收录入《中国民间故事集成》福建卷",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "langwaipo",
+      "name": "狼外婆",
+      "category": "民间故事",
+      "color": "#a78bfa",
+      "wgs84": [
+        118.76,
+        30.95
+      ],
+      "site": "皖南",
+      "province": "安徽",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "小 孙女探外婆，狼婆骗其进屋后吞食，猎人或弟弟剖腹救之；情节见诸各国狼外婆类故事。",
+      "kid_line": "外婆说：进来喝碗汤吧。可是外婆的手，怎么会是毛茸茸的呢？小朋友，敲别人的门要小心哦。",
+      "ask_kid": "如果有人叫你进屋，你怎么判断该不该进？",
+      "source": "民间故事，格林童话《外婆》（Grimm 编号 KHM 62）为其欧洲母本；中国各地有「老虎外婆」「狼外婆」等异名版本",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "chenshang-jiumu",
+      "name": "沉香救母",
+      "category": "传说",
+      "color": "#22d3ee",
+      "wgs84": [
+        108.94,
+        34.34
+      ],
+      "site": "西安",
+      "province": "陕西",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "沉香生母被华山三圣母压在山下，沉香劈山救出，母子团圆。",
+      "kid_line": "有座大山把一位妈妈压在下面了。小沉香长大以后，扛起斧头，把大山劈成了两半。救出了妈妈。",
+      "ask_kid": "如果你妈妈被压住了，你会怎么做？",
+      "source": "民间戏曲《沉香救母》；元杂剧《沉香救母》（无名氏）",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "mengpo",
+      "name": "孟婆",
+      "category": "传说",
+      "color": "#22d3ee",
+      "wgs84": [
+        107.73,
+        29.86
+      ],
+      "site": "丰都",
+      "province": "重庆",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "孟婆守忘川，售忘忧汤，令亡魂饮之忘前事，方可转世投生。",
+      "kid_line": "孟婆奶奶在桥边卖一种汤。喝了那个汤，就会忘记以前的事情，然后重新开始。",
+      "ask_kid": "如果你忘记了最开心的事，你会哭吗？",
+      "source": "民间传说；佛经有「先亡神」记载，后世附会为孟婆，供词异说见相关民俗学论著。",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "ge-sa-er",
+      "name": "格萨尔王传",
+      "category": "史诗",
+      "color": "#34d399",
+      "wgs84": [
+        91.11,
+        29.65
+      ],
+      "site": "拉萨",
+      "province": "西藏",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "藏族史诗，叙述岭国格萨尔王受天神授命、征战、降妖、造福百姓，传承于说唱艺人。",
+      "kid_line": "西藏有一首很长的歌，叫格萨尔王传。歌里讲的是一个英雄，带着一队人，走了很多很多年。",
+      "ask_kid": "一个故事要讲很多年，讲不完，你会等吗？",
+      "source": "藏族英雄史诗，已列入联合国教科文组织人类非物质文化遗产代表作名录（2009）；学界公认为世界最长史诗之一",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "jiangge-er",
+      "name": "江格尔",
+      "category": "史诗",
+      "color": "#34d399",
+      "wgs84": [
+        86.4,
+        42.32
+      ],
+      "site": "和静",
+      "province": "新疆",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "蒙古族史诗，讲述江格尔汗统领勇士征战、护佑部落的故事，由陶克陶胡演唱本记录。",
+      "kid_line": "新疆的蒙古族有一首很长的歌，叫江格尔。歌里说有一位很勇敢的汗，带着部落里的人一起保护家园。",
+      "ask_kid": "保护家园，可以做些什么呀？",
+      "source": "蒙古族英雄史诗，与《格萨尔王传》《玛纳斯》并称中国三大史诗；2006 年列入国家级非遗",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "manasi",
+      "name": "玛纳斯",
+      "category": "史诗",
+      "color": "#34d399",
+      "wgs84": [
+        77.94,
+        41.04
+      ],
+      "site": "阿合奇",
+      "province": "新疆",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "柯尔克孜族史诗，叙述玛纳斯及其子孙世代征战的英雄业绩，由玛纳斯奇演唱。",
+      "kid_line": "新疆的柯尔克孜族有一首更长的歌，叫玛纳斯。唱这首歌的人，要唱很多天都唱不完。",
+      "ask_kid": "要唱好几天的一首歌，你最想听什么？",
+      "source": "柯尔克孜族英雄史诗，2009 年列入联合国教科文组织人类非物质文化遗产代表作名录",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "hudie-mama",
+      "name": "蝴蝶妈妈",
+      "category": "史诗",
+      "color": "#34d399",
+      "wgs84": [
+        107.98,
+        26.58
+      ],
+      "site": "黔东南",
+      "province": "贵州",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "苗族史诗，蝴蝶妈妈产蛋孵出姜央等始祖，苗族自此繁衍；与蝴蝶崇拜相关。",
+      "kid_line": "苗族人有一个传说：从前有位蝴蝶妈妈，她生了蛋。从蛋里孵出了最早的人们。",
+      "ask_kid": "你觉得蝴蝶和苗族人很像吗？哪里像？",
+      "source": "苗族古歌/史诗，黔东南苗族地区广泛传唱",
+      "source_verified": false,
+      "origin": "extended"
+    },
+    {
+      "id": "ailifu-sainaiemu",
+      "name": "艾里甫与赛乃姆",
+      "category": "史诗",
+      "color": "#34d399",
+      "wgs84": [
+        75.99,
+        39.47
+      ],
+      "site": "喀什",
+      "province": "新疆",
+      "location_kind": "region",
+      "coord_precision": "city",
+      "summary": "维吾尔族叙事长诗，述艾里甫与赛乃姆相爱、离散、历经磨难终成眷属。",
+      "kid_line": "新疆有一首长诗，讲一个叫艾里甫的小伙和一个叫赛乃姆的姑娘。他们走了很远很远的路，才又见到面。",
+      "ask_kid": "走了很远的路见到想见的人，你会说什么？",
+      "source": "维吾尔族民间长诗，1958 年整理出版，喀什地区广泛传唱",
+      "source_verified": false,
+      "origin": "extended"
+    }
+  ]
+}

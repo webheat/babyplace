@@ -1,0 +1,3 @@
+# Build output - regenerate with `cd admin-ui && pnpm build`
+*
+!.gitignore

@@ -1,0 +1,66 @@
+{
+  "bsonType": "object",
+  "required": [
+    "event_name",
+    "created_at"
+  ],
+  "permission": {
+    "read": "auth.uid != null",
+    "create": "auth.uid != null",
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": {
+      "description": "系统自动生成ID"
+    },
+    "event_name": {
+      "bsonType": "string",
+      "title": "事件名"
+    },
+    "poi_id": {
+      "bsonType": "string",
+      "title": "地点ID",
+      "defaultValue": ""
+    },
+    "restaurant_id": {
+      "bsonType": "string",
+      "title": "餐厅ID",
+      "defaultValue": ""
+    },
+    "restaurant_name": {
+      "bsonType": "string",
+      "title": "餐厅名称",
+      "defaultValue": ""
+    },
+    "platform": {
+      "bsonType": "string",
+      "title": "平台",
+      "defaultValue": ""
+    },
+    "scene": {
+      "bsonType": "string",
+      "title": "场景",
+      "defaultValue": ""
+    },
+    "target_type": {
+      "bsonType": "string",
+      "title": "目标类型",
+      "defaultValue": ""
+    },
+    "target_value": {
+      "bsonType": "string",
+      "title": "目标值",
+      "defaultValue": ""
+    },
+    "meta": {
+      "bsonType": "object",
+      "title": "附加信息",
+      "defaultValue": {}
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "title": "创建时间"
+    }
+  }
+}

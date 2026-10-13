@@ -1,0 +1,138 @@
+{
+  "_meta": {
+    "schema": "babyplace-lore/1",
+    "age_band": "4-6",
+    "audience": "幼儿园中班到大班",
+    "note": "era_label + artifact + artifact_kid_line 三件套是「一层一个时代 + 一件实物 + 一句人话」的形式化。artifact_kid_line 是唯一必须人工写的字段，它决定这条历史能不能讲给 4 岁小孩听。",
+    "accuracy_rule": "accuracy_note 非 null 的条目未经人工核实，禁止上线。source_refs 为空且 accuracy_note 为 null 的条目属编辑事故。"
+  },
+  "lores": [
+    {
+      "lore_id": "gz-zhenhailou",
+      "poi_name": "广东省博物馆",
+      "age_band": "4-6",
+      "hook": "我们今天去的这栋楼，有五层。每一层里，都住着一个朝代的人。",
+      "building_story": {
+        "name": "镇海楼",
+        "built": "建于明朝洪武十三年，也就是 1380 年",
+        "who": "那时候有个人叫朱亮祖，他在修广州的城墙，就盖了这栋楼",
+        "kid_line": "这栋楼有六百多岁啦。它一开始叫望海楼。因为它站在山顶上，能看见大海。后来它有五层楼高，大家就天天叫它五层楼。",
+        "source_refs": [
+          "22.workbuddy专栏/周末遛娃派/2026-07-09 广东省博物馆预约不上？周末带娃逛广州博物馆保姆级指南！镇海楼 + 化石展厅全打卡避坑.md"
+        ]
+      },
+      "eras": [
+        {
+          "order": 1,
+          "era_label": "秦朝",
+          "year_range": "两千两百年前",
+          "color": "#f59e0b",
+          "artifact": "蕃禺漆盒",
+          "artifact_kid_line": "有一个木头盒子，上面写着两个字：蕃禺。这两个字，就是广州最早的名字。两千两百年前的人，把自己的地名刻在了盒子上。",
+          "ask_kid": "你猜猜，两千两百年前的人，会不会给自己的玩具起名字呀？",
+          "geo_focus": { "type": "pin", "zoom": 15.0 },
+          "source_refs": ["weekend-tuwa/2026-07-09-gd-museum"],
+          "accuracy_note": null
+        },
+        {
+          "order": 2,
+          "era_label": "南汉",
+          "year_range": "一千年前",
+          "color": "#22d3ee",
+          "artifact": "波斯陶瓶",
+          "artifact_kid_line": "有一只瓶子，是从很远很远的地方运来的。那个地方叫波斯，在现在伊朗那边。一千年前，有船从这里出发。船上装着丝绸和瓷器，一直开到海的那一头。",
+          "ask_kid": "你猜猜，一千年前的船，要开多久才能到那么远的地方呀？",
+          "geo_focus": { "type": "pin", "zoom": 15.0 },
+          "source_refs": ["weekend-tuwa/2026-07-09-gd-museum"],
+          "accuracy_note": null
+        },
+        {
+          "order": 3,
+          "era_label": "清朝",
+          "year_range": "三百年前",
+          "color": "#a78bfa",
+          "artifact": "广彩瓷器与十三行外销画",
+          "artifact_kid_line": "那时候广州有一片地方，专门做买卖。中国人画画，也烧碗。这些东西都装上船，运到地球另一边。那些画里，画的都是广州的港口。",
+          "ask_kid": "你猜猜，外国人看到广州的画，会不会觉得这里很好玩呀？",
+          "geo_focus": { "type": "pin", "zoom": 15.0 },
+          "source_refs": ["weekend-tuwa/2026-07-09-gd-museum"],
+          "accuracy_note": null
+        },
+        {
+          "order": 4,
+          "era_label": "清朝晚期",
+          "year_range": "一百多年前",
+          "color": "#f472b6",
+          "artifact": "日冕钟",
+          "artifact_kid_line": "有个姓邹的爷爷，发明了一个奇怪的钟。这个钟不用电池，太阳照着，它自己就会走。广州的太阳很热，他专门为广州造了这口钟。",
+          "ask_kid": "你猜猜，不用电的钟，是怎么知道时间的呀？",
+          "geo_focus": { "type": "pin", "zoom": 15.0 },
+          "source_refs": ["weekend-tuwa/2026-07-09-gd-museum"],
+          "accuracy_note": null
+        },
+        {
+          "order": 5,
+          "era_label": "近代",
+          "year_range": "八十多年前",
+          "color": "#34d399",
+          "artifact": "广州老照片",
+          "artifact_kid_line": "有一百年前拍的照片。那时候没有手机，是用一块板子，把光留住。照片里的广州，没有那么高的楼。街边都是骑自行车的人。",
+          "ask_kid": "你猜猜，一百年前的人，如果看到今天的广州，会不会吓一跳呀？",
+          "geo_focus": { "type": "pin", "zoom": 15.0 },
+          "source_refs": ["weekend-tuwa/2026-07-09-gd-museum"],
+          "accuracy_note": null
+        }
+      ]
+    },
+    {
+      "lore_id": "gz-wanhan-erling",
+      "poi_name": "南汉二陵博物馆",
+      "age_band": "4-6",
+      "hook": "这里埋着两个国王。你猜猜，国王睡觉的床，是什么做的呀？",
+      "eras": [],
+      "building_story": null,
+      "_placeholder": true,
+      "accuracy_note": "待核实：需查证南汉二陵（刘龑、高怀昌墓）的可公开事实与展陈内容后才能写 kid_line"
+    },
+    {
+      "lore_id": "gz-maritime",
+      "poi_name": "广州海事博物馆",
+      "age_band": "4-6",
+      "hook": "广州是个港口。有一千年前，这里的人就坐船去很远的地方了。",
+      "eras": [],
+      "building_story": null,
+      "_placeholder": true,
+      "accuracy_note": "待核实：需查证海事博物馆展陈（南海神庙古代码头、陶瓷）后撰写"
+    },
+    {
+      "lore_id": "gz-donghaochong",
+      "poi_name": "东濠涌博物馆",
+      "age_band": "4-6",
+      "hook": "广州有一条小河，两边种满了树。河的名字里有个「涌」字。",
+      "eras": [],
+      "building_story": null,
+      "_placeholder": true,
+      "accuracy_note": "待核实：东濠涌的「涌」是古粤语「水道」的意思，需确认后撰写"
+    },
+    {
+      "lore_id": "gz-yonghua",
+      "poi_name": "永华艺术馆",
+      "age_band": "4-6",
+      "hook": "",
+      "eras": [],
+      "building_story": null,
+      "_placeholder": true,
+      "accuracy_note": "待核实：需先确认该馆常设展主题后才能判断是否适合幼儿"
+    },
+    {
+      "lore_id": "gz-feiyichuan",
+      "poi_name": "广东省非物质文化遗产馆",
+      "age_band": "4-6",
+      "hook": "",
+      "eras": [],
+      "building_story": null,
+      "_placeholder": true,
+      "accuracy_note": "待核实：非遗主题适合幼儿，但需先确认馆内具体展项"
+    }
+  ]
+}

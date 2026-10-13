@@ -1,0 +1,6 @@
+data/
+babyplace-server
+*.db
+admin-ui/node_modules/
+admin-ui/dist/
+static/manage/

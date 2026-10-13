@@ -1,9 +1,4 @@
-import articleApi from './article';
 import { listPoi } from './poi';
-
-function ok(data = {}, message = 'ok') {
-  return Promise.resolve({ code: 200, message, data });
-}
 
 function buildMessage(item = {}, index = 0) {
   return {
@@ -18,29 +13,31 @@ function buildMessage(item = {}, index = 0) {
 export default {
   async getSysMessageList() {
     try {
-      const articleResult = await articleApi.getArticleList('all', 0, 1, 1);
-      if (articleResult.code === 200) {
-        return ok((articleResult.data || []).slice(0, 20).map((item, index) => ({
-          id: item.id || String(index + 1),
-          title: item.title || '系统消息',
-          content: item.sub_title || item.content || '内容已更新',
-          created_at: item.publish_at || Date.now(),
-          read_flag: false,
-        })));
-      }
-    } catch (_error) {
-      // Fallback to poi-based messages.
+      const articleResult = await listPoi({ page: 1, pageSize: 20 });
+      return { code: 200, message: 'ok', data: (articleResult.data?.list || []).slice(0, 20).map((item, index) => ({
+        id: item._id || String(index + 1),
+        title: item.name || '系统消息',
+        content: item.recommend_reason || item.summary || '内容已更新',
+        created_at: item.updated_at || item.created_at || Date.now(),
+        read_flag: false,
+      })) };
+    } catch (error) {
+      uni.showToast({ title: error?.message || '加载消息失败', icon: 'none' });
+      return { code: 200, message: 'ok', data: [] };
     }
-    const result = await listPoi({ page: 1, pageSize: 20 });
-    return ok((result.data?.list || []).map(buildMessage));
   },
 
   async getSysMessageChat() {
-    const result = await listPoi({ page: 1, pageSize: 10 });
-    return ok((result.data?.list || []).map(buildMessage));
+    try {
+      const result = await listPoi({ page: 1, pageSize: 10 });
+      return { code: 200, message: 'ok', data: (result.data?.list || []).map(buildMessage) };
+    } catch (error) {
+      uni.showToast({ title: error?.message || '加载消息失败', icon: 'none' });
+      return { code: 200, message: 'ok', data: [] };
+    }
   },
 
   clearSysMessageChat() {
-    return ok(true);
+    return { code: 200, message: 'ok', data: true };
   },
 };

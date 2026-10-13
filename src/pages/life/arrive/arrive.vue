@@ -47,6 +47,7 @@
     <view v-else-if="!displayList.length" class="state">暂无符合条件的地点</view>
     <view v-else class="list">
       <poi-card v-for="item in displayList" :key="item._id" :poi="item" @click="goDetail" @map="openMap" />
+      <view class="view-more" @click="goPoiList">查看更多地点</view>
     </view>
   </view>
 </template>
@@ -144,7 +145,7 @@ async function loadNearby() {
     nearbyList.value = [];
     return;
   }
-  const result = await nearbyPoi({ lat: location.lat, lng: location.lng, radius: 10000, page: 1, pageSize: 50 });
+  const result = await nearbyPoi({ lat: location.lat, lng: location.lng, radius: 10000, page: 1, pageSize: 20 });
   if (result.code !== 0) {
     nearbyList.value = [];
     uni.showToast({ title: result.message || '附近地点加载失败', icon: 'none' });
@@ -156,7 +157,7 @@ async function loadNearby() {
 async function loadList() {
   loading.value = true;
   try {
-    const result = await listPoi({ page: 1, pageSize: 50 });
+    const result = await listPoi({ page: 1, pageSize: 20 });
     if (result.code !== 0) throw new Error(result.message || '加载失败');
     rawList.value = result.data?.list || [];
   } catch (error) {
@@ -165,6 +166,10 @@ async function loadList() {
   } finally {
     loading.value = false;
   }
+}
+
+function goPoiList() {
+  uni.navigateTo({ url: '/pages/poi/list' });
 }
 
 onMounted(loadList);
@@ -269,5 +274,12 @@ onMounted(loadList);
   display: flex;
   flex-direction: column;
   gap: 12rpx;
+}
+
+.view-more {
+  text-align: center;
+  padding: 24rpx;
+  color: #2563eb;
+  font-size: 28rpx;
 }
 </style>

@@ -1,0 +1,9 @@
+{
+  "appKey": "5ef645b72a4d2aa516edc2cfe9a8f85b",
+  "waimaiMiniAppId": "wxde8ac0a21135c07d",
+  "youxuanMiniAppId": "wx77af438b3505c00e",
+  "defaultSidPrefix": "babyplace",
+  "defaultActivityUrl": "https://i.meituan.com/awp/hfe/block/d96243aa3d49acef70d9/81974/index.html",
+  "runionUrl": "https://runion.meituan.com/url",
+  "enableToken": false
+}
