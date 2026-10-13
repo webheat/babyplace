@@ -103,11 +103,17 @@ export function useMapLibre() {
   }
 
   // Data-driven circles: radius + color interpolated from a numeric property.
+  // Pass opts.colorStops = [[v0,color0],[v1,color1],...] to override the default 3-stop ramp.
   function addDataDriven(sourceId, geojson, opts = {}) {
     if (map.getSource(sourceId)) return;
     map.addSource(sourceId, { type: 'geojson', data: geojson });
     const sizeProp = opts.sizeProp || 'value';
     const colorProp = opts.colorProp || 'value';
+    const colorStops = opts.colorStops || [
+      [opts.cMin ?? 0, '#2980b9'],
+      [opts.cMid ?? 50, '#f1c40f'],
+      [opts.cMax ?? 100, '#e74c3c'],
+    ];
     map.addLayer({
       id: `${sourceId}-circle`,
       type: 'circle',
@@ -120,15 +126,27 @@ export function useMapLibre() {
         ],
         'circle-color': [
           'interpolate', ['linear'], ['get', colorProp],
-          opts.cMin ?? 0, '#2980b9',
-          opts.cMid ?? 50, '#f1c40f',
-          opts.cMax ?? 100, '#e74c3c',
+          ...colorStops.flat(),
         ],
         'circle-opacity': opts.opacity ?? 0.8,
         'circle-stroke-width': 1,
         'circle-stroke-color': '#ffffff',
       },
     });
+  }
+
+  // Click popup on any layer. `htmlFor(props)` returns the HTML string for the popup body.
+  function enableFeaturePopup(layerId, htmlFor) {
+    const popup = new maplibregl.Popup({ closeButton: true, maxWidth: '300px' });
+    map.on('click', layerId, (e) => {
+      const f = e.features && e.features[0];
+      if (!f) return;
+      const html = htmlFor(f.properties || {});
+      if (!html) return;
+      popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
+    });
+    map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
   }
 
   function fitToGeoJSON(geojson, padding = 60) {
@@ -162,6 +180,7 @@ export function useMapLibre() {
     addRoute,
     addLabels,
     addDataDriven,
+    enableFeaturePopup,
     fitToGeoJSON,
     destroy,
   };

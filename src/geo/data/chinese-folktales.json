@@ -2,8 +2,8 @@
   "type": "FeatureCollection",
   "metadata": {
     "title": "中国民间故事 / 神话 地理分布",
-    "description": "公共版权（口头传承/年代远超版权保护期）故事的地理坐标数据集。文本来源：维基文库、中国哲学书电子化计划（ctext）、地方志。坐标取故事主要流传地/标志性遗址。",
-    "categoryLegend": { "0": "神话", "1": "传说", "2": "民间故事" },
+    "description": "公共版权（口头传承/年代远超版权保护期）故事的地理坐标数据集。文本来源：维基文库、中国哲学书电子化计划（ctext）、地方志。坐标取故事主要流传地/标志性遗址。sourceUrl 指向维基文库/维基百科原文。",
+    "categoryLegend": { "0": "神话", "1": "传说", "2": "民间故事", "3": "史诗" },
     "generated": "2026-10-13"
   },
   "features": [
@@ -14,7 +14,8 @@
         "id": "nvwa", "name": "女娲补天", "category": "神话", "catIndex": 0,
         "province": "河北", "site": "涉县娲皇宫", "value": 92,
         "summary": "女娲炼五色石补天、断鳌足立四极，抟黄土造人。",
-        "source": "《淮南子·天文训》《列子·汤问》"
+        "source": "《淮南子·天文训》《列子·汤问》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/淮南子"
       }
     },
     {
@@ -24,7 +25,8 @@
         "id": "pangu", "name": "盘古开天", "category": "神话", "catIndex": 0,
         "province": "河南", "site": "桐柏山", "value": 85,
         "summary": "盘古生于混沌，开天辟地，气血化为山川江河。",
-        "source": "《三五历纪》《述异记》"
+        "source": "《三五历纪》《述异记》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/盘古"
       }
     },
     {
@@ -34,7 +36,8 @@
         "id": "jingwei", "name": "精卫填海", "category": "神话", "catIndex": 0,
         "province": "山西", "site": "长子发鸠山", "value": 70,
         "summary": "炎帝之女溺于东海，化鸟衔石木以填沧海。",
-        "source": "《山海经·北山经》"
+        "source": "《山海经·北山经》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/山海經"
       }
     },
     {
@@ -44,7 +47,8 @@
         "id": "yugong", "name": "愚公移山", "category": "神话", "catIndex": 0,
         "province": "河南", "site": "济源王屋山", "value": 88,
         "summary": "北山愚公率子孙叩石垦壤，誓移太行、王屋二山。",
-        "source": "《列子·汤问》"
+        "source": "《列子·汤问》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/列子"
       }
     },
     {
@@ -54,7 +58,8 @@
         "id": "dayu", "name": "大禹治水", "category": "神话", "catIndex": 0,
         "province": "浙江", "site": "绍兴会稽山", "value": 90,
         "summary": "禹疏九河、三过家门而不入，会诸侯于会稽。",
-        "source": "《尚书·禹贡》《史记·夏本纪》"
+        "source": "《尚书·禹贡》《史记·夏本纪》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/尚書"
       }
     },
     {
@@ -64,7 +69,8 @@
         "id": "baxian", "name": "八仙过海", "category": "神话", "catIndex": 0,
         "province": "山东", "site": "蓬莱阁", "value": 83,
         "summary": "铁拐李等八仙各显神通，渡东海而不用舟楫。",
-        "source": "《东游记》"
+        "source": "《东游记》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/八仙"
       }
     },
     {
@@ -74,7 +80,8 @@
         "id": "cangjie", "name": "仓颉造字", "category": "神话", "catIndex": 0,
         "province": "陕西", "site": "白水县", "value": 75,
         "summary": "黄帝史官仓颉观鸟兽蹄迒之迹，初造书契。",
-        "source": "《说文解字·叙》"
+        "source": "《说文解字·叙》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/仓颉"
       }
     },
     {
@@ -84,7 +91,107 @@
         "id": "houyi", "name": "后羿射日", "category": "神话", "catIndex": 0,
         "province": "江苏", "site": "射阳（传说地）", "value": 86,
         "summary": "羿引弓落九日，诛凿齿、杀九婴，拯民于焦枯。",
-        "source": "《淮南子·本经训》"
+        "source": "《淮南子·本经训》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/淮南子"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [113.369, 31.692] },
+      "properties": {
+        "id": "yan-di", "name": "神农炎帝", "category": "神话", "catIndex": 0,
+        "province": "湖北", "site": "随州炎帝故里", "value": 80,
+        "summary": "神农尝百草、教农耕，斫木为耜，民始粒食。",
+        "source": "《帝王世纪》《史记·补三皇本纪》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/炎帝"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [109.533, 35.588] },
+      "properties": {
+        "id": "huang-di", "name": "黄帝", "category": "神话", "catIndex": 0,
+        "province": "陕西", "site": "黄陵县黄帝陵", "value": 84,
+        "summary": "黄帝战蚩尤、制衣裳舟车，被尊为人文初祖。",
+        "source": "《史记·五帝本纪》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/史記"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [115.650, 34.410] },
+      "properties": {
+        "id": "sui-ren", "name": "燧人氏", "category": "神话", "catIndex": 0,
+        "province": "河南", "site": "商丘（传说地）", "value": 60,
+        "summary": "燧人钻木取火，教民熟食，去腥膻之害。",
+        "source": "《韩非子·五蠹》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/燧人氏"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [111.000, 35.020] },
+      "properties": {
+        "id": "chi-you", "name": "蚩尤", "category": "神话", "catIndex": 0,
+        "province": "山西", "site": "运城（传说地）", "value": 62,
+        "summary": "九黎之君蚩尤，铜头铁额，与黄帝战于涿鹿。",
+        "source": "《山海经·大荒北经》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/蚩尤"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [113.400, 34.700] },
+      "properties": {
+        "id": "xing-tian", "name": "刑天", "category": "神话", "catIndex": 0,
+        "province": "河南", "site": "常羊山（传说地）", "value": 55,
+        "summary": "刑天与帝争神，首断不降，以乳为目、脐为口，操干戚以舞。",
+        "source": "《山海经·海外西经》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/山海經"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [112.900, 31.200] },
+      "properties": {
+        "id": "zhu-rong", "name": "祝融", "category": "神话", "catIndex": 0,
+        "province": "湖北", "site": "火神信仰中心", "value": 55,
+        "summary": "祝融司火，号赤帝，教民以火熟食、照明。",
+        "source": "《山海经》《左传》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/祝融"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [119.460, 35.420] },
+      "properties": {
+        "id": "change", "name": "嫦娥奔月", "category": "神话", "catIndex": 0,
+        "province": "山东", "site": "日照（传说地）", "value": 88,
+        "summary": "羿得不死药，嫦娥窃之，奔月而为月精。",
+        "source": "《淮南子·览冥训》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/淮南子"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [110.870, 34.520] },
+      "properties": {
+        "id": "kuafu", "name": "夸父逐日", "category": "神话", "catIndex": 0,
+        "province": "河南", "site": "灵宝桃林塞", "value": 72,
+        "summary": "夸父追日，道渴饮河渭，未至大泽，弃杖化为邓林。",
+        "source": "《山海经·海外北经》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/山海經"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [104.740, 31.780] },
+      "properties": {
+        "id": "nezha", "name": "哪吒闹海", "category": "神话", "catIndex": 0,
+        "province": "四川", "site": "江油陈塘关（传说地）", "value": 80,
+        "summary": "哪吒析骨还父、割肉还母，莲花化身，抽筋伐龙。",
+        "source": "《封神演义》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/哪吒"
       }
     },
     {
@@ -94,7 +201,8 @@
         "id": "baishe", "name": "白蛇传", "category": "传说", "catIndex": 1,
         "province": "浙江", "site": "杭州西湖断桥", "value": 95,
         "summary": "白素贞与许仙断桥相遇，水漫金山，镇于雷峰塔下。",
-        "source": "冯梦龙《警世通言·白娘子永镇雷峰塔》"
+        "source": "冯梦龙《警世通言·白娘子永镇雷峰塔》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/白蛇傳"
       }
     },
     {
@@ -104,7 +212,8 @@
         "id": "liangzhu", "name": "梁山伯与祝英台", "category": "传说", "catIndex": 1,
         "province": "浙江", "site": "杭州万松书院", "value": 90,
         "summary": "祝英台女扮男装求学，与梁山伯同窗三载，化蝶双飞。",
-        "source": "民间传说／越剧《梁祝》"
+        "source": "民间传说／越剧《梁祝》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/梁山伯与祝英台"
       }
     },
     {
@@ -114,7 +223,8 @@
         "id": "niulang", "name": "牛郎织女", "category": "传说", "catIndex": 1,
         "province": "河南", "site": "南阳（传说地）", "value": 88,
         "summary": "牛郎织女隔银河相望，七夕鹊桥一渡。",
-        "source": "《古诗十九首·迢迢牵牛星》"
+        "source": "《古诗十九首·迢迢牵牛星》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/樂府詩集"
       }
     },
     {
@@ -124,7 +234,8 @@
         "id": "mengjiang", "name": "孟姜女", "category": "传说", "catIndex": 1,
         "province": "河北", "site": "山海关", "value": 80,
         "summary": "孟姜女千里寻夫，哭倒长城八百里。",
-        "source": "民间传说／《孟姜女变文》"
+        "source": "民间传说／《孟姜女变文》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/孟姜女"
       }
     },
     {
@@ -134,7 +245,8 @@
         "id": "mazu", "name": "妈祖", "category": "传说", "catIndex": 1,
         "province": "福建", "site": "莆田湄洲岛", "value": 85,
         "summary": "林默娘海上救难，被尊为天后、海峡护航女神。",
-        "source": "《天妃显圣录》"
+        "source": "《天妃显圣录》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/妈祖"
       }
     },
     {
@@ -144,7 +256,8 @@
         "id": "liusanjie", "name": "刘三姐", "category": "传说", "catIndex": 1,
         "province": "广西", "site": "柳州", "value": 70,
         "summary": "壮族歌仙刘三姐以山歌智斗财主，歌传千年。",
-        "source": "广西壮族民间传说"
+        "source": "广西壮族民间传说",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/刘三姐"
       }
     },
     {
@@ -154,7 +267,8 @@
         "id": "ashima", "name": "阿诗玛", "category": "传说", "catIndex": 1,
         "province": "云南", "site": "石林", "value": 65,
         "summary": "彝族撒尼姑娘阿诗玛坚贞不屈，化为石峰长立。",
-        "source": "彝族撒尼叙事长诗《阿诗玛》"
+        "source": "彝族撒尼叙事长诗《阿诗玛》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/阿诗玛"
       }
     },
     {
@@ -164,7 +278,140 @@
         "id": "jigong", "name": "济公", "category": "传说", "catIndex": 1,
         "province": "浙江", "site": "杭州灵隐寺", "value": 75,
         "summary": "李修缘鞋破帽破，扶危济困，戏惩豪强。",
-        "source": "《济公全传》"
+        "source": "《济公全传》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/济公"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [108.940, 34.340] },
+      "properties": {
+        "id": "zhongkui", "name": "钟馗", "category": "传说", "catIndex": 1,
+        "province": "陕西", "site": "终南山（传说地）", "value": 70,
+        "summary": "钟馗进士落第触阶亡，玉帝封斩鬼之神，悬像驱邪。",
+        "source": "民间传说／《唐逸史》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/钟馗"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [110.090, 34.570] },
+      "properties": {
+        "id": "chenxiang", "name": "沉香救母", "category": "传说", "catIndex": 1,
+        "province": "陕西", "site": "华阴华山", "value": 68,
+        "summary": "三圣母被压华山，子沉香习艺斧劈华山救母。",
+        "source": "宝莲灯传说",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/沉香（宝莲灯）"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [116.650, 27.570] },
+      "properties": {
+        "id": "magu", "name": "麻姑献寿", "category": "传说", "catIndex": 1,
+        "province": "江西", "site": "抚州南城麻姑山", "value": 58,
+        "summary": "麻姑仙女掷米成丹，绛珠河畔以灵芝酒献王母寿。",
+        "source": "《神仙传·麻姑》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/麻姑"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [120.580, 31.300] },
+      "properties": {
+        "id": "ganjiang", "name": "干将莫邪", "category": "传说", "catIndex": 1,
+        "province": "江苏", "site": "苏州（传说地）", "value": 65,
+        "summary": "干将莫邪为楚王铸雌雄剑，莫邪投身炉中成剑，子眉间尺复仇。",
+        "source": "《吴越春秋》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/吳越春秋"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [111.750, 40.840] },
+      "properties": {
+        "id": "zhaojun", "name": "昭君出塞", "category": "传说", "catIndex": 1,
+        "province": "内蒙古", "site": "呼和浩特（青冢）", "value": 75,
+        "summary": "王昭君和亲匈奴，出塞和戎，落雁之称。",
+        "source": "民间传说／马致远《汉宫秋》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/王昭君"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [100.230, 25.610] },
+      "properties": {
+        "id": "hudiequan", "name": "蝴蝶泉", "category": "传说", "catIndex": 1,
+        "province": "云南", "site": "大理", "value": 60,
+        "summary": "雯姑与霞郎殉情，化为蝴蝶，大理蝴蝶泉每年蝶会。",
+        "source": "白族民间传说",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/蝴蝶泉"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [120.700, 40.600] },
+      "properties": {
+        "id": "wangfu", "name": "望夫石", "category": "传说", "catIndex": 1,
+        "province": "辽宁", "site": "兴城", "value": 55,
+        "summary": "妇人望夫不归，立崖头化为石，至今凝望。",
+        "source": "民间传说",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/望夫石"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [116.990, 35.580] },
+      "properties": {
+        "id": "luban", "name": "鲁班", "category": "传说", "catIndex": 1,
+        "province": "山东", "site": "曲阜（传说地）", "value": 70,
+        "summary": "巧匠鲁班制云梯、锯刨，被尊为匠祖。",
+        "source": "《墨子》《韩非子》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/鲁班"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [108.940, 34.340] },
+      "properties": {
+        "id": "menshen", "name": "门神", "category": "传说", "catIndex": 1,
+        "province": "陕西", "site": "长安（传说地）", "value": 62,
+        "summary": "秦叔宝、尉迟恭戎装守门御鬼患，成春节门神。",
+        "source": "民间信仰／《西游记》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/门神"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [114.340, 34.790] },
+      "properties": {
+        "id": "yuelao", "name": "月老", "category": "传说", "catIndex": 1,
+        "province": "河南", "site": "开封", "value": 60,
+        "summary": "月下老人以红绳系足，定天下姻缘。",
+        "source": "《续玄怪录·定婚店》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/月老"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [103.620, 31.000] },
+      "properties": {
+        "id": "erlang", "name": "二郎神", "category": "传说", "catIndex": 1,
+        "province": "四川", "site": "都江堰灌口", "value": 66,
+        "summary": "灌江口二郎真君，斧劈桃山，擒六怪、助武王伐纣。",
+        "source": "民间信仰／《西游记》《封神演义》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/二郎神"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [110.970, 34.690] },
+      "properties": {
+        "id": "lvdongbin", "name": "吕洞宾", "category": "传说", "catIndex": 1,
+        "province": "山西", "site": "芮城永乐宫", "value": 65,
+        "summary": "纯阳子吕洞宾，岳阳度柳，点石成金，八仙之一。",
+        "source": "《吕祖全书》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/吕洞宾"
       }
     },
     {
@@ -174,7 +421,8 @@
         "id": "dongyong", "name": "董永与七仙女", "category": "民间故事", "catIndex": 2,
         "province": "湖北", "site": "孝感", "value": 72,
         "summary": "董永卖身葬父，七仙女下凡织锦赎身，槐荫为媒。",
-        "source": "《搜神记·董永》"
+        "source": "《搜神记·董永》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/搜神記"
       }
     },
     {
@@ -184,7 +432,8 @@
         "id": "hua-mu-lan", "name": "花木兰", "category": "民间故事", "catIndex": 2,
         "province": "河南", "site": "虞城（传说地）", "value": 90,
         "summary": "木兰替父从军，十二载建功，归来不受封赏。",
-        "source": "《乐府诗集·木兰诗》"
+        "source": "《乐府诗集·木兰诗》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/樂府詩集"
       }
     },
     {
@@ -194,7 +443,8 @@
         "id": "xishi", "name": "西施", "category": "民间故事", "catIndex": 2,
         "province": "浙江", "site": "诸暨苎萝村", "value": 82,
         "summary": "苎萝浣纱女西施入吴，忍辱救国，功成泛五湖。",
-        "source": "《吴越春秋》"
+        "source": "《吴越春秋》",
+        "sourceType": "wikisource", "sourceUrl": "https://zh.wikisource.org/wiki/吳越春秋"
       }
     },
     {
@@ -204,17 +454,74 @@
         "id": "suxiaoxiao", "name": "苏小小", "category": "民间故事", "catIndex": 2,
         "province": "浙江", "site": "杭州西泠桥", "value": 60,
         "summary": "南齐歌伎苏小小才情绝世，埋骨西泠，湖山留韵。",
-        "source": "《玉台新咏》／西湖传说"
+        "source": "《玉台新咏》／西湖传说",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/苏小小"
       }
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [75.99, 39.47] },
+      "geometry": { "type": "Point", "coordinates": [75.990, 39.470] },
       "properties": {
         "id": "afanti", "name": "阿凡提", "category": "民间故事", "catIndex": 2,
         "province": "新疆", "site": "喀什（传说地）", "value": 78,
         "summary": "骑驴的阿凡提以机智戏弄巴依与官吏，幽默醒世。",
-        "source": "维吾尔族民间故事"
+        "source": "维吾尔族民间故事",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/阿凡提"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [119.300, 26.080] },
+      "properties": {
+        "id": "tianluo", "name": "田螺姑娘", "category": "民间故事", "catIndex": 2,
+        "province": "福建", "site": "福州（传说地）", "value": 65,
+        "summary": "少年得田螺所化少女晨炊，事泄归海，留壳为念。",
+        "source": "民间故事／《搜神后记》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/田螺姑娘"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [113.650, 34.760] },
+      "properties": {
+        "id": "langwaitai", "name": "狼外婆", "category": "民间故事", "catIndex": 2,
+        "province": "河南", "site": "中原（广泛流传）", "value": 60,
+        "summary": "老狼披外婆衣诱食孩童，姊弟智计脱险。",
+        "source": "民间童话",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/狼外婆"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [97.010, 33.000] },
+      "properties": {
+        "id": "gesaer", "name": "格萨尔王", "category": "史诗", "catIndex": 3,
+        "province": "青海", "site": "玉树（岭国故地）", "value": 82,
+        "summary": "藏族史诗《格萨尔》：降妖伏魔，统一岭国，拯民水火。",
+        "source": "藏族史诗《格萨尔》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/格萨尔王"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [86.160, 42.820] },
+      "properties": {
+        "id": "jiangger", "name": "江格尔", "category": "史诗", "catIndex": 3,
+        "province": "新疆", "site": "和静／巴音布鲁克", "value": 70,
+        "summary": "蒙古族史诗《江格尔》：宝木巴理想国度的英雄征战。",
+        "source": "蒙古族史诗《江格尔》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/江格尔"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [76.100, 39.700] },
+      "properties": {
+        "id": "manas", "name": "玛纳斯", "category": "史诗", "catIndex": 3,
+        "province": "新疆", "site": "克州阿图什", "value": 68,
+        "summary": "柯尔克孜族史诗《玛纳斯》：八代英雄抗敌卫乡。",
+        "source": "柯尔克孜族史诗《玛纳斯》",
+        "sourceType": "wikipedia", "sourceUrl": "https://zh.wikipedia.org/wiki/玛纳斯"
       }
     }
   ]
