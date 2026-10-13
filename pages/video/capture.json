@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "生成遛娃视频",
+  "usingComponents": {
+    "photo-capture": "../../components/photo-capture/index"
+  }
+}

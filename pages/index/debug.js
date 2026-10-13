@@ -1,0 +1,1 @@
+"use strict";const e=require("../../common/vendor.js"),n={__name:"debug",setup(n){function t(){e.index.switchTab({url:"/pages/index/index"})}return(n,a)=>({a:e.o(t,"5a")})}},t=e._export_sfc(n,[["__scopeId","data-v-68d0c7e5"]]);wx.createPage(t);

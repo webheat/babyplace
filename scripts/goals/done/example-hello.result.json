@@ -1,0 +1,9 @@
+{
+  "goal": "example-hello",
+  "source_file": "scripts/goals/pending/example-hello.md",
+  "finished_at": "2026-06-12T11:52:38.385451",
+  "success": true,
+  "output": "完成。文件已创建并删除。\n\n- 创建：`/opt/babyplace/scripts/goals/hello.txt`（内容：当前时间戳 + \"Goal runner works!\"）\n- 已删除：`rm` 完成，无残留",
+  "duration": 15.1,
+  "error": null
+}
