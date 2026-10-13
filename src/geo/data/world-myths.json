@@ -1,0 +1,361 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "title": "全球神话 / 传说 地理分布（兜底数据集）",
+    "description": "Wikidata 拉取失败时的离线兜底：选自公共版权神话/史诗的标志性传播地坐标。",
+    "categoryLegend": {
+      "0": "神话",
+      "1": "传说",
+      "2": "民间故事"
+    },
+    "generated": "2026-10-13",
+    "fallback": true
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          22.86,
+          40.08
+        ]
+      },
+      "properties": {
+        "id": "olympus",
+        "name": "奥林匹斯诸神（宙斯）",
+        "category": "神话",
+        "catIndex": 0,
+        "province": "希腊",
+        "site": "奥林匹斯山",
+        "value": 90,
+        "summary": "希腊神话：宙斯与众神居奥林匹斯，主掌雷电与天界。",
+        "source": "希腊神话",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Mount_Olympus"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          26.24,
+          39.96
+        ]
+      },
+      "properties": {
+        "id": "troy",
+        "name": "特洛伊战争",
+        "category": "传说",
+        "catIndex": 1,
+        "province": "土耳其",
+        "site": "特洛伊遗址",
+        "value": 85,
+        "summary": "荷马史诗：特洛伊十年围城，木马破城。",
+        "source": "《伊利亚特》",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Troy"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          22.5,
+          38.48
+        ]
+      },
+      "properties": {
+        "id": "delphi",
+        "name": "德尔斐神谕（阿波罗）",
+        "category": "神话",
+        "catIndex": 0,
+        "province": "希腊",
+        "site": "德尔斐",
+        "value": 78,
+        "summary": "阿波罗神谕之所，铭刻“认识你自己”。",
+        "source": "希腊神话",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Delphi"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          17.63,
+          59.86
+        ]
+      },
+      "properties": {
+        "id": "asgard",
+        "name": "阿斯加德（奥丁/索尔）",
+        "category": "神话",
+        "catIndex": 0,
+        "province": "北欧",
+        "site": "（神话域·乌斯萨拉）",
+        "value": 82,
+        "summary": "北欧神话：奥丁居阿斯加德，索尔掌雷霆。",
+        "source": "北欧神话",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Asgard"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.5,
+          25.7
+        ]
+      },
+      "properties": {
+        "id": "osiris",
+        "name": "奥西里斯（冥界之王）",
+        "category": "神话",
+        "catIndex": 0,
+        "province": "埃及",
+        "site": "阿拜多斯",
+        "value": 80,
+        "summary": "埃及神话：奥西里斯死而复生，掌冥界与丰饶。",
+        "source": "埃及神话",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Osiris"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          45.64,
+          31.32
+        ]
+      },
+      "properties": {
+        "id": "gilgamesh",
+        "name": "吉尔伽美什",
+        "category": "史诗",
+        "catIndex": 2,
+        "province": "伊拉克",
+        "site": "乌鲁克",
+        "value": 83,
+        "summary": "苏美尔史诗：乌鲁克王吉尔伽美什求永生。",
+        "source": "《吉尔伽美什史诗》",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Gilgamesh"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          81.86,
+          26.8
+        ]
+      },
+      "properties": {
+        "id": "ramayana",
+        "name": "罗摩（罗摩衍那）",
+        "category": "史诗",
+        "catIndex": 2,
+        "province": "印度",
+        "site": "阿约提亚",
+        "value": 84,
+        "summary": "印度史诗：罗摩救妻悉多，伐罗波那。",
+        "source": "《罗摩衍那》",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Rama"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -98.84,
+          19.69
+        ]
+      },
+      "properties": {
+        "id": "quetzalcoatl",
+        "name": "羽蛇神魁扎尔科亚特尔",
+        "category": "神话",
+        "catIndex": 0,
+        "province": "墨西哥",
+        "site": "特奥蒂瓦坎",
+        "value": 76,
+        "summary": "中美洲神话：羽蛇神掌风与晨星。",
+        "source": "阿兹特克/玛雅神话",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Quetzalcoatl"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -155.85,
+          19.5
+        ]
+      },
+      "properties": {
+        "id": "maui",
+        "name": "毛伊（波利尼西亚）",
+        "category": "神话",
+        "catIndex": 0,
+        "province": "夏威夷",
+        "site": "（波利尼西亚）",
+        "value": 70,
+        "summary": "波利尼西亚神话：毛伊以钩钓起岛屿、捕太阳。",
+        "source": "波利尼西亚神话",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Māui_(Hawaiian_mythology)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2,
+          5.6
+        ]
+      },
+      "properties": {
+        "id": "anansi",
+        "name": "阿南西（蜘蛛）",
+        "category": "民间故事",
+        "catIndex": 2,
+        "province": "加纳",
+        "site": "（西非/加纳）",
+        "value": 68,
+        "summary": "西非/加勒比民间故事：蜘蛛阿南西以智取胜。",
+        "source": "阿坎民间故事",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Anansi"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.76,
+          50.67
+        ]
+      },
+      "properties": {
+        "id": "arthur",
+        "name": "亚瑟王",
+        "category": "传说",
+        "catIndex": 1,
+        "province": "英国",
+        "site": "廷塔哲",
+        "value": 86,
+        "summary": "不列颠传说：亚瑟王拔石中剑，圆桌骑士。",
+        "source": "亚瑟王传说",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/King_Arthur"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.07,
+          53.07
+        ]
+      },
+      "properties": {
+        "id": "robin",
+        "name": "罗宾汉",
+        "category": "民间故事",
+        "catIndex": 2,
+        "province": "英国",
+        "site": "舍伍德森林",
+        "value": 80,
+        "summary": "英格兰民间故事：罗宾汉劫富济贫。",
+        "source": "英格兰民谣",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Robin_Hood"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.08,
+          55.61
+        ]
+      },
+      "properties": {
+        "id": "beowulf",
+        "name": "贝奥武甫",
+        "category": "史诗",
+        "catIndex": 2,
+        "province": "丹麦",
+        "site": "莱雷",
+        "value": 78,
+        "summary": "古英语史诗：贝奥武甫斩妖龙。",
+        "source": "《贝奥武甫》",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Beowulf"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -63.7,
+          60.7
+        ]
+      },
+      "properties": {
+        "id": "sedna",
+        "name": "塞德娜（因纽特）",
+        "category": "神话",
+        "catIndex": 0,
+        "province": "因纽特",
+        "site": "（北极）",
+        "value": 64,
+        "summary": "因纽特神话：海兽之母塞德娜掌海洋生灵。",
+        "source": "因纽特神话",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Sedna_(mythology)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.9,
+          -1.6
+        ]
+      },
+      "properties": {
+        "id": "mwindo",
+        "name": "姆温多（Nyanga）",
+        "category": "史诗",
+        "catIndex": 2,
+        "province": "刚果",
+        "site": "（尼亚加）",
+        "value": 62,
+        "summary": "中非尼亚加史诗：英雄姆温多历险。",
+        "source": "《姆温多史诗》",
+        "sourceType": "wikipedia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Mwindo_epic"
+      }
+    }
+  ]
+}
