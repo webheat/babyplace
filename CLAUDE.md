@@ -6,215 +6,186 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**遛娃宝地 (Babyplace)** — Cross-platform app helping parents find kid-friendly places (POIs). Built with uni-app Vue3 targeting H5 + multiple mini programs (WeChat, Xiaohongshu, Alipay, etc.). 
+**遛娃宝地 (Babyplace)** — Cross-platform app helping parents find kid-friendly places (POIs). Built with uni-app Vue3 targeting H5 + multiple mini programs (WeChat, Xiaohongshu, Alipay, etc.).
 
-**Two backends that coexist:**
+**Three coexisting systems** — knowing which one owns a file is the main thing to get right:
+
 1. **Go Server** (`server/`) — PRIMARY backend. SQLite, modular handlers, single binary.
 2. **uniCloud cloud functions** (`uniCloud-aliyun/cloudfunctions/`) — Legacy, being phased out.
+3. **Story/geo H5** (`web/` + `pipeline/`) — A standalone Vite+MapLibre app that renders history & folklore as a narrated 3D globe. **Not in the pnpm workspace** — it has its own `package-lock.json` and needs its own `npm i`. Nothing in `src/` depends on it; it's a separate deliverable that reads from the same SQLite DB.
 
 **Admin UI** (`server/admin-ui/`) — Vue3 + Element Plus SPA for managing POIs, articles, sources, reviews.
 
-**Data ingestion** — Python scripts in `scripts/` (Azhen POI import, basename CSV import, WeCom notifications).
+**Data ingestion** — Python scripts in `scripts/` (Azhen POI import, basename CSV import, WeChat article scraping, WeCom notifications). These use `scripts/.venv/`, separate from the pyenv python the geo pipeline uses.
+
+## ⚠️ Two trees at the repo root — only `src/` is source
+
+The repo root contains **two parallel trees that look identical**, and picking the wrong one wastes an hour of debugging minified code:
+
+| Path | What it is |
+|---|---|
+| `src/pages/`, `src/api/`, `src/components/`, `src/utils/`, `src/store/` | **Source.** `.vue` / `.js`, human-readable, aliased as `@/`. |
+| `pages/`, `api/`, `components/`, `utils/`, `store/`, `common/`, `config/`, `static/` | **Committed WeChat mini-program build output.** Minified `.js`, plus `.wxml` / `.wxss` / `.json` with no source counterpart. |
+
+Root `api/poi.js` is the *compiled* form of `src/api/poi.js` (see the minified `exports.nearbyPoi`). Root files are committed on purpose (`build:` commits, e.g. `8f88677 build: 更新小程序编译产物 v1.1.0`) and are **not** in `.gitignore` — `.gitignore` only covers `dist/`.
+
+**Rules:** edit only under `src/`. Never hand-edit or regenerate the root tree; it is refreshed by copying `dist/dev/mp-weixin` out. If you see a bug "in `api/poi.js`", you are looking at build output — the bug is in `src/api/poi.js`.
+
+`src/pages.json`, `src/manifest.json`, `src/App.vue` are the real routing/config entries (there is no root `pages.json` or `manifest.json`).
 
 ## Commands
 
 ```bash
 # Frontend (uni-app Vue3) — run from repo root
-pnpm install                      # Install all deps (includes server/admin-ui via workspace)
+pnpm install                      # Install root deps only (see note on admin-ui below)
 pnpm dev:h5                       # H5 dev server (http://localhost:5173)
 pnpm dev:mp-weixin                # WeChat Mini Program dev
 pnpm build:h5                     # H5 production build
-pnpm build:mp-weixin              # MP build + patch project-config.json
+pnpm build:mp-weixin              # MP build + patch project.config.json
 
 # Admin UI (Vue3 + Element Plus) — run from server/admin-ui/
-pnpm --filter admin-ui dev        # Admin dashboard dev server (port mirrored in vite.config)
-pnpm --filter admin-ui build      # Admin production build (output: static/manage/)
+cd server/admin-ui && pnpm i      # MUST install separately (see note)
+cd server/admin-ui && pnpm dev    # Admin dashboard dev server
+cd server/admin-ui && pnpm build  # Admin production build (output → static/manage/)
 
 # Go Backend Server — run from server/
 cd server && go run .             # Start on :8080 (reads .env from server/ or ../)
-cd server && go build -o babyplace-server .  # Build binary
-go test ./...                     # Run Go tests
+cd server && go build -o babyplace-server .
+go vet ./...                      # Only static check available — there are no *_test.go files
 
-# Docker (Go server + admin UI, multi-stage build)
-docker build -t babyplace ./server
-docker run -p 8080:8080 --env-file .env babyplace
-
-# Data ingestion (Python scripts)
-pnpm run ingest:azhen             # Import POI from "真的叫阿珍" WeChat articles
+# Data ingestion (Python, needs scripts/.venv)
+pnpm run ingest:azhen             # Import POI from WeChat articles
 pnpm run ingest:azhen:dry-run     # Dry run without writing
 pnpm run ingest:azhen:reset       # Clear all POIs before import
 pnpm run ingest:basename          # Import from basename.csv
-pnpm run ingest:basename:dry-run  # Basename dry run
+pnpm run ingest:wechat            # Scrape WeChat articles
 pnpm run notify:wecom             # Send WeChat Work notification
+pnpm run upload:mp-weixin:auto    # Auto-upload mini program (miniprogram-ci)
 
-# WeChat Mini Program upload (miniprogram-ci)
-pnpm run upload:mp-weixin:auto    # Auto-upload to WeChat (uses private.wx0097f2621a6cb4b1.key)
+# Story/geo H5 — run from web/ (NEEDS ITS OWN npm i FIRST)
+cd web && npm i
+npm run data:poi                  # SQLite POIs → poi.json (GCJ-02 → WGS-84)
+npm run data:script               # lore.json → episode.json
+npm run data:tts                  # episode.json → audio + real timing
+npm run dev                       # inline + vite dev server (port 5188)
+npm run build                     # inline + vite build → web/dist/
 
-# Deployment (legacy uniCloud — requires HBuilderX CLI on Windows)
-pnpm run deploy:cloud:functions   # Upload cloud functions
-pnpm run deploy:all               # Full deploy: functions + schema + web
+# Nightly batch (both are one-shot crontab entries, both只产出不发布)
+bash web/scripts/nightly-geo.sh       # POI→script→TTS→bake→H5 build
+bash web/scripts/nightly-folktale.sh  # validate→compile→GeoJSON→H5 build
+# Logs: out/logs/nightly-*.log, out/logs/folktale-*.log
+
+# Verification — the closest thing this repo has to a test suite
+python3 -I pipeline/folktale_to_lore.py --check   # bijection + kid-copy rules
 ```
 
-## Architecture
+**Admin UI is NOT a pnpm workspace member.** The root `pnpm-workspace.yaml` has only an `allowBuilds:` key — no `packages:` list — and `server/admin-ui/` carries its own `pnpm-lock.yaml`. `pnpm --filter admin-ui ...` fails; the package is named `babyplace-admin-ui`. Always `cd server/admin-ui && pnpm i` first.
 
-### Go Server (`server/`) — PRIMARY backend
+**The `deploy:cloud:*` and `deploy:all` npm scripts are Windows-only** — they hardcode `C:\HBuilderX\cli.exe`. They will not run on this Linux host; uploading cloud functions is not scriptable from here.
 
-Single Go binary (`package main`), modular `.go` handler files. SQLite via `modernc.org/sqlite` (pure Go, no CGO).
+**`web/` runs its Python with `python3 -I`** (isolated mode) via npm scripts — the `-I` matters because the pipeline scripts live outside `web/` and must not pick up a stray local `json.py`/`os.py`. Keep the `-I` when running them by hand.
+
+## Story/geo H5 subsystem (`web/` + `pipeline/`)
+
+The piece most likely to be under-documented elsewhere. A narrated 3D-globe story player where **one `episode.json` drives both outputs** — the live H5 player and the Remotion render — via a shared camera model.
+
+### Data flow
+
+```
+SQLite babyplace.db ──poi_extract.py──► poi.json          (GCJ-02 → WGS-84, iterative)
+lore.json (hand-written) ─┐
+                          ├─script_gen.py─► episode.json  ← THE single source of truth
+poi.json ─────────────────┘                                (camera keys + beats + captions)
+                              └─tts_episode.py─► audio/ + real timing written back
+                                              └─inline_episode.py─► episode-inline.js
+                                                                    (window.__EPISODE__)
+folktales.json ──folktale_to_lore.py──► folktale-episode.json
+                                     └─export_geojson.py──► folktales.geojson + -lite.geojson
+```
+
+`src/geo/data/chinese-folktales.json` (47 features) is the **upstream source of truth** for name / category / province / site / source / summary / coordinates. `web/public/data/folktales.json` stores **only the human-written fields** (`kid_line`, `ask_kid`, `want_to_see`) keyed by upstream `id`. `folktale_to_lore.py --check` enforces the bijection and refuses to produce output when it's broken — this is why a missing `kid_line` blocks the whole nightly batch rather than silently shipping 21 of 47 stories. `folktales-extra.json` holds 18 hand-added tales that don't exist upstream (own coords, `source_verified: false`).
+
+### Hard-won invariants — don't regress these
+
+- **`episode.json` is the only truth.** H5 and Remotion both read it and share `web/src/camera.js`; they differ only in clock source (rAF vs `useCurrentFrame()`). The acceptance criterion is that `camAt(keys, t)` returns the same camera for the same `t` regardless of renderer or frame count.
+- **Coordinates are GCJ-02 in the DB, WGS-84 everywhere downstream.** Bake tiles are WGS-84. Convert with `gcj02towgs84_exact` (iterative to 1e-6°); a naive forward-minus-offset only converges to tens of metres near Guangzhou. `folktale_to_lore.py` defaults to assuming the upstream GeoJSON is already WGS-84 — it has a `--assume-gcj02` flag if that turns out wrong.
+- **`episode-inline.js` is gitignored and required for the page to render.** A fresh clone white-screens until `inline_episode.py` runs. `npm run build`/`dev` already chain it; running `vite build` bare does not.
+- **Kid-facing copy has a hard length budget.** `THRESHOLD = 30` chars/sentence in `folktale_to_lore.py`. Semantic coherence beats the character count — a mechanical punctuation split shattered causal clauses ("他不是把水堵住，而是挖出河道…" into fragments). `fix_long_sentences.py` is the historical evidence; read it before "fixing" long lines.
+- **MiniMax TTS gotchas** (documented in `tts_episode.py`, do not remove): `data.audio` is a **hex** string not base64, and `language_boost` must be top-level, not nested in `voice_setting`.
+- **This machine has no GPU.** Bake goes through SwiftShader at ~9s/frame, which is why `nightly-geo.sh` runs 3 segments in parallel at `nice -n 15` and uses `FPS=20`. `CHROME` must be set explicitly to the 150 headless shell — the 131 build silently hangs on tile fetches.
+- **Wikidata is unreachable from this host** (direct and proxy both time out), so `fetch-wikidata-myths.mjs` ships a bundled public-domain fallback. Re-test before assuming it's still down.
+
+### `bake-basemap.mjs` env knobs
+
+`NAME STYLE(satellite|dark|light) CENTER=lng,lat ZSTART ZEND PITCH BEARING FPS DUR HOLD(out point of zoom, p∈[0,1]) MARGIN=lngDeg,latDeg KEEPMARGIN COUNTRIES OUT CREDIT`. Artifacts land in `process.cwd()`, not the script directory.
+
+## Architecture (Go Server)
+
+**NO framework** — raw `net/http` handlers. Single binary, `package main`.
 
 **Key files:**
 - `main.go` — Entry point: init modules, register HTTP routes, start server
-- `db.go` — SQLite schema/init, `POI` and `Article` struct definitions, DB helper functions
-- `admin.go` — `POST /babyplace-admin` action router + `AdminResponse{Code,Message,Data}` helpers + param extraction helpers
-- `poi.go` — POI CRUD, nearby search
-- `review.go`, `article.go`, `recommend.go` — Core data handlers
-- `goods.go` — Legacy goods CRUD (old API without `poi.` prefix)
-- `seed.go` — Batch import/upsert operations
-- `mptext.go` — WeChat public account (公众号) article scraping via 猫铺text API
-- `xhs.go`, `video.go`, `wxlogin.go` — External integrations
-- `dify.go`, `llm.go` — AI/chat backends
-- `amap.go`, `route.go` — AMap (高德地图) geocoding/route planning
-- `scheduler.go` — Periodic article crawler
-- `notify.go` — WeCom notifications
-- `manage.go` — Admin UI static file serving (`/manage/`)
-- `image.go` — Image processing
+- `db.go` — SQLite schema/init, `POI` and `Article` structs, DB helpers
+- `admin.go` — `POST /babyplace-admin` action router + `AdminResponse{Code,Message,Data}` + param helpers
+- `poi.go`, `review.go`, `article.go`, `recommend.go`, `goods.go` — Core data handlers
+- `article_parse.go` — WeChat article HTML parsing
+- `mptext.go` — 猫铺text WeChat scraping; `scheduler.go` — periodic crawler
+- `dify.go`, `llm.go`, `amap.go`, `route.go`, `xhs.go`, `video.go`, `wxlogin.go`, `notify.go`, `image.go`, `obsidian.go`
+- `manage.go` — Admin UI static serving (`/manage/`)
 
-**Routes (defined in main.go):**
-- `POST /babyplace-admin` — Main admin API (action-based routing)
-- `/api/chat`, `/api/openclaw/chat`, `/api/dify/chat` — AI chat
-- `/api/amap/search`, `/api/amap/nearby` — AMap geocoding
-- `/api/xhs/status`, `/api/xhs/auth`, `/api/xhs/callback`, `/api/xhs/publish` — Xiaohongshu
-- `/api/video/upload`, `/api/video/enhance`, `/api/video/render` — Video pipeline
-- `/api/wx-login` — WeChat login
-- `/api/client-log` — Client-side error/event logging
-- `/manage/` — Admin dashboard (static files)
-- `/health` — Health check
+**Routes:** `POST /babyplace-admin` (action router) · `/api/chat`, `/api/openclaw/chat`, `/api/dify/chat` · `/api/amap/search`, `/api/amap/nearby` · `/api/xhs/*` · `/api/video/*` · `/api/wx-login` · `/api/client-log` · `/manage/` · `/health`
 
-**Response format (all handlers):** `{ code: 0, message: 'ok', data: {} }` — matches legacy uniCloud convention.
+**Response format (all handlers):** `{ code: 0, message: 'ok', data: {} }` — matches the legacy uniCloud convention. `ok()` / `fail()` helpers; params via `getString()` / `getInt()` / `getFloat()` / `getPayload()`.
 
-**CORS:** `corsMiddleware` on all API routes (Allow-Origin: *, methods: GET/POST/OPTIONS).
+**CORS:** open (`*`) on all API routes.
 
-**Config:** Loads `.env` from `server/.env` then `../.env`. Key vars: `PORT`, `DB_PATH`, `AMAP_KEY`, `ASTBOT_BASE_URL`, `ASTBOT_API_KEY`, `OPENCLAW_BIN`, `DIFY_API_URL`, `WX_APP_ID`, `WX_APP_SECRET`, `MPTEXT_FAKEIDS`, `WECOM_CORPID`, `AI_API_URL`, `AI_API_KEY`, `REMOTION_SERVER_URL`.
+### Four unrelated things wear the "LLM" label — don't conflate them
 
-### Admin UI (`server/admin-ui/`)
+| Route / helper | Actually goes to | Defined in |
+|---|---|---|
+| `POST /api/chat` | AstrBot's sync API (`astrbotBaseURL + /api/v1/chat/sync`), username `miniprogram_<sessionID>` | `main.go:handleChat` |
+| `POST /api/openclaw/chat` | Shells out to a **local binary** (`OPENCLAW_BIN`, default `openclaw`) and parses its stdout JSON; tolerates non-zero exit | `main.go:handleOpenClawChat` |
+| `POST /api/dify/chat` | Dify `/v1/chat-messages` (default `http://lanes.ymxt.top:3000`) | `dify.go` |
+| `llmChat(system, user)` | Generic OpenAI-compatible `/chat/completions` against `AI_API_URL` + `AI_API_KEY`, model from `LLM_MODEL` (default `qwen-turbo`) | `llm.go` |
 
-Vue3 + Element Plus SPA, built with Vite. Compiled into Go binary's `static/manage/` via Docker multi-stage build.
+**`llmChat` is not used by any chat route.** Its only caller is `article_parse.go` for WeChat article HTML→POI extraction. If you're changing chat behaviour, edit the route handler; if you're changing extraction quality, edit `llm.go`.
 
-**Structure:**
-```
-server/admin-ui/src/
-├── main.js             # App entry, Element Plus registration
-├── App.vue             # Root component
-├── router.js           # Vue Router (login guard)
-├── api.js              # API calls to POST /babyplace-admin
-└── views/
-    ├── Login.vue       # Auth page
-    ├── Layout.vue      # App shell (sidebar + content)
-    ├── Dashboard.vue   # Landing page
-    ├── PoiList.vue     # POI management (search table + CRUD dialog)
-    ├── ArticleList.vue # Article management
-    ├── ReviewList.vue  # Review management
-    └── SourceList.vue  # Content source management
-```
+**Config:** loads `.env` from `server/.env` then `../.env`. Key vars: `PORT`, `DB_PATH`, `AMAP_KEY`, `DIFY_API_URL`, `WX_APP_ID`/`WX_APP_SECRET`, `WECOM_CORPID`, `AI_API_URL`/`AI_API_KEY`, `OPENCLAW_BIN`, `REMOTION_SERVER_URL`.
 
-**Dev server:** Run from `server/admin-ui/` with `pnpm dev` (Vite proxy configured in `vite.config.js`).
-
-### Frontend App (`src/`)
-
-uni-app Vue3 CLI project targeting H5 + multiple mini programs. Composition API with `<script setup>`.
-
-**Key structure:**
-```
-src/
-├── pages/              # Page components (16 subdirs: admin, auth, chat, poi, etc.)
-├── api/                # API wrappers (3-tier fallback — see below)
-├── components/         # Shared components (25 dirs)
-├── utils/              # Utilities (auth.js, etc.)
-├── config/             # App config
-├── data/               # Static snapshots (e.g. poi-snapshot.json)
-├── store/              # Vuex store
-├── common/             # Shared assets (icon fonts)
-├── static/             # Static files
-└── pages.json          # Page routing (register all pages here)
-```
-
-**API Fallback Chain (3 tiers, see `src/api/poi.js`, `src/api/admin.js`):**
-1. `uniCloud.importObject()` → direct uniCloud Object call
-2. `callAdminAction()` → HTTP call to `POST /babyplace-admin` (Go server)
-3. Static snapshot from `src/data/poi-snapshot.json` → offline fallback
-
-### uniCloud Cloud Functions (`uniCloud-aliyun/cloudfunctions/`)
-
-Legacy but still deployed. CommonJS modules with `{'action': '...', 'payload': {...}}` pattern.
-
-**Key functions:** `babyplace-admin/` (HTTP action router), `poi/`, `recommend/`, `review/`, `article/`.
-
-### Database
-
-**Go Server:** SQLite at path set by `DB_PATH` env var (default: `data/babyplace.db`). Schema defined in `db.go` (`initDB()`). Key tables: `pois`, `reviews`, `articles`, `content_sources`, `mptext_accounts`.
-
-**uniCloud (legacy):** JSON schemas in `uniCloud-aliyun/database/*.schema.json`. Collections: `babyplace-poi`, `babyplace-article`, `babyplace-content-source`, `babyplace-user-review`, `babyplace-restaurant`, `babyplace-feedback`.
-
-## External Integrations
-
-| Service | File(s) | Purpose |
-|---------|---------|---------|
-| AMap (高德地图) | `amap.go`, `route.go` | Geocoding, nearby search, driving routes |
-| WeChat Mini Program | `wxlogin.go` | OAuth login |
-| Xiaohongshu (小红书) | `xhs.go` | Auth, publish, status |
-| AstrBot | `main.go` (handleChat) | Old AI chat backend (sync API proxy) |
-| OpenClaw | `main.go` (handleOpenClawChat) | CLI-based agent (shells out to `openclaw` binary) |
-| Dify | `dify.go` | Workflow/agent platform (遛娃宝地知识库) |
-| LLM | `llm.go` | Direct LLM calls (default model: `qwen-turbo`) |
-| 猫铺text | `mptext.go` | WeChat public account article scraping |
-| WeCom (企业微信) | `notify.go` | Failure alerts |
-| Remotion | `video.go` | Video rendering service |
-| aitoearn | — | Multi-platform publishing (B站/抖音) |
-| Meituan/Ele.me | `goods.go` | Affiliate link generation |
+**Frontend fallback chain (3 tiers, `src/api/poi.js`, `src/api/admin.js`):** `uniCloud.importObject()` → HTTP `POST /babyplace-admin` → static snapshot `src/data/poi-snapshot.json`.
 
 ## Key Patterns
 
-### Frontend (uni-app Vue3)
-- **Composition API**: `<script setup>` syntax everywhere
-- **Imports**: `onMounted/ref/reactive/computed` from `vue`; `onLoad/onPullDownRefresh` from `@dcloudio/uni-app`
-- **Path Alias**: `@/` → `src/`
-- **Error Handling**: Check `result.code !== 0`, show via `uni.showToast({ title, icon: 'none' })`
-- **Platform Conditionals**: `// #ifdef H5` / `// #endif`
-- **Naming**: camelCase vars/functions, `handle` prefix for events, `is`/`has` for booleans
+**Backend:** raw `net/http`; `dbMu` mutex around writes; `modernc.org/sqlite` (pure Go, no CGO).
 
-### Backend (Go Server)
-- **NO framework** — raw `net/http` handlers
-- **Response**: `AdminResponse{ Code, Message, Data }` with `ok()` / `fail()` helpers
-- **Param extraction**: `getString()`, `getInt()`, `getFloat()`, `getPayload()` helpers in `admin.go`
-- **DB access**: `database/sql` with `modernc.org/sqlite` driver; `dbMu` mutex around writes
+**Frontend:** Composition API `<script setup>`; imports from `@dcloudio/uni-app`; `// #ifdef H5` conditionals; always check `result.code !== 0`; camelCase with `handle`/`is` prefixes; rpx units.
 
-### Admin UI (Vue3 + Element Plus)
-- Element Plus components: `el-table`, `el-form`, `el-card`, `el-dialog`, `el-tag`, `el-button`
-- API calls via `api.js` → `POST /babyplace-admin` with `{action, payload}`
-- Login guard in `router.js` (simple token check)
-- Views follow a pattern: search form → table → pagination → CRUD dialog
+**Admin UI:** `api.js` → `POST /babyplace-admin` with `{action, payload}`; Element Plus tables/forms/dialogs.
 
-### Design System
-Defined in `DESIGN.md` at repo root. Covers colors, typography (rpx-based), spacing (4px grid), component CSS, responsive breakpoints.
+**Design system:** `DESIGN.md` — colors, typography, 4px spacing grid, breakpoints.
 
 ## Key Reference Documents
 
-Located in `docs/` — read these before working in related areas:
-- `POI_ENGINE_SPEC.md` — Recommendation engine specification
-- `AI_DEV_SPEC.md` — AI development rules
-- `DATABASE_RELATIONS.md` — DB schema relations
-- `CLOUD_SCHEMA.md` — Cloud database schemas
-- `HTTP_CLOUD_FUNCTION_DEBUG.md` — Local cloud function debugging
-- `MPTTEXT_API_INTEGRATION.md` — 猫铺text API docs
-- `CONTENT_PARSER_SPEC.md` — Article parsing spec
-- `MEITUAN_UNION_INTEGRATION.md` — Meituan affiliate integration
-- `MINIAPP_API.md` — Mini program API docs
+- `src/geo/README.md` — geo module capabilities, free data sources, and the Cesium/esbuild `#ifdef` trap (Cesium shaders break uni-app's conditional-compile preprocessor, so it must load as a global script)
+- `docs/POI_ENGINE_SPEC.md` — recommendation engine
+- `docs/DATABASE_RELATIONS.md`, `docs/CLOUD_SCHEMA.md` — schema
+- `docs/AI_DEV_SPEC.md`, `docs/CONTENT_PARSER_SPEC.md`, `docs/MINIAPP_API.md`
+- `docs/MPTEXT_API_INTEGRATION.md`, `docs/MEITUAN_UNION_INTEGRATION.md`, `docs/WECOM_NOTIFICATION.md`
+- `docs/CICD.md`, `docs/INCREMENTAL_POI_WORKFLOW.md`, `docs/HTTP_CLOUD_FUNCTION_DEBUG.md`
+
+## Testing
+
+**There are no unit tests anywhere** — no `*_test.go`, no JS test runner. `go test ./...` passes vacuously; use `go vet ./...` as the only Go static check. The real regression gates are:
+
+- `python3 -I pipeline/folktale_to_lore.py --check` — bijection between upstream GeoJSON and hand-written kid copy, plus the 30-char sentence rule. Blocks the nightly batch when broken.
+- `bake-basemap.mjs` producing a non-empty MP4.
+- Visual/WebGL verification is manual by design — the sandbox can't run WebGL.
 
 ## Git Workflow
 
-Commit format: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
-Co-Authored-By: Claude <noreply@anthropic.com> on all commits.
+Commit format: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`. `Co-Authored-By: Claude <noreply@anthropic.com>` on all commits.
 
-Docker workflow for testing: `docker build -t babyplace ./server && docker run -p 8080:8080 --env-file .env babyplace`
+`.gitignore` carries load-bearing exceptions: `data/` is ignored as SQLite but `!web/public/data/` re-includes it, then re-ignores the generated `episode.json` / `episode-inline.js` / `poi.json` while keeping hand-written `lore.json` and the folktale JSON. `out/` (bake frames + audio) is fully ignored and rebuildable.
 
 ## Security Rules
 
