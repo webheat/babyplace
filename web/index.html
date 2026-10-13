@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>两千年前的广州 · 遛娃宝地</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body,#app{height:100%;background:#05070d;overflow:hidden}
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <!-- episode.json 编译期注入，避免运行时 fetch 在离线/内网下白屏 -->
+  <script src="./data/episode-inline.js"></script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

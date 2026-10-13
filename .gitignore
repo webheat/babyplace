@@ -29,6 +29,16 @@ scripts/.venv/
 
 # SQLite database
 data/
+# …但 web/public/data 是历史地理可视化（H5）的数据源，不是 SQLite 库。
+# lore.json 是手写内容源，必须入库；其余是 pipeline 生成的，可重跑重建。
+!web/public/data/
+web/public/data/episode.json
+web/public/data/episode-inline.js
+web/public/data/poi.json
+web/public/data/articles.json
+
+# 历史地理可视化产出：bake 帧序列 + 配音（可由 pipeline 全量重建，不入库）
+out/
 
 pic/
 .claude/

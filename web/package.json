@@ -1,0 +1,25 @@
+{
+  "name": "babyplace-geo-h5",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "遛娃宝地 · 历史地理 3D 可视化 H5。MapLibre 3D 地球 + 时间轴 + 字幕。",
+  "scripts": {
+    "data:poi": "python3 -I ../pipeline/poi_extract.py",
+    "data:script": "python3 -I ../pipeline/script_gen.py",
+    "data:tts": "python3 -I ../pipeline/tts_episode.py",
+    "data:inline": "python3 -I ../pipeline/inline_episode.py",
+    "build": "npm run data:inline && vite build",
+    "dev": "npm run data:inline && vite",
+    "preview": "vite preview --host 0.0.0.0 --port 5188"
+  },
+  "dependencies": {
+    "maplibre-gl": "5.24.0",
+    "vue": "3.4.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "5.2.1",
+    "puppeteer-core": "23.11.1",
+    "vite": "5.2.8"
+  }
+}
