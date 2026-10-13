@@ -63,6 +63,8 @@
     "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5000320260310001",
     "@dcloudio/uni-mp-xhs": "3.0.0-alpha-5000320260310001",
     "@dcloudio/uni-quickapp-webview": "3.0.0-alpha-5000320260310001",
+    "cesium": "^1.146.0",
+    "maplibre-gl": "^6.14.0",
     "vue": "^3.4.21",
     "vue-i18n": "^9.14.5"
   },

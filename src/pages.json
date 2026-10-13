@@ -330,6 +330,25 @@
           "style": {}
         }
       ]
+    },
+    {
+      "root": "pages/geo",
+      "pages": [
+        {
+          "path": "cesium/index",
+          "aliasPath": "/geo/cesium",
+          "style": {
+            "navigationBarTitleText": "Cesium 3D 地球"
+          }
+        },
+        {
+          "path": "maplibre/index",
+          "aliasPath": "/geo/maplibre",
+          "style": {
+            "navigationBarTitleText": "MapLibre 地图"
+          }
+        }
+      ]
     }
   ],
   "globalStyle": {
